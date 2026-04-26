@@ -291,7 +291,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 }}
                                 required
                             >
-                                <option value="" disabled>-- Select Flavor --</option>
                                 {availableFormfactors.map((ff: any) => (
                                     <option key={ff.name} value={ff.name}>{ff.name}</option>
                                 ))}
