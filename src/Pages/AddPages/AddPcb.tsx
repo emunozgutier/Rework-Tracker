@@ -306,7 +306,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                     onChange={(e) => setPcbRev(e.target.value)}
                                     required
                                 >
-                                    <option value="">Select Rev</option>
+
                                     {availablePcbRevisions.map((rev) => (
                                         <option key={rev} value={rev}>{rev}</option>
                                     ))}
@@ -330,7 +330,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 onChange={(e) => setBom(e.target.value)}
                                 required
                             >
-                                <option value="">Select BOM</option>
+
                                 {availableBoms.length > 0 ? (
                                     availableBoms.map((b) => (
                                         <option key={b} value={b}>{b}</option>
