@@ -162,7 +162,7 @@ app.post('/api/projects', async (req, res) => {
 // PCBs API
 app.get('/api/pcbs', (req, res) => {
     const query = `
-        SELECT pcbs.*, projects.name as project_name, owners.name as owner_name,
+        SELECT pcbs.*, projects.name as project_name, owners.name as owner_name, owners.username as owner_username,
                (SELECT GROUP_CONCAT(tag_id) FROM pcb_tags WHERE pcb_id = pcbs.id) as tag_ids
         FROM pcbs 
         LEFT JOIN projects ON pcbs.project_id = projects.id
@@ -177,6 +177,7 @@ app.get('/api/pcbs', (req, res) => {
             project: row.project_name,
             project_id: row.project_id,
             owner: row.owner_name || 'Unassigned',
+            owner_username: row.owner_username || undefined,
             product: row.product_name_and_rev,
             bom: row.bom,
             tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : []

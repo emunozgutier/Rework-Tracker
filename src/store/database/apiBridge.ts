@@ -118,11 +118,15 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                 const pcb = internalPcbs.find(x => x.id === id);
                 return createResponse(pcb || { error: 'Not found' }, pcb ? 200 : 404);
             }
-            const pcbsWithTags = internalPcbs.map(pcb => ({
-                ...pcb,
-                product: pcb.product_name_and_rev || pcb.product,
-                tag_ids: internalPcbTags[pcb.id] || []
-            }));
+            const pcbsWithTags = internalPcbs.map(pcb => {
+                const ownerObj = internalOwners.find(o => String(o.id) === String(pcb.owner_id) || o.name === pcb.owner);
+                return {
+                    ...pcb,
+                    product: pcb.product_name_and_rev || pcb.product,
+                    tag_ids: internalPcbTags[pcb.id] || [],
+                    owner_username: pcb.owner_username || (ownerObj ? ownerObj.username : undefined)
+                };
+            });
             return createResponse(pcbsWithTags);
         }
         if (method === 'POST') {
@@ -133,7 +137,8 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                 id: Date.now(), 
                 ...body,
                 project: proj ? proj.name : 'Unknown',
-                owner: ownerObj ? ownerObj.name : 'Unassigned'
+                owner: ownerObj ? ownerObj.name : 'Unassigned',
+                owner_username: ownerObj ? ownerObj.username : undefined
             };
             
             if (proj) {

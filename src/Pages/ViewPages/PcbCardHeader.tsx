@@ -22,7 +22,7 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
                     <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{pcb.product || 'No Rev'}</span>
                     {pcb.bom && <><span style={{ opacity: 0.5 }}>•</span><span style={{ whiteSpace: 'nowrap' }}>{pcb.bom}</span></>}
                     <span style={{ opacity: 0.5 }}>•</span>
-                    <span style={{ whiteSpace: 'nowrap' }}>{pcb.owner || 'Unassigned'}</span>
+                    <span style={{ whiteSpace: 'nowrap' }}>{pcb.owner_username ? `@${pcb.owner_username}` : (pcb.owner || 'Unassigned')}</span>
                 </div>
             </div>
 

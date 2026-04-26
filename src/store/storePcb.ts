@@ -8,6 +8,7 @@ export interface Pcb {
     status: string;
     project: string;
     owner: string;
+    owner_username?: string;
     product: string;
     bom?: string;
     tag_ids?: number[];
