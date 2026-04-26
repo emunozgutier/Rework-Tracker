@@ -139,7 +139,26 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
         const cornerPart = noPartYet ? "" : siliconVersion;
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
-        const combinedProduct = [ffPart, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
+        
+        const isNA = (str: string) => {
+            const s = str.trim().toLowerCase();
+            return s === 'n/a' || s === 'na' || s === 'not applicable';
+        };
+        
+        const rawParts = [ffPart, finalPcbRev, revPart, cornerPart].filter(Boolean);
+        const cleanParts: string[] = [];
+        let hasNA = false;
+        for (const part of rawParts) {
+            if (isNA(part)) {
+                if (!hasNA) {
+                    cleanParts.push("N/A");
+                    hasNA = true;
+                }
+            } else {
+                cleanParts.push(part);
+            }
+        }
+        const combinedProduct = cleanParts.join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
         const crc = generateCRC(finalBoardName);
         const finalBoardWithCrc = `${finalBoardName}${crc}`;
@@ -167,31 +186,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             </header>
 
             <form onSubmit={handleSubmit} className="add-form">
-                <FormGroup title="Instance">
-                    <div className="form-row">
-                        <div className="form-group flex-1">
-                            <label>Assigned Name</label>
-                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
-                                <span>{selectedProjectKey}-{boardNumber}</span>
-                                <span style={{ color: '#a855f7', fontWeight: 800 }} title="Mathematical Checksum">
-                                    {generateCRC(`${selectedProjectKey}-${boardNumber.toUpperCase()}`)}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="form-group flex-1">
-                            <label htmlFor="owner">Owner</label>
-                            <select 
-                                id="owner" 
-                                value={selectedOwner} 
-                                onChange={(e) => setSelectedOwner(e.target.value)}
-                            >
-                                <option value="">Unassigned</option>
-                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                            </select>
-                        </div>
-                    </div>
-                </FormGroup>
-
                 <FormGroup title="Silicon">
                     <div className="form-row">
                         <div className="form-group flex-1">
@@ -249,6 +243,31 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             />
                             No part yet
                         </label>
+                    </div>
+                </FormGroup>
+
+                <FormGroup title="Instance">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label>Assigned Name</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
+                                <span>{selectedProjectKey}-{boardNumber}</span>
+                                <span style={{ color: '#a855f7', fontWeight: 800 }} title="Mathematical Checksum">
+                                    {generateCRC(`${selectedProjectKey}-${boardNumber.toUpperCase()}`)}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="owner">Owner</label>
+                            <select 
+                                id="owner" 
+                                value={selectedOwner} 
+                                onChange={(e) => setSelectedOwner(e.target.value)}
+                            >
+                                <option value="">Unassigned</option>
+                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                            </select>
+                        </div>
                     </div>
                 </FormGroup>
 
