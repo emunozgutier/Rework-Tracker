@@ -6,6 +6,12 @@ import { usePcbStore } from '../../store/storePcb';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { generateCRC } from '../../components/UrlManager/crc';
 
+const isNA = (str: string) => {
+    if (!str) return false;
+    const s = str.trim().toLowerCase();
+    return s === 'n/a' || s === 'na' || s === 'not applicable';
+};
+
 interface AddPCBProps {
     onBack: () => void;
     onSuccess: () => void;
@@ -34,9 +40,9 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
     const availableFormfactors = selectedProjData?.formfactors || [];
-    const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s)) : [];
     
-    const availableSiliconRevisions = selectedProjData?.revisions || [];
+    const availableSiliconRevisions = (selectedProjData?.revisions || []).filter((s: string) => !isNA(s));
     let availablePcbRevisions: string[] = [];
     let availableBoms: string[] = [];
     if (selectedProject && selectedFormfactor) {
@@ -84,17 +90,19 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 const firstProj = projData[0];
                 setSelectedProject(firstProj.id.toString());
                 if (firstProj.silicon_corners) {
-                    const corners = firstProj.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean);
+                    const corners = firstProj.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s));
                     setSiliconVersion(corners.length > 0 ? corners[0] : '');
                 }
                 if (firstProj.formfactors && firstProj.formfactors.length > 0) {
                     setSelectedFormfactor(firstProj.formfactors[0].name);
-                    setSelectedRevision(firstProj.revisions && firstProj.revisions.length > 0 ? firstProj.revisions[0] : '');
+                    const revs = (firstProj.revisions || []).filter((s: string) => !isNA(s));
+                    setSelectedRevision(revs.length > 0 ? revs[0] : '');
                     setPcbRev(firstProj.formfactors[0].revisions[0] || '');
                     setBom(firstProj.formfactors[0].boms ? firstProj.formfactors[0].boms[0] : '');
                 } else if (firstProj.revisions && firstProj.revisions.length > 0) {
                     setSelectedFormfactor('');
-                    setSelectedRevision(firstProj.revisions[0]);
+                    const revs = (firstProj.revisions || []).filter((s: string) => !isNA(s));
+                    setSelectedRevision(revs.length > 0 ? revs[0] : '');
                     setPcbRev('');
                     setBom('');
                 }
@@ -108,7 +116,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const project = projects.find(p => p.id.toString() === id);
         
         if (project && project.silicon_corners) {
-            const corners = project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean);
+            const corners = project.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s));
             setSiliconVersion(corners.length > 0 ? corners[0] : '');
         } else {
             setSiliconVersion('');
@@ -116,12 +124,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
 
         if (project && project.formfactors && project.formfactors.length > 0) {
             setSelectedFormfactor(project.formfactors[0].name);
-            setSelectedRevision(project.revisions && project.revisions.length > 0 ? project.revisions[0] : '');
+            const revs = (project.revisions || []).filter((s: string) => !isNA(s));
+            setSelectedRevision(revs.length > 0 ? revs[0] : '');
             setPcbRev(project.formfactors[0].revisions[0] || '');
             setBom(project.formfactors[0].boms ? project.formfactors[0].boms[0] : '');
         } else if (project && project.revisions && project.revisions.length > 0) {
             setSelectedFormfactor('');
-            setSelectedRevision(project.revisions[0]);
+            const revs = (project.revisions || []).filter((s: string) => !isNA(s));
+            setSelectedRevision(revs.length > 0 ? revs[0] : '');
             setPcbRev('');
             setBom('');
         } else {
@@ -139,11 +149,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
         const cornerPart = noPartYet ? "" : siliconVersion;
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
-        
-        const isNA = (str: string) => {
-            const s = str.trim().toLowerCase();
-            return s === 'n/a' || s === 'na' || s === 'not applicable';
-        };
         
         const rawParts = [ffPart, finalPcbRev, revPart, cornerPart].filter(Boolean);
         const cleanParts: string[] = [];
@@ -265,7 +270,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 onChange={(e) => setSelectedOwner(e.target.value)}
                             >
                                 <option value="">Unassigned</option>
-                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                                {owners.map(o => <option key={o.id} value={o.id}>@{o.username}</option>)}
                             </select>
                         </div>
                     </div>
