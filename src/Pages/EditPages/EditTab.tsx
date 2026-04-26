@@ -102,7 +102,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                         >
                             <option value="">Select an Owner...</option>
                             {owners.map(o => (
-                                <option key={o.id} value={o.id}>{o.name}</option>
+                                <option key={o.id} value={o.id}>@{o.username}</option>
                             ))}
                         </select>
                     </div>

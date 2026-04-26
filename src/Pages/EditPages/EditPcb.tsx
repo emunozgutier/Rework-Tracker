@@ -179,7 +179,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                                 onChange={(e) => setSelectedOwner(e.target.value)}
                             >
                                 <option value="">Unassigned</option>
-                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                                {owners.map(o => <option key={o.id} value={o.id}>@{o.username}</option>)}
                             </select>
                         </div>
                     </div>
