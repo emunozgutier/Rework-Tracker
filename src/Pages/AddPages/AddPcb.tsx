@@ -19,6 +19,7 @@ interface AddPCBProps {
 
 export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
+    const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('hex');
     const [status] = useState('In Progress');
     const [pcbRev, setPcbRev] = useState('');
     const [bom, setBom] = useState('');
@@ -32,7 +33,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [projects, setProjects] = useState<any[]>([]);
     const [owners, setOwners] = useState<any[]>([]);
     const { addPcb, pcbs, fetchPcbs, loading } = usePcbStore();
-    const [lastAutoFilledProject, setLastAutoFilledProject] = useState('');
 
     useEffect(() => {
         if (pcbs.length === 0) fetchPcbs();
@@ -53,30 +53,42 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
 
     useEffect(() => {
-        // Trigger autofill of the next hex number when the selected project changes
-        if (selectedProjData && selectedProject !== lastAutoFilledProject && pcbs) {
+        // Trigger autofill of the next number when the selected project or number format changes
+        if (selectedProjData && pcbs) {
             // Check if there are PCBs matching this project
             const projectPcbs = pcbs.filter(p => p.project === selectedProjData.name);
-            let nextHex = '0001';
+            let nextVal = 1;
             
             if (projectPcbs.length > 0) {
-                const hexValues = projectPcbs.map(p => {
+                const numericValues = projectPcbs.map(p => {
                     const parts = p.board_number.split('-');
                     if (parts.length > 1) {
-                        return parseInt(parts.slice(-1)[0], 16);
+                        let numPart = parts.slice(-1)[0];
+                        // remove CRC (last char)
+                        numPart = numPart.substring(0, numPart.length - 1);
+                        
+                        if (numPart.toLowerCase().startsWith('0x')) {
+                            return parseInt(numPart.substring(2), 16);
+                        } else {
+                            // legacy format or decimal
+                            return parseInt(numPart, 16);
+                        }
                     }
                     return NaN;
                 }).filter(n => !isNaN(n));
                 
-                if (hexValues.length > 0) {
-                    const maxHex = Math.max(...hexValues);
-                    nextHex = (maxHex + 1).toString(16).toUpperCase().padStart(4, '0');
+                if (numericValues.length > 0) {
+                    nextVal = Math.max(...numericValues) + 1;
                 }
             }
-            setBoardNumber(nextHex);
-            setLastAutoFilledProject(selectedProject);
+            
+            if (numberFormat === 'hex') {
+                setBoardNumber('0x' + nextVal.toString(16).toUpperCase().padStart(4, '0'));
+            } else {
+                setBoardNumber(nextVal.toString(10).padStart(4, '0'));
+            }
         }
-    }, [selectedProject, selectedProjData, pcbs, lastAutoFilledProject]);
+    }, [selectedProject, selectedProjData, pcbs, numberFormat]);
 
     useEffect(() => {
         // Fetch projects and owners for dropdowns
@@ -164,7 +176,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             }
         }
         const combinedProduct = cleanParts.join(' ').trim();
-        const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
+        const finalBoardName = `${selectedProjectKey}-${boardNumber}`;
         const crc = generateCRC(finalBoardName);
         const finalBoardWithCrc = `${finalBoardName}${crc}`;
         
@@ -255,11 +267,36 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     <div className="form-row">
                         <div className="form-group flex-1">
                             <label>Assigned Name</label>
-                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, border: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
                                 <span>{selectedProjectKey}-{boardNumber}</span>
                                 <span style={{ color: '#a855f7', fontWeight: 800 }} title="Mathematical Checksum">
-                                    {generateCRC(`${selectedProjectKey}-${boardNumber.toUpperCase()}`)}
+                                    {generateCRC(`${selectedProjectKey}-${boardNumber}`)}
                                 </span>
+                            </div>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label>Number Format</label>
+                            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'normal' }}>
+                                    <input 
+                                        type="radio" 
+                                        name="numberFormat" 
+                                        value="hex" 
+                                        checked={numberFormat === 'hex'} 
+                                        onChange={() => setNumberFormat('hex')} 
+                                    />
+                                    Hex (0x)
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'normal' }}>
+                                    <input 
+                                        type="radio" 
+                                        name="numberFormat" 
+                                        value="decimal" 
+                                        checked={numberFormat === 'decimal'} 
+                                        onChange={() => setNumberFormat('decimal')} 
+                                    />
+                                    Decimal
+                                </label>
                             </div>
                         </div>
                         <div className="form-group flex-1">
