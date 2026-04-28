@@ -17,7 +17,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [revisions, setRevisions] = useState('');
     const [siliconCorners, setSiliconCorners] = useState('');
     const [projectKey, setProjectKey] = useState('');
-    const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('hex');
+    const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
     const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([]);
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -71,7 +71,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
             setRevisions(Array.isArray(existingProject.revisions) ? existingProject.revisions.join(', ') : (existingProject.revisions || ''));
             setSiliconCorners(existingProject.silicon_corners || '');
             setProjectKey(existingProject.project_key || '');
-            setNumberFormat((existingProject.number_format as 'hex' | 'decimal') || 'hex');
+            setNumberFormat((existingProject.number_format as 'hex' | 'decimal') || 'decimal');
             if (existingProject.formfactors && existingProject.formfactors.length > 0) {
                 setFormfactors(existingProject.formfactors.map((f: any) => ({ name: f.name, revisions: f.revisions.join(', '), boms: f.boms ? f.boms.join(', ') : '' })));
             } else {
@@ -88,7 +88,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         setRevisions(Array.isArray(project.revisions) ? project.revisions.join(', ') : (project.revisions || ''));
                         setSiliconCorners(project.silicon_corners || '');
                         setProjectKey(project.project_key || '');
-                        setNumberFormat(project.number_format || 'hex');
+                        setNumberFormat(project.number_format || 'decimal');
                         if (project.formfactors && project.formfactors.length > 0) {
                             setFormfactors(project.formfactors.map((f: any) => ({ name: f.name, revisions: f.revisions.join(', '), boms: f.boms ? f.boms.join(', ') : '' })));
                         } else {

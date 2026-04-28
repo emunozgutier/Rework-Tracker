@@ -32,7 +32,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [revisions, setRevisions] = useState('A0');
     const [siliconCorners, setSiliconCorners] = useState('TT');
     const [projectKey, setProjectKey] = useState('');
-    const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('hex');
+    const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
     const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([
         { name: 'Validation', revisions: '1.0', boms: 'BOM1, BOM2' }
     ]);

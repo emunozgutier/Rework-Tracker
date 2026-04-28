@@ -140,7 +140,7 @@ app.post('/api/projects', async (req, res) => {
 
     try {
         const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : await generateProjectKey(cleanName);
-        db.run("INSERT INTO projects (name, description, revisions, project_key, formfactors, silicon_corners, number_format) VALUES (?, ?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'hex'], function(err) {
+        db.run("INSERT INTO projects (name, description, revisions, project_key, formfactors, silicon_corners, number_format) VALUES (?, ?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'decimal'], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -337,7 +337,7 @@ app.put('/api/projects/:id', (req, res) => {
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
     const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : null;
 
-    db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, formfactors = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'hex', req.params.id], function(err) {
+    db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, formfactors = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'decimal', req.params.id], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 if (err.message.includes('projects.name')) {

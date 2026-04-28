@@ -81,7 +81,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 }
             }
             
-            const numberFormat = selectedProjData.number_format || 'hex';
+            const numberFormat = selectedProjData.number_format || 'decimal';
             if (numberFormat === 'hex') {
                 setBoardNumber('0x' + nextVal.toString(16).toUpperCase().padStart(4, '0'));
             } else {
