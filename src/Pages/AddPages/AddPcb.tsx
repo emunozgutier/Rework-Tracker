@@ -19,6 +19,8 @@ interface AddPCBProps {
 
 export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
+    const [isManualNumber, setIsManualNumber] = useState(false);
+    const [lastAutoAssignedProject, setLastAutoAssignedProject] = useState('');
     const [status] = useState('In Progress');
     const [pcbRev, setPcbRev] = useState('');
     const [bom, setBom] = useState('');
@@ -51,44 +53,46 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     }
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
 
-    useEffect(() => {
-        // Trigger autofill of the next number when the selected project or number format changes
-        if (selectedProjData && pcbs) {
-            // Check if there are PCBs matching this project
-            const projectPcbs = pcbs.filter(p => p.project === selectedProjData.name);
-            let nextVal = 1;
-            
-            if (projectPcbs.length > 0) {
-                const numericValues = projectPcbs.map(p => {
-                    const parts = p.board_number.split('-');
-                    if (parts.length > 1) {
-                        let numPart = parts.slice(-1)[0];
-                        // remove CRC (last char)
-                        numPart = numPart.substring(0, numPart.length - 1);
-                        
-                        if (numPart.toLowerCase().startsWith('0x')) {
-                            return parseInt(numPart.substring(2), 16);
-                        } else {
-                            // legacy format or decimal
-                            return parseInt(numPart, 16);
-                        }
+    const handleAutoAssign = () => {
+        if (!selectedProjData || !pcbs) return;
+        const projectPcbs = pcbs.filter(p => p.project === selectedProjData.name);
+        let nextVal = 1;
+        
+        if (projectPcbs.length > 0) {
+            const numericValues = projectPcbs.map(p => {
+                const parts = p.board_number.split('-');
+                if (parts.length > 1) {
+                    let numPart = parts.slice(-1)[0];
+                    numPart = numPart.substring(0, numPart.length - 1);
+                    if (numPart.toLowerCase().startsWith('0x')) {
+                        return parseInt(numPart.substring(2), 16);
+                    } else {
+                        return parseInt(numPart, 16);
                     }
-                    return NaN;
-                }).filter(n => !isNaN(n));
-                
-                if (numericValues.length > 0) {
-                    nextVal = Math.max(...numericValues) + 1;
                 }
-            }
+                return NaN;
+            }).filter(n => !isNaN(n));
             
-            const numberFormat = selectedProjData.number_format || 'decimal';
-            if (numberFormat === 'hex') {
-                setBoardNumber('0x' + nextVal.toString(16).toUpperCase().padStart(4, '0'));
-            } else {
-                setBoardNumber(nextVal.toString(10).padStart(4, '0'));
+            if (numericValues.length > 0) {
+                nextVal = Math.max(...numericValues) + 1;
             }
         }
-    }, [selectedProject, selectedProjData, pcbs]);
+        
+        const numberFormat = selectedProjData.number_format || 'decimal';
+        if (numberFormat === 'hex') {
+            setBoardNumber('0x' + nextVal.toString(16).toUpperCase().padStart(4, '0'));
+        } else {
+            setBoardNumber(nextVal.toString(10).padStart(4, '0'));
+        }
+        setIsManualNumber(false);
+    };
+
+    useEffect(() => {
+        if (selectedProjData && selectedProject !== lastAutoAssignedProject && !loading) {
+            handleAutoAssign();
+            setLastAutoAssignedProject(selectedProject);
+        }
+    }, [selectedProject, selectedProjData, loading, lastAutoAssignedProject]);
 
     useEffect(() => {
         // Fetch projects and owners for dropdowns
@@ -176,9 +180,15 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             }
         }
         const combinedProduct = cleanParts.join(' ').trim();
-        const finalBoardName = `${selectedProjectKey}-${boardNumber}`;
+        const finalBoardName = `${selectedProjectKey}-${boardNumber.trim()}`;
         const crc = generateCRC(finalBoardName);
         const finalBoardWithCrc = `${finalBoardName}${crc}`;
+        
+        // Final duplicate check before submit
+        if (pcbs.some(p => p.board_number.toUpperCase() === finalBoardWithCrc.toUpperCase())) {
+            alert('This board number is already assigned in this project.');
+            return;
+        }
         
         const success = await addPcb({
             board_number: finalBoardWithCrc,
@@ -192,6 +202,11 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             onSuccess();
         }
     };
+
+    const finalBoardNameForUI = `${selectedProjectKey}-${boardNumber.trim()}`;
+    const crcForUI = generateCRC(finalBoardNameForUI);
+    const finalBoardWithCrcForUI = `${finalBoardNameForUI}${crcForUI}`;
+    const isDuplicate = pcbs.some(p => p.board_number.toUpperCase() === finalBoardWithCrcForUI.toUpperCase());
 
     return (
         <div className="add-page-container">
@@ -210,7 +225,10 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             <select 
                                 id="project" 
                                 value={selectedProject} 
-                                onChange={(e) => handleProjectChange(e.target.value)}
+                                onChange={(e) => {
+                                    setLastAutoAssignedProject(''); // Reset to allow auto-assign for new project
+                                    handleProjectChange(e.target.value);
+                                }}
                             >
                                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                             </select>
@@ -266,13 +284,28 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 <FormGroup title="Instance">
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label>Assigned Name</label>
-                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, border: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
-                                <span>{selectedProjectKey}-{boardNumber}</span>
-                                <span style={{ color: '#a855f7', fontWeight: 800 }} title="Mathematical Checksum">
-                                    {generateCRC(`${selectedProjectKey}-${boardNumber}`)}
+                            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>Assigned Name</span>
+                                <button type="button" onClick={handleAutoAssign} style={{ fontSize: '0.8rem', padding: '4px 12px', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text)', border: '1px solid var(--border)', cursor: 'pointer' }}>
+                                    Auto Assign
+                                </button>
+                            </label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, border: `1px solid ${isDuplicate ? '#ef4444' : 'var(--border)'}`, display: 'flex', alignItems: 'center' }}>
+                                <span>{selectedProjectKey}-</span>
+                                <input 
+                                    type="text"
+                                    value={boardNumber}
+                                    onChange={(e) => {
+                                        setBoardNumber(e.target.value);
+                                        setIsManualNumber(true);
+                                    }}
+                                    style={{ background: 'transparent', border: 'none', color: isDuplicate ? '#ef4444' : 'inherit', fontSize: 'inherit', fontWeight: 'inherit', outline: 'none', width: '100px', padding: 0 }}
+                                />
+                                <span style={{ color: '#a855f7', fontWeight: 800, marginLeft: '4px' }} title="Mathematical Checksum">
+                                    {crcForUI}
                                 </span>
                             </div>
+                            {isDuplicate && <span style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '6px', display: 'block' }}>This board number is already assigned.</span>}
                         </div>
                         <div className="form-group flex-1">
                             <label htmlFor="owner">Owner</label>

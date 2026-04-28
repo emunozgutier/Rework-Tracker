@@ -1,5 +1,5 @@
-// Removed numbers and visually ambiguous letters (0, O, 1, I, L, Z)
-const CHARSET = 'ABCDEFGHJKMNPQRSTUVWXY';
+// Removed numbers, visually ambiguous letters (O, I, L, Z), and hex characters (A-F)
+const CHARSET = 'GHJKMNPQRSTUVWXY';
 
 export function generateCRC(input: string): string {
     let sum = 0;

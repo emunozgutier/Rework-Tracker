@@ -67,6 +67,17 @@ app.get('/api/dashboard', (req, res) => {
 });
 
 // --- Helpers ---
+const CHARSET = 'ABCDEFGHJKMNPQRSTUVWXY';
+
+function generateCRC(input) {
+    let sum = 0;
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i].toUpperCase();
+        sum += char.charCodeAt(0) * (i + 1);
+    }
+    return CHARSET[sum % CHARSET.length];
+}
+
 function sanitizeProjectName(name) {
     if (!name) return "";
     // Remove non-alphanumeric characters but keep spaces for splitting
@@ -337,19 +348,79 @@ app.put('/api/projects/:id', (req, res) => {
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
     const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : null;
 
-    db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, formfactors = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'decimal', req.params.id], function(err) {
-        if (err) {
-            if (err.message.includes('UNIQUE constraint failed')) {
-                if (err.message.includes('projects.name')) {
-                    return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
+    db.get("SELECT number_format FROM projects WHERE id = ?", [req.params.id], (err, row) => {
+        const oldFormat = row ? (row.number_format || 'hex') : 'hex';
+        
+        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, formfactors = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'decimal', req.params.id], function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    if (err.message.includes('projects.name')) {
+                        return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
+                    }
+                    if (err.message.includes('projects.project_key')) {
+                        return res.status(400).json({ error: `The project key "${finalProjectKey}" is already in use.` });
+                    }
                 }
-                if (err.message.includes('projects.project_key')) {
-                    return res.status(400).json({ error: `The project key "${finalProjectKey}" is already in use.` });
-                }
+                return res.status(500).json({ error: err.message });
             }
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ updated: this.changes, name: cleanName });
+            
+            const changes = this.changes;
+            const newFormat = number_format || 'decimal';
+            
+            // Migrate all PCBs to the new format
+            db.all("SELECT id, board_number FROM pcbs WHERE project_id = ?", [req.params.id], (err, pcbs) => {
+                if (err || !pcbs || pcbs.length === 0) return res.json({ updated: changes, name: cleanName });
+                
+                let completed = 0;
+                let hasUpdates = false;
+                
+                pcbs.forEach(pcb => {
+                    const oldBoardStr = pcb.board_number;
+                    const parts = oldBoardStr.split('-');
+                    if (parts.length > 1) {
+                        let numPart = parts.slice(-1)[0];
+                        numPart = numPart.substring(0, numPart.length - 1);
+                        
+                        let val;
+                        if (numPart.toLowerCase().startsWith('0x')) {
+                            val = parseInt(numPart.substring(2), 16);
+                        } else if (oldFormat === 'decimal' && /^\\d+$/.test(numPart)) {
+                            val = parseInt(numPart, 10);
+                        } else {
+                            val = parseInt(numPart, 16);
+                        }
+                        
+                        if (!isNaN(val)) {
+                            let newNumStr = '';
+                            if (newFormat === 'hex') {
+                                newNumStr = '0x' + val.toString(16).toUpperCase().padStart(4, '0');
+                            } else {
+                                newNumStr = val.toString(10).padStart(4, '0');
+                            }
+                            
+                            const newBoardNameBase = `${finalProjectKey}-${newNumStr}`;
+                            const crc = generateCRC(newBoardNameBase);
+                            const newBoardNumber = `${newBoardNameBase}${crc}`;
+                            
+                            if (newBoardNumber !== oldBoardStr) {
+                                hasUpdates = true;
+                                db.run("UPDATE pcbs SET board_number = ? WHERE id = ?", [newBoardNumber, pcb.id], () => {
+                                    db.run("UPDATE reworks SET rework_name = REPLACE(rework_name, ?, ?) WHERE pcb_id = ?", [oldBoardStr, newBoardNumber, pcb.id], () => {
+                                        completed++;
+                                        if (completed === pcbs.length) res.json({ updated: changes, name: cleanName, migrated: true });
+                                    });
+                                });
+                                return; // wait for callback
+                            }
+                        }
+                    }
+                    completed++;
+                    if (completed === pcbs.length) {
+                        res.json({ updated: changes, name: cleanName, migrated: hasUpdates });
+                    }
+                });
+            });
+        });
     });
 });
 
