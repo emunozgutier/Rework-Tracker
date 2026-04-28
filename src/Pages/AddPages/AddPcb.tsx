@@ -19,7 +19,6 @@ interface AddPCBProps {
 
 export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
-    const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('hex');
     const [status] = useState('In Progress');
     const [pcbRev, setPcbRev] = useState('');
     const [bom, setBom] = useState('');
@@ -82,13 +81,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 }
             }
             
+            const numberFormat = selectedProjData.number_format || 'hex';
             if (numberFormat === 'hex') {
                 setBoardNumber('0x' + nextVal.toString(16).toUpperCase().padStart(4, '0'));
             } else {
                 setBoardNumber(nextVal.toString(10).padStart(4, '0'));
             }
         }
-    }, [selectedProject, selectedProjData, pcbs, numberFormat]);
+    }, [selectedProject, selectedProjData, pcbs]);
 
     useEffect(() => {
         // Fetch projects and owners for dropdowns
@@ -272,31 +272,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 <span style={{ color: '#a855f7', fontWeight: 800 }} title="Mathematical Checksum">
                                     {generateCRC(`${selectedProjectKey}-${boardNumber}`)}
                                 </span>
-                            </div>
-                        </div>
-                        <div className="form-group flex-1">
-                            <label>Number Format</label>
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'normal' }}>
-                                    <input 
-                                        type="radio" 
-                                        name="numberFormat" 
-                                        value="hex" 
-                                        checked={numberFormat === 'hex'} 
-                                        onChange={() => setNumberFormat('hex')} 
-                                    />
-                                    Hex (0x)
-                                </label>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'normal' }}>
-                                    <input 
-                                        type="radio" 
-                                        name="numberFormat" 
-                                        value="decimal" 
-                                        checked={numberFormat === 'decimal'} 
-                                        onChange={() => setNumberFormat('decimal')} 
-                                    />
-                                    Decimal
-                                </label>
                             </div>
                         </div>
                         <div className="form-group flex-1">

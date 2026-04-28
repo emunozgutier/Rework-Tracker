@@ -21,6 +21,7 @@ const initDb = () => {
             project_key TEXT UNIQUE,
             formfactors TEXT,
             silicon_corners TEXT,
+            number_format TEXT DEFAULT 'hex',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_key ON projects(project_key)`);
@@ -87,6 +88,11 @@ const initDb = () => {
         // Add Case-Insensitive Unique Indexes for all entities
         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_name_nocase ON owners(name COLLATE NOCASE)`);
         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_name_nocase ON tags(name COLLATE NOCASE)`);
+
+        // Migration: Add number_format column to projects if it doesn't exist
+        db.run(`ALTER TABLE projects ADD COLUMN number_format TEXT DEFAULT 'hex'`, (err) => {
+            // Ignore error if column already exists
+        });
     });
 };
 

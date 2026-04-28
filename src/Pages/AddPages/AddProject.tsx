@@ -32,6 +32,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [revisions, setRevisions] = useState('A0');
     const [siliconCorners, setSiliconCorners] = useState('TT');
     const [projectKey, setProjectKey] = useState('');
+    const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('hex');
     const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([
         { name: 'Validation', revisions: '1.0', boms: 'BOM1, BOM2' }
     ]);
@@ -87,7 +88,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
         }));
         const success = await addProject({ 
             name, description: '', revisions, project_key: projectKey, 
-            formfactors: payloadFormfactors, silicon_corners: siliconCorners 
+            formfactors: payloadFormfactors, silicon_corners: siliconCorners, number_format: numberFormat 
         });
         if (success) {
             onSuccess();
@@ -157,6 +158,31 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         onChange={setSiliconCorners}
                         placeholder="e.g. TT, FF, SS"
                     />
+                </div>
+                <div className="form-group">
+                    <label>Board Number Format</label>
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'normal' }}>
+                            <input 
+                                type="radio" 
+                                name="numberFormat" 
+                                value="hex" 
+                                checked={numberFormat === 'hex'} 
+                                onChange={() => setNumberFormat('hex')} 
+                            />
+                            Hex (0x)
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'normal' }}>
+                            <input 
+                                type="radio" 
+                                name="numberFormat" 
+                                value="decimal" 
+                                checked={numberFormat === 'decimal'} 
+                                onChange={() => setNumberFormat('decimal')} 
+                            />
+                            Decimal
+                        </label>
+                    </div>
                 </div>
                 <div className="form-group">
                     <label>PCB Flavors & Revisions</label>
