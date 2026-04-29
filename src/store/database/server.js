@@ -156,27 +156,6 @@ db.all("SELECT id, formfactors FROM projects", [], (err, projects) => {
     }
 });
 
-// Migration: Extract rework_number from rework_name
-db.run("ALTER TABLE reworks ADD COLUMN rework_number INTEGER", () => {
-    db.all("SELECT id, rework_name FROM reworks", [], (err, reworks) => {
-        if (!err && reworks && reworks.length > 0) {
-            reworks.forEach(r => {
-                if (r.rework_name) {
-                    const parts = r.rework_name.split('-R-');
-                    let num = 1;
-                    if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
-                        num = parseInt(parts[1]);
-                    }
-                    db.run("UPDATE reworks SET rework_number = ? WHERE id = ?", [num, r.id]);
-                }
-            });
-            db.run("ALTER TABLE reworks DROP COLUMN rework_name", () => {});
-        } else {
-            db.run("ALTER TABLE reworks DROP COLUMN rework_name", () => {});
-        }
-    });
-});
-
 // Routes
 
 // Dashboard Summary
