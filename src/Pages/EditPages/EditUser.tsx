@@ -85,7 +85,7 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
                         id="username"
                         type="text" 
                         value={username} 
-                        onChange={(e) => setUsername(e.target.value)} 
+                        onChange={(e) => setUsername(e.target.value.toLowerCase())} 
                         pattern="^\S+$"
                         maxLength={8}
                         title="Username cannot contain spaces and must be 8 characters or fewer"
