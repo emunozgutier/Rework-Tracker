@@ -37,7 +37,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
             const startTime = Date.now();
             intervalRef.current = setInterval(() => {
                 const elapsed = Date.now() - startTime;
-                const percentage = Math.min((elapsed / 3000) * 100, 100);
+                const percentage = Math.min((elapsed / 1000) * 100, 100);
                 setProgress(percentage);
                 if (percentage >= 100) {
                     clearInterval(intervalRef.current);
@@ -80,7 +80,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         left: 0, 
                         height: '100%', 
                         width: `${progress}%`, 
-                        backgroundColor: COLORS.purpleFill, 
+                        backgroundColor: COLORS.indigoFill, 
                         transition: progress === 0 ? 'none' : 'width 0.05s linear',
                         zIndex: 0
                     }} 

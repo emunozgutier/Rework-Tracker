@@ -5,7 +5,7 @@ export const COLORS = {
     purpleMedium: 'rgba(168, 85, 247, 0.15)',
     purpleDark: 'rgba(168, 85, 247, 0.2)',
     purpleBorder: 'rgba(168, 85, 247, 0.4)',
-    purpleFill: 'rgba(168, 85, 247, 0.3)',
+    indigoFill: 'rgba(99, 102, 241, 0.3)',
     purpleAccent: '#8b5cf6',
     
     // Orange Variants (Resistor Swaps / Options)
