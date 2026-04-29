@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { db, initDb } from './db.js';
+import { apiLoggerMiddleware } from './logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +38,7 @@ app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     next();
 });
+app.use(apiLoggerMiddleware);
 
 app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures')));
 
