@@ -18,7 +18,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [siliconCorners, setSiliconCorners] = useState('');
     const [projectKey, setProjectKey] = useState('');
     const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
-    const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([]);
+    const [flavors, setFlavors] = useState<{name: string, revisions: string, boms?: string}[]>([]);
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
     
@@ -72,10 +72,10 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
             setSiliconCorners(existingProject.silicon_corners || '');
             setProjectKey(existingProject.project_key || '');
             setNumberFormat((existingProject.number_format as 'hex' | 'decimal') || 'decimal');
-            if (existingProject.formfactors && existingProject.formfactors.length > 0) {
-                setFormfactors(existingProject.formfactors.map((f: any) => ({ name: f.name, revisions: f.revisions.join(', '), boms: f.boms ? f.boms.join(', ') : '' })));
+            if (existingProject.flavors && existingProject.flavors.length > 0) {
+                setFlavors(existingProject.flavors.map((f: any) => ({ name: f.name, revisions: f.revisions.join(', '), boms: f.boms ? f.boms.join(', ') : '' })));
             } else {
-                setFormfactors([{ name: '', revisions: '', boms: '' }]);
+                setFlavors([{ name: '', revisions: '', boms: '' }]);
             }
             setLoading(false);
         } else {
@@ -89,10 +89,10 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         setSiliconCorners(project.silicon_corners || '');
                         setProjectKey(project.project_key || '');
                         setNumberFormat(project.number_format || 'decimal');
-                        if (project.formfactors && project.formfactors.length > 0) {
-                            setFormfactors(project.formfactors.map((f: any) => ({ name: f.name, revisions: f.revisions.join(', '), boms: f.boms ? f.boms.join(', ') : '' })));
+                        if (project.flavors && project.flavors.length > 0) {
+                            setFlavors(project.flavors.map((f: any) => ({ name: f.name, revisions: f.revisions.join(', '), boms: f.boms ? f.boms.join(', ') : '' })));
                         } else {
-                            setFormfactors([{ name: '', revisions: '', boms: '' }]);
+                            setFlavors([{ name: '', revisions: '', boms: '' }]);
                         }
                     }
                     setLoading(false);
@@ -107,7 +107,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-        const payloadFormfactors = formfactors
+        const payloadPcbFlavors = flavors
             .filter(f => f.name.trim())
             .map(f => ({
                 name: f.name.trim(),
@@ -116,7 +116,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
             }));
         const success = await updateProject(id, { 
             name, description: '', revisions, project_key: projectKey, 
-            formfactors: payloadFormfactors, silicon_corners: siliconCorners, number_format: numberFormat 
+            flavors: payloadPcbFlavors, silicon_corners: siliconCorners, number_format: numberFormat 
         });
         if (success) {
             onSuccess();
@@ -133,7 +133,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
 
     if (loading) return <div className="loading">Loading Project...</div>;
 
-    const activeFlavorName = formfactors[activeTab]?.name;
+    const activeFlavorName = flavors[activeTab]?.name;
     const activeFlavorInUse = activeFlavorName ? projectPcbs.some(p => p.product && p.product.startsWith(activeFlavorName)) : false;
 
     return (
@@ -228,12 +228,12 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         Define specific flavors (e.g., Demo, Validation) and their allowed revisions.
                     </p>
                     <FormTabs
-                        tabs={formfactors.map(ff => ff.name)}
+                        tabs={flavors.map(ff => ff.name)}
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
                         onAddTab={() => {
-                            setFormfactors([...formfactors, { name: '', revisions: '', boms: '' }]);
-                            setActiveTab(formfactors.length);
+                            setFlavors([...flavors, { name: '', revisions: '', boms: '' }]);
+                            setActiveTab(flavors.length);
                         }}
                         canDeleteActiveTab={!activeFlavorInUse}
                         onDeleteActiveTab={() => {
@@ -241,51 +241,51 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                 alert(`Cannot delete flavor "${activeFlavorName}" because it is currently assigned to one or more PCBs.`);
                                 return;
                             }
-                            const newFf = formfactors.filter((_, i) => i !== activeTab);
-                            setFormfactors(newFf);
+                            const newFf = flavors.filter((_, i) => i !== activeTab);
+                            setFlavors(newFf);
                             setActiveTab(Math.max(0, activeTab - 1));
                         }}
                     >
-                        {formfactors[activeTab] && (
+                        {flavors[activeTab] && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>Flavor Name</label>
                                     <input 
                                         type="text" 
                                         placeholder="e.g. Demo" 
-                                        value={formfactors[activeTab].name} 
+                                        value={flavors[activeTab].name} 
                                         style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)', transition: 'border-color 0.2s ease' }}
                                         onChange={e => {
-                                            const newFf = [...formfactors];
+                                            const newFf = [...flavors];
                                             newFf[activeTab].name = e.target.value;
-                                            setFormfactors(newFf);
+                                            setFlavors(newFf);
                                         }}
                                     />
                                 </div>
                                 <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>PCB Revisions</label>
                                     <MultipleInputs
-                                        value={formfactors[activeTab].revisions}
+                                        value={flavors[activeTab].revisions}
                                         onChange={(val) => {
-                                            const newFf = [...formfactors];
+                                            const newFf = [...flavors];
                                             newFf[activeTab].revisions = val;
-                                            setFormfactors(newFf);
+                                            setFlavors(newFf);
                                         }}
                                         placeholder="e.g. 1.0, 1.1"
-                                        usageCounts={filterCountsObj(formfactors[activeTab].revisions, (val) => getFlavorRevisionUsageCount(formfactors[activeTab].name, val))}
+                                        usageCounts={filterCountsObj(flavors[activeTab].revisions, (val) => getFlavorRevisionUsageCount(flavors[activeTab].name, val))}
                                     />
                                 </div>
                                 <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>BOM Options</label>
                                     <MultipleInputs
-                                        value={formfactors[activeTab].boms || ''}
+                                        value={flavors[activeTab].boms || ''}
                                         onChange={(val) => {
-                                            const newFf = [...formfactors];
+                                            const newFf = [...flavors];
                                             newFf[activeTab].boms = val;
-                                            setFormfactors(newFf);
+                                            setFlavors(newFf);
                                         }}
                                         placeholder="e.g. BOM1, BOM2"
-                                        usageCounts={filterCountsObj(formfactors[activeTab].boms, (val) => getFlavorBomUsageCount(formfactors[activeTab].name, val))}
+                                        usageCounts={filterCountsObj(flavors[activeTab].boms, (val) => getFlavorBomUsageCount(flavors[activeTab].name, val))}
                                     />
                                 </div>
                             </div>

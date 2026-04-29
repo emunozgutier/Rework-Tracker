@@ -33,7 +33,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [siliconCorners, setSiliconCorners] = useState('TT');
     const [projectKey, setProjectKey] = useState('');
     const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
-    const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([
+    const [flavors, setFlavors] = useState<{name: string, revisions: string, boms?: string}[]>([
         { name: 'Validation', revisions: '1.0', boms: 'BOM1, BOM2' }
     ]);
     const [activeTab, setActiveTab] = useState(0);
@@ -81,14 +81,14 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const payloadFormfactors = formfactors.filter(f => f.name.trim() !== '').map(f => ({
+        const payloadPcbFlavors = flavors.filter(f => f.name.trim() !== '').map(f => ({
             name: f.name.trim(),
             revisions: f.revisions.split(',').map(r => r.trim()).filter(Boolean),
             boms: f.boms ? f.boms.split(',').map(b => b.trim()).filter(Boolean) : []
         }));
         const success = await addProject({ 
             name, description: '', revisions, project_key: projectKey, 
-            formfactors: payloadFormfactors, silicon_corners: siliconCorners, number_format: numberFormat 
+            flavors: payloadPcbFlavors, silicon_corners: siliconCorners, number_format: numberFormat 
         });
         if (success) {
             onSuccess();
@@ -190,43 +190,43 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         Define specific flavors (e.g., Demo, Validation) and their allowed revisions.
                     </p>
                     <FormTabs
-                        tabs={formfactors.map(ff => ff.name)}
+                        tabs={flavors.map(ff => ff.name)}
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
                         onAddTab={() => {
-                            setFormfactors([...formfactors, { name: '', revisions: '', boms: '' }]);
-                            setActiveTab(formfactors.length);
+                            setFlavors([...flavors, { name: '', revisions: '', boms: '' }]);
+                            setActiveTab(flavors.length);
                         }}
                         onDeleteActiveTab={() => {
-                            const newFf = formfactors.filter((_, i) => i !== activeTab);
-                            setFormfactors(newFf);
+                            const newFf = flavors.filter((_, i) => i !== activeTab);
+                            setFlavors(newFf);
                             setActiveTab(Math.max(0, activeTab - 1));
                         }}
                     >
-                        {formfactors[activeTab] && (
+                        {flavors[activeTab] && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>Flavor Name</label>
                                     <input 
                                         type="text" 
                                         placeholder="e.g. Demo" 
-                                        value={formfactors[activeTab].name} 
+                                        value={flavors[activeTab].name} 
                                         style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)', transition: 'border-color 0.2s ease' }}
                                         onChange={e => {
-                                            const newFf = [...formfactors];
+                                            const newFf = [...flavors];
                                             newFf[activeTab].name = e.target.value;
-                                            setFormfactors(newFf);
+                                            setFlavors(newFf);
                                         }}
                                     />
                                 </div>
                                 <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>PCB Revisions</label>
                                     <MultipleInputs
-                                        value={formfactors[activeTab].revisions}
+                                        value={flavors[activeTab].revisions}
                                         onChange={(val) => {
-                                            const newFf = [...formfactors];
+                                            const newFf = [...flavors];
                                             newFf[activeTab].revisions = val;
-                                            setFormfactors(newFf);
+                                            setFlavors(newFf);
                                         }}
                                         placeholder="e.g. 1.0, 1.1"
                                     />
@@ -234,11 +234,11 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                 <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>BOM Options</label>
                                     <MultipleInputs
-                                        value={formfactors[activeTab].boms || ''}
+                                        value={flavors[activeTab].boms || ''}
                                         onChange={(val) => {
-                                            const newFf = [...formfactors];
+                                            const newFf = [...flavors];
                                             newFf[activeTab].boms = val;
-                                            setFormfactors(newFf);
+                                            setFlavors(newFf);
                                         }}
                                         placeholder="e.g. BOM1, BOM2"
                                     />

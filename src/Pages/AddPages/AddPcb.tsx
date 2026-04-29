@@ -26,7 +26,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [bom, setBom] = useState('');
     const [noPartYet, setNoPartYet] = useState(false);
     const [selectedRevision, setSelectedRevision] = useState('');
-    const [selectedFormfactor, setSelectedFormfactor] = useState('');
+    const [selectedPcbFlavor, setSelectedPcbFlavor] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
     const [siliconVersion, setSiliconVersion] = useState('');
@@ -40,14 +40,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     }, [fetchPcbs, pcbs.length]);
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
-    const availableFormfactors = selectedProjData?.formfactors || [];
+    const availablePcbFlavors = selectedProjData?.flavors || [];
     const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s)) : [];
     
     const availableSiliconRevisions = (selectedProjData?.revisions || []).filter((s: string) => !isNA(s));
     let availablePcbRevisions: string[] = [];
     let availableBoms: string[] = [];
-    if (selectedProject && selectedFormfactor) {
-        const ff = availableFormfactors.find((f: any) => f.name === selectedFormfactor);
+    if (selectedProject && selectedPcbFlavor) {
+        const ff = availablePcbFlavors.find((f: any) => f.name === selectedPcbFlavor);
         availablePcbRevisions = ff ? ff.revisions : [];
         availableBoms = ff && ff.boms ? ff.boms : [];
     }
@@ -116,14 +116,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     const corners = firstProj.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s));
                     setSiliconVersion(corners.length > 0 ? corners[0] : '');
                 }
-                if (firstProj.formfactors && firstProj.formfactors.length > 0) {
-                    setSelectedFormfactor(firstProj.formfactors[0].name);
+                if (firstProj.flavors && firstProj.flavors.length > 0) {
+                    setSelectedPcbFlavor(firstProj.flavors[0].name);
                     const revs = (firstProj.revisions || []).filter((s: string) => !isNA(s));
                     setSelectedRevision(revs.length > 0 ? revs[0] : '');
-                    setPcbRev(firstProj.formfactors[0].revisions[0] || '');
-                    setBom(firstProj.formfactors[0].boms ? firstProj.formfactors[0].boms[0] : '');
+                    setPcbRev(firstProj.flavors[0].revisions[0] || '');
+                    setBom(firstProj.flavors[0].boms ? firstProj.flavors[0].boms[0] : '');
                 } else if (firstProj.revisions && firstProj.revisions.length > 0) {
-                    setSelectedFormfactor('');
+                    setSelectedPcbFlavor('');
                     const revs = (firstProj.revisions || []).filter((s: string) => !isNA(s));
                     setSelectedRevision(revs.length > 0 ? revs[0] : '');
                     setPcbRev('');
@@ -145,20 +145,20 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             setSiliconVersion('');
         }
 
-        if (project && project.formfactors && project.formfactors.length > 0) {
-            setSelectedFormfactor(project.formfactors[0].name);
+        if (project && project.flavors && project.flavors.length > 0) {
+            setSelectedPcbFlavor(project.flavors[0].name);
             const revs = (project.revisions || []).filter((s: string) => !isNA(s));
             setSelectedRevision(revs.length > 0 ? revs[0] : '');
-            setPcbRev(project.formfactors[0].revisions[0] || '');
-            setBom(project.formfactors[0].boms ? project.formfactors[0].boms[0] : '');
+            setPcbRev(project.flavors[0].revisions[0] || '');
+            setBom(project.flavors[0].boms ? project.flavors[0].boms[0] : '');
         } else if (project && project.revisions && project.revisions.length > 0) {
-            setSelectedFormfactor('');
+            setSelectedPcbFlavor('');
             const revs = (project.revisions || []).filter((s: string) => !isNA(s));
             setSelectedRevision(revs.length > 0 ? revs[0] : '');
             setPcbRev('');
             setBom('');
         } else {
-            setSelectedFormfactor('');
+            setSelectedPcbFlavor('');
             setSelectedRevision('');
             setPcbRev('');
             setBom('');
@@ -171,7 +171,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const finalPcbRev = pcbRev;
         const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
         const cornerPart = noPartYet ? "" : siliconVersion;
-        const ffPart = selectedFormfactor ? selectedFormfactor : '';
+        const ffPart = selectedPcbFlavor ? selectedPcbFlavor : '';
         const finalBoardName = `${selectedProjectKey}-${boardNumber.trim()}`;
         
         const numberFormat = selectedProjData?.number_format || 'decimal';
@@ -332,16 +332,16 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             <label htmlFor="formfactor">Flavor *</label>
                             <select 
                                 id="formfactor"
-                                value={selectedFormfactor}
+                                value={selectedPcbFlavor}
                                 onChange={(e) => {
-                                    setSelectedFormfactor(e.target.value);
-                                    const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
+                                    setSelectedPcbFlavor(e.target.value);
+                                    const ff = availablePcbFlavors.find((f: any) => f.name === e.target.value);
                                     setPcbRev(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
                                     setBom(ff && ff.boms && ff.boms.length > 0 ? ff.boms[0] : '');
                                 }}
                                 required
                             >
-                                {availableFormfactors.map((ff: any) => (
+                                {availablePcbFlavors.map((ff: any) => (
                                     <option key={ff.name} value={ff.name}>{ff.name}</option>
                                 ))}
                             </select>

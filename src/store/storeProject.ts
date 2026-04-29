@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { API_BASE } from '../store/database/apiBridge';
 import { apiFetch } from '../store/database/apiBridge';
 
-export interface Formfactor {
+export interface PcbFlavor {
     name: string;
     revisions: string[];
     boms?: string[];
@@ -16,7 +16,7 @@ export interface Project {
     pcbs: string[];
     revisions: string[];
     project_key: string;
-    formfactors: Formfactor[];
+    flavors: PcbFlavor[];
     silicon_corners?: string;
     number_format?: string;
 }
@@ -26,8 +26,8 @@ interface ProjectState {
     loading: boolean;
     error: string | null;
     fetchProjects: () => Promise<void>;
-    addProject: (data: { name: string; description: string; revisions: string; project_key: string; formfactors?: Formfactor[]; silicon_corners?: string; number_format?: string }) => Promise<boolean>;
-    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; formfactors?: Formfactor[]; silicon_corners?: string; number_format?: string }) => Promise<boolean>;
+    addProject: (data: { name: string; description: string; revisions: string; project_key: string; flavors?: PcbFlavor[]; silicon_corners?: string; number_format?: string }) => Promise<boolean>;
+    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; flavors?: PcbFlavor[]; silicon_corners?: string; number_format?: string }) => Promise<boolean>;
     deleteProject: (id: number | string) => Promise<boolean>;
 }
 

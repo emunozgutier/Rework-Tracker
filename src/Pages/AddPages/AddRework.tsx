@@ -130,13 +130,13 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
 
         if (reworkType === 'Silicon Swap' && activePcb && selectedProjData) {
             let rawProduct = activePcb.product || '';
-            let foundFormfactor = '';
+            let foundPcbFlavor = '';
             let finalPcbRev = '';
 
-            if (selectedProjData.formfactors && selectedProjData.formfactors.length > 0) {
-                for (const ff of selectedProjData.formfactors) {
+            if (selectedProjData.flavors && selectedProjData.flavors.length > 0) {
+                for (const ff of selectedProjData.flavors) {
                     if (rawProduct.startsWith(ff.name)) {
-                        foundFormfactor = ff.name;
+                        foundPcbFlavor = ff.name;
                         rawProduct = rawProduct.slice(ff.name.length).trim();
                         for (const rev of ff.revisions) {
                             if (rawProduct.startsWith(rev)) {
@@ -151,7 +151,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
 
             const cornerPart = noPartYet ? "" : siliconVersion;
             const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
-            const new_product = [foundFormfactor, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
+            const new_product = [foundPcbFlavor, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
             formData.append('new_product', new_product);
         }
         images.forEach(img => {

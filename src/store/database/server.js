@@ -131,6 +131,31 @@ db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name
     }
 });
 
+// Migration: Extract formfactors from projects into pcb_flavors
+db.all("SELECT id, formfactors FROM projects", [], (err, projects) => {
+    if (!err && projects && projects.length > 0) {
+        let hasFormfactors = false;
+        projects.forEach(project => {
+            if (project.formfactors) {
+                hasFormfactors = true;
+                let parsedFF = [];
+                try { parsedFF = JSON.parse(project.formfactors); } catch(e){}
+                parsedFF.forEach(ff => {
+                    db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [
+                        project.id, 
+                        ff.name, 
+                        JSON.stringify(ff.revisions || []), 
+                        JSON.stringify(ff.boms || [])
+                    ]);
+                });
+            }
+        });
+        
+        // After migration, drop the column
+        db.run("ALTER TABLE projects DROP COLUMN formfactors", () => {});
+    }
+});
+
 // Routes
 
 // Dashboard Summary
@@ -218,28 +243,40 @@ app.get('/api/projects', (req, res) => {
     `;
     db.all(query, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows.map(row => {
-            let parsedFormfactors = [];
-            try { parsedFormfactors = row.formfactors ? JSON.parse(row.formfactors) : []; } catch (e) {}
-            return {
-                ...row,
-                revisions: row.revisions ? row.revisions.split(',').map(r => r.trim()) : [],
-                formfactors: parsedFormfactors,
-                pcbs: row.pcb_list ? row.pcb_list.split(',') : []
-            };
-        }));
+        
+        db.all("SELECT * FROM pcb_flavors", [], (err, flavors) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            res.json(rows.map(row => {
+                const projectFlavors = flavors.filter(f => f.project_id === row.id).map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    revisions: f.revisions ? JSON.parse(f.revisions) : [],
+                    boms: f.boms ? JSON.parse(f.boms) : []
+                }));
+                
+                delete row.formfactors; // Remove old column if it was present
+                
+                return {
+                    ...row,
+                    revisions: row.revisions ? row.revisions.split(',').map(r => r.trim()) : [],
+                    flavors: projectFlavors,
+                    pcbs: row.pcb_list ? row.pcb_list.split(',') : []
+                };
+            }));
+        });
     });
 });
 
 app.post('/api/projects', async (req, res) => {
-    const { name, description, revisions, project_key, formfactors, silicon_corners, number_format } = req.body;
+    const { name, description, revisions, project_key, flavors, silicon_corners, number_format } = req.body;
     const cleanName = sanitizeProjectName(name);
     
     if (!cleanName) return res.status(400).json({ error: "Project name is required and must contain alphanumeric characters" });
 
     try {
         const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : await generateProjectKey(cleanName);
-        db.run("INSERT INTO projects (name, description, revisions, project_key, formfactors, silicon_corners, number_format) VALUES (?, ?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'decimal'], function(err) {
+        db.run("INSERT INTO projects (name, description, revisions, project_key, silicon_corners, number_format) VALUES (?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal'], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -251,7 +288,17 @@ app.post('/api/projects', async (req, res) => {
                 }
                 return res.status(500).json({ error: err.message });
             }
-            res.status(201).json({ id: this.lastID, name: cleanName, project_key: finalProjectKey });
+            const newProjectId = this.lastID;
+            
+            if (flavors && flavors.length > 0) {
+                const stmt = db.prepare("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)");
+                flavors.forEach(f => {
+                    stmt.run([newProjectId, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])]);
+                });
+                stmt.finalize();
+            }
+            
+            res.status(201).json({ id: newProjectId, name: cleanName, project_key: finalProjectKey });
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -470,7 +517,7 @@ app.post('/api/reworks', upload.any(), (req, res) => {
 
 // --- Projects API Expansions ---
 app.put('/api/projects/:id', (req, res) => {
-    const { name, description, revisions, project_key, formfactors, silicon_corners, number_format } = req.body;
+    const { name, description, revisions, project_key, flavors, silicon_corners, number_format } = req.body;
     const cleanName = sanitizeProjectName(name);
 
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
@@ -480,7 +527,7 @@ app.put('/api/projects/:id', (req, res) => {
         const oldFormat = row ? (row.number_format || 'hex') : 'hex';
         const oldProjectKey = row ? row.project_key : null;
         
-        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, formfactors = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'decimal', req.params.id], function(err) {
+        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', req.params.id], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -493,6 +540,16 @@ app.put('/api/projects/:id', (req, res) => {
                 return res.status(500).json({ error: err.message });
             }
             
+            db.run("DELETE FROM pcb_flavors WHERE project_id = ?", [req.params.id], () => {
+                if (flavors && flavors.length > 0) {
+                    const stmt = db.prepare("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)");
+                    flavors.forEach(f => {
+                        stmt.run([req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])]);
+                    });
+                    stmt.finalize();
+                }
+            });
+
             const changes = this.changes;
             const newFormat = number_format || 'decimal';
             

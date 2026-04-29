@@ -19,13 +19,22 @@ const initDb = () => {
             description TEXT,
             revisions TEXT,
             project_key TEXT UNIQUE,
-            formfactors TEXT,
             silicon_corners TEXT,
             number_format TEXT DEFAULT 'decimal',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_key ON projects(project_key)`);
         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE)`);
+
+        // PCB Flavors Table
+        db.run(`CREATE TABLE IF NOT EXISTS pcb_flavors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            revisions TEXT,
+            boms TEXT,
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+        )`);
 
         // Owners Table
         db.run(`CREATE TABLE IF NOT EXISTS owners (
