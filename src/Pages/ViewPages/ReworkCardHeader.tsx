@@ -11,9 +11,9 @@ interface ReworkCardHeaderProps {
 export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle = false }: ReworkCardHeaderProps) {
     const { isMobile } = useStore();
 
-    const shortName = (rework.rework_name && !showFullTitle)
-        ? rework.rework_name.replace(new RegExp(`^${rework.board_number || rework.pcb_board_number || '.*'}-`), '')
-        : (rework.rework_name || (showFullTitle ? `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R${String(rework.id).padStart(3, '0')}` : `R${String(rework.id).padStart(3, '0')}`));
+    const shortName = showFullTitle 
+        ? `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R${String(rework.rework_number || rework.id).padStart(3, '0')}`
+        : `R${String(rework.rework_number || rework.id).padStart(3, '0')}`;
 
     return (
         <div 

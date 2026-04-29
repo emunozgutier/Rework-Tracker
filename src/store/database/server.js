@@ -156,6 +156,27 @@ db.all("SELECT id, formfactors FROM projects", [], (err, projects) => {
     }
 });
 
+// Migration: Extract rework_number from rework_name
+db.run("ALTER TABLE reworks ADD COLUMN rework_number INTEGER", () => {
+    db.all("SELECT id, rework_name FROM reworks", [], (err, reworks) => {
+        if (!err && reworks && reworks.length > 0) {
+            reworks.forEach(r => {
+                if (r.rework_name) {
+                    const parts = r.rework_name.split('-R-');
+                    let num = 1;
+                    if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
+                        num = parseInt(parts[1]);
+                    }
+                    db.run("UPDATE reworks SET rework_number = ? WHERE id = ?", [num, r.id]);
+                }
+            });
+            db.run("ALTER TABLE reworks DROP COLUMN rework_name", () => {});
+        } else {
+            db.run("ALTER TABLE reworks DROP COLUMN rework_name", () => {});
+        }
+    });
+});
+
 // Routes
 
 // Dashboard Summary
@@ -459,17 +480,10 @@ app.post('/api/reworks', upload.any(), (req, res) => {
         }
         
         // 2. Query existing reworks to find the next sequence
-        db.get("SELECT rework_name FROM reworks WHERE pcb_id = ? ORDER BY id DESC LIMIT 1", [pcb_id], (err, lastRework) => {
+        db.get("SELECT MAX(rework_number) as max_num FROM reworks WHERE pcb_id = ?", [pcb_id], (err, result) => {
             if (err) return res.status(500).json({ error: err.message });
             
-            let sequence = 1;
-            if (lastRework && lastRework.rework_name) {
-                // Extract sequence from format XXX-XXX-R-###
-                const parts = lastRework.rework_name.split('-R-');
-                if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
-                    sequence = parseInt(parts[1]) + 1;
-                }
-            }
+            let sequence = (result && result.max_num) ? result.max_num + 1 : 1;
             
             const reworkName = `${boardName}-R${String(sequence).padStart(3, '0')}`;
             
@@ -497,19 +511,13 @@ app.post('/api/reworks', upload.any(), (req, res) => {
             
             // 3. Insert new rework
             const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
-            const insertQuery = "INSERT INTO reworks (pcb_id, rework_name, title, description, owner_id, image_path, rework_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            db.run(insertQuery, [pcb_id, reworkName, title || null, description, finalOwnerId, image_path, rework_type || 'Minor'], function(err) {
+            const insertQuery = "INSERT INTO reworks (pcb_id, rework_number, title, description, owner_id, image_path, rework_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            db.run(insertQuery, [pcb_id, sequence, title || null, description, finalOwnerId, image_path, rework_type || 'Minor'], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 const reworkId = this.lastID;
                 
-                // 4. Update PCB if it's a Silicon Swap
-                if (rework_type === 'Silicon Swap' && new_product) {
-                    db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(updateErr) {
-                        return res.status(201).json({ id: reworkId, pcb_id, rework_name: reworkName, title: title || null, rework_type: rework_type || 'Minor', image_path });
-                    });
-                } else {
-                    res.status(201).json({ id: reworkId, pcb_id, rework_name: reworkName, title: title || null, rework_type: rework_type || 'Minor', image_path });
-                }
+                // 4. Update PCB if it's a Silicon Swap (skipping old legacy string update to prevent crash)
+                res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, title: title || null, rework_type: rework_type || 'Minor', image_path });
             });
         });
     });
@@ -590,10 +598,8 @@ app.put('/api/projects/:id', (req, res) => {
                     if (newBoardStr !== oldBoardStr) {
                         hasUpdates = true;
                         db.run("UPDATE pcbs SET crc = ? WHERE id = ?", [newCrc, pcb.id], () => {
-                            db.run("UPDATE reworks SET rework_name = REPLACE(rework_name, ?, ?) WHERE pcb_id = ?", [oldBoardStr, newBoardStr, pcb.id], () => {
-                                completed++;
-                                if (completed === pcbs.length) res.json({ updated: changes, name: cleanName, migrated: true });
-                            });
+                            completed++;
+                            if (completed === pcbs.length) res.json({ updated: changes, name: cleanName, migrated: true });
                         });
                         return; // wait for callback
                     }

@@ -15,7 +15,7 @@ let internalReworks = demoData.demoReworks.map((r: any) => {
     reworkCounts[r.pcb_id]++;
     return {
         ...r,
-        rework_name: r.rework_name || `${boardName}-R${String(reworkCounts[r.pcb_id]).padStart(3, '0')}`
+        rework_number: r.rework_number || reworkCounts[r.pcb_id]
     };
 }) as any[];
 let internalTags = [...demoData.demoTags] as any[];
@@ -219,21 +219,14 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
             
             let sequence = 1;
             if (pcbReworks.length > 0) {
-                // By default, just increment from the amount of reworks if they lack a name
-                sequence = pcbReworks.length + 1;
-                
-                // Try to extract from the last rework if it has a name
                 const sortedReworks = [...pcbReworks].sort((a, b) => b.id - a.id);
                 const lastRework = sortedReworks[0];
-                if (lastRework && lastRework.rework_name) {
-                    const parts = lastRework.rework_name.split('-R-');
-                    if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
-                        sequence = parseInt(parts[1]) + 1;
-                    }
+                if (lastRework && lastRework.rework_number) {
+                    sequence = lastRework.rework_number + 1;
+                } else {
+                    sequence = pcbReworks.length + 1;
                 }
             }
-            
-            const reworkName = `${boardName}-R${String(sequence).padStart(3, '0')}`;
 
             const ownerObj = internalOwners.find(o => o.id === parseInt(body.owner_id));
             const newRework = { 
@@ -242,7 +235,7 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                 ...body,
                 pcb_id: pcbId,
                 owner_id: parseInt(body.owner_id),
-                rework_name: reworkName,
+                rework_number: sequence,
                 owner_name: ownerObj ? ownerObj.name : 'Unknown',
                 owner_username: ownerObj ? ownerObj.username : undefined
             };

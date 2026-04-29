@@ -13,7 +13,7 @@ export interface Rework {
     owner_username?: string;
     pcb_board_number: string;
     image_path?: string;
-    rework_name?: string;
+    rework_number?: number;
     rework_type?: string;
 }
 

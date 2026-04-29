@@ -77,7 +77,7 @@ const initDb = () => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pcb_id INTEGER,
             title TEXT,
-            rework_name TEXT UNIQUE,
+            rework_number INTEGER,
             description TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             status TEXT DEFAULT 'Completed',
@@ -87,7 +87,7 @@ const initDb = () => {
             FOREIGN KEY (pcb_id) REFERENCES pcbs (id),
             FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`);
-        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reworks_name ON reworks(rework_name)`);
+        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reworks_pcb_num ON reworks(pcb_id, rework_number)`);
 
         // PCB_Tags Join Table
         db.run(`CREATE TABLE IF NOT EXISTS pcb_tags (

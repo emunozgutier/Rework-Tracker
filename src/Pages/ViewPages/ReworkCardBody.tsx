@@ -180,7 +180,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
             {showGallery && imagePaths.length > 0 && (
                 <PictureCard 
                     images={imagePaths} 
-                    title={rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R${String(rework.id).padStart(3, '0')}`} 
+                    title={`${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R${String(rework.rework_number || rework.id).padStart(3, '0')}`} 
                     onClose={() => setShowGallery(false)} 
                 />
             )}
