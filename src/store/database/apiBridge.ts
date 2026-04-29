@@ -10,7 +10,6 @@ let internalOwners = [...demoData.demoOwners] as any[];
 const reworkCounts: Record<number, number> = {};
 let internalReworks = demoData.demoReworks.map((r: any) => {
     const pcb = demoData.demoPcbs.find(p => p.id === r.pcb_id);
-    const boardName = pcb ? pcb.board_number : r.pcb_board_number || 'UNKNOWN';
     if (!reworkCounts[r.pcb_id]) reworkCounts[r.pcb_id] = 0;
     reworkCounts[r.pcb_id]++;
     return {
@@ -212,7 +211,6 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
         if (method === 'POST') {
             const pcbId = parseInt(body.pcb_id);
             const pcbObj = internalPcbs.find(p => p.id === pcbId);
-            const boardName = pcbObj ? pcbObj.board_number : 'UNKNOWN';
 
             // Find existing reworks for this PCB
             const pcbReworks = internalReworks.filter(r => r.pcb_id === pcbId || r.pcb_id === String(pcbId));
