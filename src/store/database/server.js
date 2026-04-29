@@ -173,7 +173,7 @@ app.post('/api/projects', async (req, res) => {
 // PCBs API
 app.get('/api/pcbs', (req, res) => {
     const query = `
-        SELECT pcbs.*, projects.name as project_name, owners.name as owner_name, owners.username as owner_username,
+        SELECT pcbs.*, projects.name as project_name, projects.number_format as number_format, owners.name as owner_name, owners.username as owner_username,
                (SELECT GROUP_CONCAT(tag_id) FROM pcb_tags WHERE pcb_id = pcbs.id) as tag_ids
         FROM pcbs 
         LEFT JOIN projects ON pcbs.project_id = projects.id
@@ -187,6 +187,7 @@ app.get('/api/pcbs', (req, res) => {
             status: row.status,
             project: row.project_name,
             project_id: row.project_id,
+            number_format: row.number_format || 'decimal',
             owner: row.owner_name || 'Unassigned',
             owner_username: row.owner_username || undefined,
             product: row.product_name_and_rev,
@@ -393,14 +394,18 @@ app.put('/api/projects/:id', (req, res) => {
                         if (!isNaN(val)) {
                             let newNumStr = '';
                             if (newFormat === 'hex') {
-                                newNumStr = '0x' + val.toString(16).toUpperCase().padStart(4, '0');
+                                newNumStr = val.toString(16).toUpperCase().padStart(4, '0');
                             } else {
                                 newNumStr = val.toString(10).padStart(4, '0');
                             }
                             
                             const newBoardNameBase = `${finalProjectKey}-${newNumStr}`;
-                            const crc = generateCRC(newBoardNameBase);
-                            const newBoardNumber = `${newBoardNameBase}${crc}`;
+                            let newBoardNumber = newBoardNameBase;
+                            
+                            if (newFormat !== 'hex') {
+                                const crc = generateCRC(newBoardNameBase);
+                                newBoardNumber = `${newBoardNameBase}${crc}`;
+                            }
                             
                             if (newBoardNumber !== oldBoardStr) {
                                 hasUpdates = true;

@@ -63,11 +63,18 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 const parts = p.board_number.split('-');
                 if (parts.length > 1) {
                     let numPart = parts.slice(-1)[0];
-                    numPart = numPart.substring(0, numPart.length - 1);
+                    const numberFormat = selectedProjData?.number_format || 'decimal';
+                    
+                    if (numberFormat !== 'hex') {
+                        numPart = numPart.substring(0, numPart.length - 1);
+                    }
+                    
                     if (numPart.toLowerCase().startsWith('0x')) {
                         return parseInt(numPart.substring(2), 16);
-                    } else {
+                    } else if (numberFormat === 'hex') {
                         return parseInt(numPart, 16);
+                    } else {
+                        return parseInt(numPart, 10);
                     }
                 }
                 return NaN;
@@ -80,7 +87,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         
         const numberFormat = selectedProjData.number_format || 'decimal';
         if (numberFormat === 'hex') {
-            setBoardNumber('0x' + nextVal.toString(16).toUpperCase().padStart(4, '0'));
+            setBoardNumber(nextVal.toString(16).toUpperCase().padStart(4, '0'));
         } else {
             setBoardNumber(nextVal.toString(10).padStart(4, '0'));
         }
@@ -181,8 +188,13 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         }
         const combinedProduct = cleanParts.join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.trim()}`;
-        const crc = generateCRC(finalBoardName);
-        const finalBoardWithCrc = `${finalBoardName}${crc}`;
+        
+        const numberFormat = selectedProjData?.number_format || 'decimal';
+        let finalBoardWithCrc = finalBoardName;
+        if (numberFormat !== 'hex') {
+            const crc = generateCRC(finalBoardName);
+            finalBoardWithCrc = `${finalBoardName}${crc}`;
+        }
         
         // Final duplicate check before submit
         if (pcbs.some(p => p.board_number.toUpperCase() === finalBoardWithCrc.toUpperCase())) {
@@ -203,9 +215,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         }
     };
 
+    const numberFormatUI = selectedProjData?.number_format || 'decimal';
     const finalBoardNameForUI = `${selectedProjectKey}-${boardNumber.trim()}`;
-    const crcForUI = generateCRC(finalBoardNameForUI);
-    const finalBoardWithCrcForUI = `${finalBoardNameForUI}${crcForUI}`;
+    let crcForUI = '';
+    let finalBoardWithCrcForUI = finalBoardNameForUI;
+    if (numberFormatUI !== 'hex') {
+        crcForUI = generateCRC(finalBoardNameForUI);
+        finalBoardWithCrcForUI = `${finalBoardNameForUI}${crcForUI}`;
+    }
     const isDuplicate = pcbs.some(p => p.board_number.toUpperCase() === finalBoardWithCrcForUI.toUpperCase());
 
     return (

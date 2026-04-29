@@ -7,6 +7,8 @@ export interface Pcb {
     board_number: string;
     status: string;
     project: string;
+    project_id?: number;
+    number_format?: 'hex' | 'decimal';
     owner: string;
     owner_username?: string;
     product: string;

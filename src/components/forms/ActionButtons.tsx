@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Edit2, ExternalLink, QrCode } from 'lucide-react';
+import { Plus, Edit2, ExternalLink, QrCode, Trash2 } from 'lucide-react';
 
 interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     label?: React.ReactNode;
@@ -125,6 +125,35 @@ export function QrButton({ label = "QR Code", icon = QrCode, style, ...props }: 
             }}
             {...props}
             className={`action-btn-hover action-btn-neutral ${props.className || ''}`}
+        >
+            {renderIcon(icon)}
+            {label}
+        </button>
+    );
+}
+
+export function DeleteButton({ label = "Delete", icon = Trash2, style, ...props }: ActionButtonProps) {
+    return (
+        <button 
+            style={{ 
+                flex: 1,
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                gap: '8px', 
+                background: 'transparent', 
+                color: '#ef4444', 
+                border: '1px solid rgba(239, 68, 68, 0.5)', 
+                padding: '10px 16px', 
+                borderRadius: '8px', 
+                fontSize: '0.9rem', 
+                fontWeight: 600, 
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                ...style 
+            }}
+            {...props}
+            className={`action-btn-hover action-btn-delete ${props.className || ''}`}
         >
             {renderIcon(icon)}
             {label}

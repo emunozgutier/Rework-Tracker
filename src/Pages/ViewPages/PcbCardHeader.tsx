@@ -16,7 +16,7 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
             style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', padding: '12px 16px', gap: '12px' }}
         >
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} /></span>
+                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></span>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
                     <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{pcb.product || 'No Rev'}</span>

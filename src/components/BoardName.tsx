@@ -1,5 +1,8 @@
-export function BoardName({ name }: { name: string }) {
+export function BoardName({ name, isHex }: { name: string; isHex?: boolean }) {
     if (!name) return null;
+    
+    // If it's a hex number, there is no CRC, so just return the raw string
+    if (isHex) return <span>{name}</span>;
     
     // Check if it follows our strict format: 3 letters, hyphen, 4 numbers, 1 letter (CRC)
     // E.g. MAP-0001K

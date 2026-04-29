@@ -8,7 +8,8 @@ import { FormTabs } from '../../components/forms/FormTabs';
 import { RemoveTag } from '../RemovePage/RemoveTag';
 import { Tag as TagIcon, X } from 'lucide-react';
 import { formatTagName } from '../../store/storeTag';
-import { EditButton, ViewButton, AddButton, QrButton } from '../../components/forms/ActionButtons';
+import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../../components/forms/ActionButtons';
+import { RemovePcb } from '../RemovePage/RemovePcb';
 import { ReworkCardHeader } from './ReworkCardHeader';
 
 interface PcbCardBodyProps {
@@ -18,12 +19,13 @@ interface PcbCardBodyProps {
 export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
     const { tags, fetchTags } = useTagStore();
-    const { fetchPcbs } = usePcbStore();
+    const { fetchPcbs, deletePcb } = usePcbStore();
     const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile } = useStore();
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
     const [isAssigningTag, setIsAssigningTag] = useState(false);
     const [tagToRemove, setTagToRemove] = useState<any>(null);
+    const [isRemovePcbOpen, setIsRemovePcbOpen] = useState(false);
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const tabsList = ['Rework', 'Public Tags', 'Personal Tags'];
     const mobileTabsList = ['Rework', 'Public #', 'Personal #'];
@@ -80,7 +82,15 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
         setTagToRemove(null);
     };
 
+    const confirmRemovePcb = async () => {
+        const success = await deletePcb(pcb.id);
+        if (success) {
+            fetchPcbs();
+        }
+    };
+
     const pcbReworks = reworks.filter((r: any) => r.pcb_id === pcb.id);
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     return (
         <div className="card-expanded-content">
@@ -94,7 +104,12 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
                 />
                 
-                
+                {isLocalhost && (
+                    <DeleteButton 
+                        onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
+                        label="Delete PCB"
+                    />
+                )}
             </div>
 
             <div style={{ marginTop: '20px' }}>
@@ -242,6 +257,13 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                 onConfirm={confirmRemoveTag} 
                 tag={tagToRemove} 
                 pcb={pcb} 
+            />
+
+            <RemovePcb 
+                isOpen={isRemovePcbOpen}
+                onClose={() => setIsRemovePcbOpen(false)}
+                onConfirm={confirmRemovePcb}
+                pcb={pcb}
             />
         </div>
     );

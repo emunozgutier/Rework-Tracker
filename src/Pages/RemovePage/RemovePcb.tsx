@@ -62,7 +62,7 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
                 </h2>
 
                 <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
-                    You are about to permanently remove PCB <strong style={{color: 'var(--accent)'}}><BoardName name={pcb.board_number} /></strong>. This action cannot be undone.
+                    You are about to permanently remove PCB <strong style={{color: 'var(--accent)'}}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></strong>. This action cannot be undone.
                 </p>
 
                 <div style={{ marginBottom: '24px' }}>
