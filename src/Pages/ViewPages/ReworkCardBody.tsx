@@ -105,7 +105,6 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                         <div className="rework-body-divider mobile-hide"></div>
 
                         <div className="rework-description-col">
-                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
                             {rework.description && rework.description.trim() ? (
                                 <p 
                                     style={{ 
@@ -130,7 +129,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                     {rework.description}
                                 </p>
                             ) : (
-                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None</span>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No Description</span>
                             )}
                         </div>
                     </div>
