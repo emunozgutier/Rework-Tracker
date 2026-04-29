@@ -1,0 +1,46 @@
+import { Edit2 } from 'lucide-react';
+
+interface OwnerCardHeaderProps {
+    owner: any;
+    onEdit: (id: number | string) => void;
+}
+
+export function OwnerCardHeader({ owner, onEdit }: OwnerCardHeaderProps) {
+    return (
+        <div 
+            className="card-header-main" 
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', width: '100%' }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button 
+                    className="edit-button" 
+                    onClick={(e) => { e.stopPropagation(); onEdit(owner.id); }}
+                    style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
+                    title="Edit Owner"
+                >
+                    <Edit2 size={16} />
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0, fontFamily: 'monospace' }}>
+                        {owner.username ? `@${owner.username}` : 'No username'}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }} title={owner.name}>
+                        {owner.name && owner.name.length > 20 ? `${owner.name.substring(0, 20)}...` : owner.name}
+                    </span>
+                </div>
+            </div>
+            
+            <div className="pcb-mini-list" style={{ gap: '6px' }}>
+                <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: 'var(--accent)', color: 'var(--accent)' }}>
+                    {owner.pcb_count || 0} PCBs
+                </span>
+                <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: '#f43f5e', color: '#f43f5e' }}>
+                    {owner.rework_count || 0} Reworks
+                </span>
+                <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: '#10b981', color: '#10b981' }}>
+                    {owner.tag_count || 0} Tags
+                </span>
+            </div>
+        </div>
+    );
+}

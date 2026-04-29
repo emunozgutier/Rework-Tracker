@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Plus, Edit2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { ProjectCard } from './ProjectCard';
 import { PcbCard } from './PcbCard';
 import { ReworkCard } from './ReworkCard';
 import { TagCard } from './TagCard';
+import { OwnerCard } from './OwnerCard';
 import { PcbFilter } from '../../components/Filter/PcbFilter';
 import { TagFilter } from '../../components/Filter/TagFilter';
 
@@ -292,35 +293,11 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                             return <TagCard key={item.id} tag={item} onEdit={onEdit} />;
                         }
 
-                        return (
-                            <div key={item.id} className="item-card">
-                                <div className="card-actions-overlay">
-                                    <button className="edit-button" onClick={(e) => { e.stopPropagation(); onEdit(item.id); }}>
-                                        <Edit2 size={16} />
-                                    </button>
-                                </div>
+                        if (type === 'owners') {
+                            return <OwnerCard key={item.id} owner={item} onEdit={onEdit} />;
+                        }
 
-                                {type === 'owners' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: '24px' }}>
-                                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0 }}>{item.name}</span>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{item.username ? `@${item.username}` : 'No username'}</span>
-                                        </div>
-                                        <div className="pcb-mini-list" style={{ gap: '6px' }}>
-                                            <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: 'var(--accent)', color: 'var(--accent)' }}>
-                                                {item.pcb_count || 0} PCBs
-                                            </span>
-                                            <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: '#f43f5e', color: '#f43f5e' }}>
-                                                {item.rework_count || 0} Reworks
-                                            </span>
-                                            <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: '#10b981', color: '#10b981' }}>
-                                                {item.tag_count || 0} Tags
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        );
+                        return null;
                     })
                 )}
             </div>
