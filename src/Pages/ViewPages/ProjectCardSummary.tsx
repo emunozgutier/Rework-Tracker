@@ -1,3 +1,5 @@
+import { COLORS } from '../../store/storeStyles';
+
 interface ProjectCardSummaryProps {
     project: {
         pcb_count: number;
@@ -23,7 +25,7 @@ export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
                 <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Silicon Corners</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
                     {project.silicon_corners ? project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean).map((sc: string, i: number) => (
-                        <span key={i} className="pcb-pill" style={{ borderColor: '#f59e0b', color: '#f59e0b' }}>{sc}</span>
+                        <span key={i} className="pcb-pill" style={{ borderColor: COLORS.amber, color: COLORS.amber }}>{sc}</span>
                     )) : <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>None defined</span>}
                 </div>
             </div>

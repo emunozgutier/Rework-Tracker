@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import { COLORS } from '../../store/storeStyles';
 import { X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
@@ -143,7 +144,7 @@ export function NetworkQRCode() {
                     >
                         <div style={{ wordBreak: 'break-all' }}>{displayDomain}</div>
                         <div style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '2px', textDecoration: 'underline text-underline-offset-2' }}>{displayPath}</div>
-                        <div style={{ marginTop: '6px', fontSize: '0.7rem', color: '#a855f7', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        <div style={{ marginTop: '6px', fontSize: '0.7rem', color: COLORS.purple, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                             Click to Open PCB Page
                         </div>
                     </a>

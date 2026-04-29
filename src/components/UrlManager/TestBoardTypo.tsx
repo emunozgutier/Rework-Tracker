@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { generateCRC } from './crc';
+import { COLORS } from '../../store/storeStyles';
 import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
 
@@ -60,7 +61,7 @@ export function TestBoardTypo() {
             <div style={{ margin: '2rem 0', fontSize: '1.3rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>
                 <strong>Intended Board Output: </strong>
                 <span style={{ color: 'var(--text)', padding: '0.5rem', letterSpacing: '2px' }}>
-                    {baseName}<span style={{ color: '#a855f7', fontWeight: 900 }}>{crc}</span>
+                    {baseName}<span style={{ color: COLORS.purple, fontWeight: 900 }}>{crc}</span>
                 </span>
             </div>
 
@@ -82,7 +83,7 @@ export function TestBoardTypo() {
                     <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: isValidMatch ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${isValidMatch ? '#10b981' : '#ef4444'}` }}>
                         {isValidMatch ? (
                             <div style={{ color: '#10b981' }}>
-                                ✅ <strong>VALID MATCH!</strong> The code <strong style={{ color: '#a855f7' }}>{mistypedUpper}</strong> exists mathematically and matches a real physical board in the database.
+                                ✅ <strong>VALID MATCH!</strong> The code <strong style={{ color: COLORS.purple }}>{mistypedUpper}</strong> exists mathematically and matches a real physical board in the database.
                             </div>
                         ) : (
                             <div style={{ color: '#ef4444' }}>

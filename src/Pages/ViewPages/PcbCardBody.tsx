@@ -11,6 +11,7 @@ import { formatTagName } from '../../store/storeTag';
 import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../../components/forms/ActionButtons';
 import { RemovePcb } from '../RemovePage/RemovePcb';
 import { ReworkCardHeader } from './ReworkCardHeader';
+import { ReworkCardBody } from './ReworkCardBody';
 
 interface PcbCardBodyProps {
     pcb: any;
@@ -31,10 +32,9 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const mobileTabsList = ['Rework', 'Public #', 'Personal #'];
     const activeTabName = tabsList[activeTabIndex];
     
-    const [isBlinking, setIsBlinking] = useState(false);
-    const handleReworkClick = () => {
-        setIsBlinking(true);
-        setTimeout(() => setIsBlinking(false), 2000);
+    const [expandedReworkId, setExpandedReworkId] = useState<number | string | null>(null);
+    const handleReworkClick = (reworkId: number | string) => {
+        setExpandedReworkId(expandedReworkId === reworkId ? null : reworkId);
     };
 
     const fetchAttachedTags = async () => {
@@ -132,7 +132,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                         setSelectedBoards([pcb.id.toString()]);
                                         setActiveTab('reworks'); 
                                     }}
-                                    className={isBlinking ? 'blink-button' : ''}
+                                    className=""
                                     label="View All Reworks"
                                     style={{ flex: 'none' }}
                                 />
@@ -149,9 +149,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                     <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.03)', minWidth: 0, width: '100%', boxSizing: 'border-box' }}>
                                         <ReworkCardHeader 
                                             rework={rework} 
-                                            isExpanded={false}
-                                            onToggle={() => handleReworkClick()}
+                                            isExpanded={expandedReworkId === rework.id}
+                                            onToggle={() => handleReworkClick(rework.id)}
                                         />
+                                        {expandedReworkId === rework.id && (
+                                            <div style={{ padding: '0 12px 12px 12px' }}>
+                                                <ReworkCardBody rework={rework} />
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                                 {pcbReworks.length > 5 && (

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { COLORS } from '../../store/storeStyles';
 import { EditButton, ViewButton } from '../../components/forms/ActionButtons';
 import { usePcbStore } from '../../store/storePcb';
 import { useStore } from '../../store/useStore';
@@ -79,7 +80,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         left: 0, 
                         height: '100%', 
                         width: `${progress}%`, 
-                        backgroundColor: 'rgba(168, 85, 247, 0.3)', 
+                        backgroundColor: COLORS.purpleFill, 
                         transition: progress === 0 ? 'none' : 'width 0.05s linear',
                         zIndex: 0
                     }} 

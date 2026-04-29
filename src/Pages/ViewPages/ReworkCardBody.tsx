@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PictureCard } from './PictureCard';
 import { useStore } from '../../store/useStore';
 import { EditButton, ViewButton } from '../../components/forms/ActionButtons';
+import { COLORS } from '../../store/storeStyles';
 
 interface ReworkCardBodyProps {
     rework: any;
@@ -67,20 +68,20 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                 justifyContent: 'center',
                                 padding: '4px 12px', 
                                 background: rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.1)' 
-                                          : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.1)' 
-                                : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'rgba(249, 115, 22, 0.1)'
+                                          : rework.rework_type === 'Silicon Swap' ? COLORS.purpleLight 
+                                : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeLight
                                           : 'rgba(59, 130, 246, 0.1)', 
                                 color: rework.rework_type === 'Major' ? '#ef4444' 
-                                     : rework.rework_type === 'Silicon Swap' ? '#a855f7' 
-                                     : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? '#f97316'
+                                     : rework.rework_type === 'Silicon Swap' ? COLORS.purple 
+                                     : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange
                                      : '#3b82f6', 
                                 borderRadius: '16px', 
                                 fontSize: '0.75rem', 
                                 fontWeight: 700,
                                 border: `1px solid ${
                                     rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.2)' 
-                                  : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.2)' 
-                                  : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'rgba(249, 115, 22, 0.2)'
+                                  : rework.rework_type === 'Silicon Swap' ? COLORS.purpleDark 
+                                  : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeDark
                                   : 'rgba(59, 130, 246, 0.2)'
                                 }`
                             }}>

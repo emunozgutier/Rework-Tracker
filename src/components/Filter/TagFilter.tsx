@@ -1,5 +1,6 @@
 import { useTagStore } from '../../store/storeTag';
 import { useOwnerStore } from '../../store/storeOwner';
+import { COLORS } from '../../store/storeStyles';
 import { PcbFilterElement } from './PcbFilterElement';
 import { PcbFilterGroup } from './PcbFilterGroup';
 
@@ -37,7 +38,7 @@ export function TagFilter() {
             width: '100%',
             paddingBottom: '12px'
         }}>
-            <PcbFilterGroup title="Tag Properties" color="#8b5cf6">
+            <PcbFilterGroup title="Tag Properties" color={COLORS.purpleAccent}>
                 <PcbFilterElement title="Type" value={selectedTagTypes} onChange={setSelectedTagTypes}>
                     {['public', 'personal'].map(type => {
                         const count = tags.filter((tag: any) => tag.type === type && matchTag(tag, 'type')).length;

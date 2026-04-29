@@ -1,3 +1,5 @@
+import { COLORS } from '../store/storeStyles';
+
 export function BoardName({ name, isHex }: { name: string; isHex?: boolean }) {
     if (!name) return null;
     
@@ -18,7 +20,7 @@ export function BoardName({ name, isHex }: { name: string; isHex?: boolean }) {
                 return (
                     <span>
                         {base}
-                        <span style={{ color: '#a855f7', fontWeight: 'bold' }}>
+                        <span style={{ color: COLORS.purple, fontWeight: 'bold' }}>
                             {crc}
                         </span>
                     </span>

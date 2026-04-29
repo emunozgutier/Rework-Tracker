@@ -1,5 +1,6 @@
 import { usePcbStore } from '../../store/storePcb';
 import { useProjectStore } from '../../store/storeProject';
+import { COLORS } from '../../store/storeStyles';
 import { useTagStore, formatTagName } from '../../store/storeTag';
 import { useOwnerStore } from '../../store/storeOwner';
 import { PcbFilterElement } from './PcbFilterElement';
@@ -85,7 +86,7 @@ export function PcbFilter() {
         }}>
             
             {/* Silicon Group */}
-            <PcbFilterGroup title="Silicon Filters" color="#8b5cf6">
+            <PcbFilterGroup title="Silicon Filters" color={COLORS.purpleAccent}>
                 <PcbFilterElement title="Projects" value={selectedProjects} onChange={setSelectedProjects}>
                     {projects.map(p => {
                         const count = pcbs.filter(pcb => pcb.project === p.name && matchPcb(pcb, 'project')).length;
@@ -130,7 +131,7 @@ export function PcbFilter() {
             </PcbFilterGroup>
 
             {/* PCB Group */}
-            <PcbFilterGroup title="PCB Filters" color="#8b5cf6">
+            <PcbFilterGroup title="PCB Filters" color={COLORS.purpleAccent}>
                 <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers}>
                     {pcbs
                         .filter(pcb => matchPcb(pcb, 'boardnum'))

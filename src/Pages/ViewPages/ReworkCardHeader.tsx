@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { COLORS } from '../../store/storeStyles';
 
 interface ReworkCardHeaderProps {
     rework: any;
@@ -32,9 +33,9 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
                         borderRadius: '12px', 
                         fontSize: '0.75rem', 
                         fontWeight: 600,
-                        background: rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.15)' : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.15)' : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'rgba(249, 115, 22, 0.15)' : 'rgba(99, 102, 241, 0.15)',
-                        color: rework.rework_type === 'Major' ? '#ef4444' : rework.rework_type === 'Silicon Swap' ? '#a855f7' : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? '#f97316' : '#818cf8',
-                        border: `1px solid ${rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.4)' : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.4)' : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'rgba(249, 115, 22, 0.4)' : 'rgba(99, 102, 241, 0.4)'}`
+                        background: rework.rework_type === 'Major' ? COLORS.redLight : rework.rework_type === 'Silicon Swap' ? COLORS.purpleMedium : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeMedium : COLORS.indigoLight,
+                        color: rework.rework_type === 'Major' ? COLORS.red : rework.rework_type === 'Silicon Swap' ? COLORS.purple : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange : COLORS.indigo,
+                        border: `1px solid ${rework.rework_type === 'Major' ? COLORS.redBorder : rework.rework_type === 'Silicon Swap' ? COLORS.purpleBorder : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeBorder : COLORS.indigoBorder}`
                     }}>
                         {rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'R swap' : (rework.rework_type || 'Minor')}
                     </span>
