@@ -14,7 +14,7 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(true);
-    const { updateOwner, deleteOwner } = useOwnerStore();
+    const { updateOwner, deleteOwner, error } = useOwnerStore();
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -64,6 +64,11 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
             </header>
 
             <form onSubmit={handleUpdate} className="add-form">
+                {error && (
+                    <div style={{ color: '#ef4444', marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                        {error}
+                    </div>
+                )}
                 <div className="form-group">
                     <label htmlFor="name">Full Name</label>
                     <input 

@@ -11,7 +11,7 @@ interface AddUserProps {
 export function AddUser({ onBack, onSuccess }: AddUserProps) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
-    const { addOwner, loading } = useOwnerStore();
+    const { addOwner, loading, error } = useOwnerStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,6 +31,11 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
             </header>
 
             <form onSubmit={handleSubmit} className="add-form">
+                {error && (
+                    <div style={{ color: '#ef4444', marginBottom: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                        {error}
+                    </div>
+                )}
                 <div className="form-group">
                     <label htmlFor="name">Full Name</label>
                     <input 
