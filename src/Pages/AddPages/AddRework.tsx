@@ -268,7 +268,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     <label htmlFor="owner">Assigned Owner</label>
                     <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
                         <option value="-1">-- Unassigned --</option>
-                        {owners.map(o => <option key={o.id} value={o.id.toString()}>{o.name}</option>)}
+                        {owners.map(o => <option key={o.id} value={o.id.toString()}>@{o.username}</option>)}
                     </select>
                 </div>
 
