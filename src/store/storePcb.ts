@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { API_BASE } from '../store/database/apiBridge';
 import { apiFetch } from '../store/database/apiBridge';
+import { useStore } from './useStore';
 
 export interface Pcb {
     id: number;
@@ -145,10 +146,17 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     deletePcb: async (id) => {
         set({ loading: true, error: null });
         try {
+            const pcbToDelete = get().pcbs.find(p => p.id.toString() === id.toString());
+            const boardNumber = pcbToDelete?.board_number;
+
             const res = await apiFetch(`${API_BASE}/pcbs/${id}`, { method: 'DELETE' });
             if (!res.ok) {
                 set({ error: 'Failed to delete pcb', loading: false });
                 return false;
+            }
+
+            if (boardNumber && useStore.getState().expandedPcb === boardNumber) {
+                useStore.getState().setExpandedPcb(null);
             }
 
             const newPcbs = get().pcbs.filter(p => p.id.toString() !== id.toString());
