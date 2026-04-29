@@ -9,7 +9,7 @@ let internalPcbs = [...demoData.demoPcbs] as any[];
 let internalOwners = [...demoData.demoOwners] as any[];
 const reworkCounts: Record<number, number> = {};
 let internalReworks = demoData.demoReworks.map((r: any) => {
-    const pcb = demoData.demoPcbs.find(p => p.id === r.pcb_id);
+
     if (!reworkCounts[r.pcb_id]) reworkCounts[r.pcb_id] = 0;
     reworkCounts[r.pcb_id]++;
     return {

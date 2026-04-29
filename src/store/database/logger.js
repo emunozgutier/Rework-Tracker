@@ -62,8 +62,8 @@ export const cleanupOldLogs = () => {
 setInterval(cleanupOldLogs, 60 * 60 * 1000);
 
 export const apiLoggerMiddleware = (req, res, next) => {
-    // Only log API requests
-    if (!req.path.startsWith('/api')) {
+    // Only log API data requests (ignore static picture fetches)
+    if (!req.path.startsWith('/api') || req.path.startsWith('/api/pictures')) {
         return next();
     }
 

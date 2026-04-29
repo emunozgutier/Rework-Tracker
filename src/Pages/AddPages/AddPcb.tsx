@@ -19,7 +19,7 @@ interface AddPCBProps {
 
 export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
-    const [isManualNumber, setIsManualNumber] = useState(false);
+
     const [lastAutoAssignedProject, setLastAutoAssignedProject] = useState('');
     const [status] = useState('In Progress');
     const [pcbRev, setPcbRev] = useState('');
@@ -91,7 +91,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         } else {
             setBoardNumber(nextVal.toString(10).padStart(4, '0'));
         }
-        setIsManualNumber(false);
+
     };
 
     useEffect(() => {
@@ -302,7 +302,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                     value={boardNumber}
                                     onChange={(e) => {
                                         setBoardNumber(e.target.value);
-                                        setIsManualNumber(true);
+
                                     }}
                                     style={{ background: 'transparent', border: 'none', color: isDuplicate ? '#ef4444' : 'inherit', fontSize: 'inherit', fontWeight: 'inherit', outline: 'none', width: '100px', padding: 0 }}
                                 />
