@@ -41,7 +41,8 @@
                 "A0"
             ],
             "project_key": "DIO",
-            "formfactors": [
+            "silicon_corners": "TT",
+            "flavors": [
                 {
                     "name": "Validation",
                     "revisions": [
@@ -50,8 +51,7 @@
                         "2.0"
                     ]
                 }
-            ],
-            "silicon_corners": "TT"
+            ]
         },
         {
             "id": 1,
@@ -79,7 +79,8 @@
                 "C0"
             ],
             "project_key": "TIT",
-            "formfactors": [
+            "silicon_corners": "TT, SS, FF",
+            "flavors": [
                 {
                     "name": "Validation",
                     "revisions": [
@@ -104,8 +105,7 @@
                         "2.0"
                     ]
                 }
-            ],
-            "silicon_corners": "TT, SS, FF"
+            ]
         },
         {
             "id": 2,
@@ -146,7 +146,8 @@
                 "B1"
             ],
             "project_key": "ATL",
-            "formfactors": [
+            "silicon_corners": "TT, SS, FF",
+            "flavors": [
                 {
                     "name": "Validation",
                     "revisions": [
@@ -171,8 +172,7 @@
                         "2.0"
                     ]
                 }
-            ],
-            "silicon_corners": "TT, SS, FF"
+            ]
         }
     ],
     "demoPcbs": [
@@ -1402,7 +1402,8 @@
             "owner_name": "Alice Smith",
             "pcb_board_number": "DIO-0001U",
             "image_path": "[\"this is picture DIO-0001U-R001-PIC-1\",\"this is picture DIO-0001U-R001-PIC-2\",\"this is picture DIO-0001U-R001-PIC-3\"]",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 2,
@@ -1414,7 +1415,8 @@
             "owner_name": "Charlie Brown",
             "pcb_board_number": "DIO-0002D",
             "image_path": "[\"this is picture DIO-0002D-R001-PIC-1\",\"this is picture DIO-0002D-R001-PIC-2\",\"this is picture DIO-0002D-R001-PIC-3\"]",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 3,
@@ -1425,7 +1427,8 @@
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0003N",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 4,
@@ -1437,7 +1440,8 @@
             "owner_name": "Elena Miller",
             "pcb_board_number": "DIO-0004W",
             "image_path": "[\"this is picture DIO-0004W-R001-PIC-1\",\"this is picture DIO-0004W-R001-PIC-2\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 5,
@@ -1448,7 +1452,8 @@
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "DIO-0006Q",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 6,
@@ -1459,7 +1464,8 @@
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0007Y",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 1
         },
         {
             "id": 7,
@@ -1471,7 +1477,8 @@
             "owner_name": "George Costanza",
             "pcb_board_number": "DIO-0009S",
             "image_path": "[\"this is picture DIO-0009S-R001-PIC-1\",\"this is picture DIO-0009S-R001-PIC-2\",\"this is picture DIO-0009S-R001-PIC-3\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 8,
@@ -1483,7 +1490,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0011C",
             "image_path": "[\"this is picture DIO-0011C-R001-PIC-1\",\"this is picture DIO-0011C-R001-PIC-2\"]",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 9,
@@ -1494,7 +1502,8 @@
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "DIO-0012M",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 10,
@@ -1505,7 +1514,8 @@
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "DIO-0014E",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 11,
@@ -1517,7 +1527,8 @@
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "DIO-0015P",
             "image_path": "[\"this is picture DIO-0015P-R001-PIC-1\",\"this is picture DIO-0015P-R001-PIC-2\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 12,
@@ -1528,7 +1539,8 @@
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "DIO-0016X",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 13,
@@ -1540,7 +1552,8 @@
             "owner_name": "Bob Jones",
             "pcb_board_number": "DIO-0016X",
             "image_path": "[\"this is picture DIO-0016X-R001-PIC-1\",\"this is picture DIO-0016X-R001-PIC-2\",\"this is picture DIO-0016X-R001-PIC-3\"]",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 2
         },
         {
             "id": 14,
@@ -1551,7 +1564,8 @@
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "DIO-0016X",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 3
         },
         {
             "id": 15,
@@ -1563,7 +1577,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0019A",
             "image_path": "[\"this is picture DIO-0019A-R001-PIC-1\",\"this is picture DIO-0019A-R001-PIC-2\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 16,
@@ -1574,7 +1589,8 @@
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "DIO-0022U",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 17,
@@ -1585,7 +1601,8 @@
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0023D",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 18,
@@ -1596,7 +1613,8 @@
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "DIO-0027Q",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 19,
@@ -1607,7 +1625,8 @@
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "DIO-0029H",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 1
         },
         {
             "id": 20,
@@ -1619,7 +1638,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "TIT-0001E",
             "image_path": "[\"this is picture TIT-0001E-R001-PIC-1\",\"this is picture TIT-0001E-R001-PIC-2\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 21,
@@ -1631,7 +1651,8 @@
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0002P",
             "image_path": "[\"this is picture TIT-0002P-R001-PIC-1\",\"this is picture TIT-0002P-R001-PIC-2\",\"this is picture TIT-0002P-R001-PIC-3\"]",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 1
         },
         {
             "id": 22,
@@ -1642,7 +1663,8 @@
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "TIT-0002P",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 2
         },
         {
             "id": 23,
@@ -1654,7 +1676,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "TIT-0002P",
             "image_path": "[\"this is picture TIT-0002P-R001-PIC-1\",\"this is picture TIT-0002P-R001-PIC-2\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 3
         },
         {
             "id": 24,
@@ -1665,7 +1688,8 @@
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "TIT-0003X",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 25,
@@ -1676,7 +1700,8 @@
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0004G",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 26,
@@ -1687,7 +1712,8 @@
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "TIT-0005R",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 27,
@@ -1698,7 +1724,8 @@
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0005R",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 2
         },
         {
             "id": 28,
@@ -1709,7 +1736,8 @@
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "TIT-0005R",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 3
         },
         {
             "id": 29,
@@ -1720,7 +1748,8 @@
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "TIT-0006A",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 30,
@@ -1731,7 +1760,8 @@
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "TIT-0007J",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 31,
@@ -1742,7 +1772,8 @@
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "TIT-0007J",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 2
         },
         {
             "id": 32,
@@ -1753,7 +1784,8 @@
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0007J",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 3
         },
         {
             "id": 33,
@@ -1764,7 +1796,8 @@
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0008T",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 34,
@@ -1776,7 +1809,8 @@
             "owner_name": "Alice Smith",
             "pcb_board_number": "TIT-0009C",
             "image_path": "[\"this is picture TIT-0009C-R001-PIC-1\",\"this is picture TIT-0009C-R001-PIC-2\"]",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 1
         },
         {
             "id": 35,
@@ -1787,7 +1821,8 @@
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "TIT-0010D",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 36,
@@ -1799,7 +1834,8 @@
             "owner_name": "Elena Miller",
             "pcb_board_number": "TIT-0011N",
             "image_path": "[\"this is picture TIT-0011N-R001-PIC-1\",\"this is picture TIT-0011N-R001-PIC-2\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 37,
@@ -1810,7 +1846,8 @@
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "TIT-0012W",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 38,
@@ -1822,7 +1859,8 @@
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0001F",
             "image_path": "[\"this is picture ATL-0001F-R001-PIC-1\",\"this is picture ATL-0001F-R001-PIC-2\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 39,
@@ -1834,7 +1872,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0002Q",
             "image_path": "[\"this is picture ATL-0002Q-R001-PIC-1\",\"this is picture ATL-0002Q-R001-PIC-2\",\"this is picture ATL-0002Q-R001-PIC-3\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 40,
@@ -1845,7 +1884,8 @@
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0002Q",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 2
         },
         {
             "id": 41,
@@ -1857,7 +1897,8 @@
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0002Q",
             "image_path": "[\"this is picture ATL-0002Q-R001-PIC-1\",\"this is picture ATL-0002Q-R001-PIC-2\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 3
         },
         {
             "id": 42,
@@ -1869,7 +1910,8 @@
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0003Y",
             "image_path": "[\"this is picture ATL-0003Y-R001-PIC-1\",\"this is picture ATL-0003Y-R001-PIC-2\",\"this is picture ATL-0003Y-R001-PIC-3\"]",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 43,
@@ -1880,7 +1922,8 @@
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0004H",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 44,
@@ -1892,7 +1935,8 @@
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0005S",
             "image_path": "[\"this is picture ATL-0005S-R001-PIC-1\",\"this is picture ATL-0005S-R001-PIC-2\",\"this is picture ATL-0005S-R001-PIC-3\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 45,
@@ -1903,7 +1947,8 @@
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "ATL-0006B",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 46,
@@ -1915,7 +1960,8 @@
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0007K",
             "image_path": "[\"this is picture ATL-0007K-R001-PIC-1\",\"this is picture ATL-0007K-R001-PIC-2\",\"this is picture ATL-0007K-R001-PIC-3\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 47,
@@ -1926,7 +1972,8 @@
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0007K",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 2
         },
         {
             "id": 48,
@@ -1937,7 +1984,8 @@
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0007K",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 3
         },
         {
             "id": 49,
@@ -1948,7 +1996,8 @@
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0008U",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 50,
@@ -1959,7 +2008,8 @@
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0009D",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 51,
@@ -1970,7 +2020,8 @@
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0010E",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 52,
@@ -1982,7 +2033,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0011P",
             "image_path": "this is picture ATL-0011P-R001-PIC-1",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 53,
@@ -1994,7 +2046,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0011P",
             "image_path": "[\"this is picture ATL-0011P-R001-PIC-1\",\"this is picture ATL-0011P-R001-PIC-2\",\"this is picture ATL-0011P-R001-PIC-3\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 2
         },
         {
             "id": 54,
@@ -2005,7 +2058,8 @@
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0011P",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 3
         },
         {
             "id": 55,
@@ -2017,7 +2071,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0012X",
             "image_path": "[\"this is picture ATL-0012X-R001-PIC-1\",\"this is picture ATL-0012X-R001-PIC-2\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 56,
@@ -2029,7 +2084,8 @@
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0013G",
             "image_path": "this is picture ATL-0013G-R001-PIC-1",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 57,
@@ -2040,7 +2096,8 @@
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0014R",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 1
         },
         {
             "id": 58,
@@ -2052,7 +2109,8 @@
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0015A",
             "image_path": "[\"this is picture ATL-0015A-R001-PIC-1\",\"this is picture ATL-0015A-R001-PIC-2\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 59,
@@ -2063,7 +2121,8 @@
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0016J",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 1
         },
         {
             "id": 60,
@@ -2075,7 +2134,8 @@
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0017T",
             "image_path": "[\"this is picture ATL-0017T-R001-PIC-1\",\"this is picture ATL-0017T-R001-PIC-2\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 61,
@@ -2087,7 +2147,8 @@
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0017T",
             "image_path": "[\"this is picture ATL-0017T-R001-PIC-1\",\"this is picture ATL-0017T-R001-PIC-2\",\"this is picture ATL-0017T-R001-PIC-3\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 2
         },
         {
             "id": 62,
@@ -2099,7 +2160,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0017T",
             "image_path": "[\"this is picture ATL-0017T-R001-PIC-1\",\"this is picture ATL-0017T-R001-PIC-2\",\"this is picture ATL-0017T-R001-PIC-3\"]",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 3
         },
         {
             "id": 63,
@@ -2111,7 +2173,8 @@
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0018C",
             "image_path": "[\"this is picture ATL-0018C-R001-PIC-1\",\"this is picture ATL-0018C-R001-PIC-2\",\"this is picture ATL-0018C-R001-PIC-3\"]",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 64,
@@ -2123,7 +2186,8 @@
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0019M",
             "image_path": "[\"this is picture ATL-0019M-R001-PIC-1\",\"this is picture ATL-0019M-R001-PIC-2\",\"this is picture ATL-0019M-R001-PIC-3\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 65,
@@ -2134,7 +2198,8 @@
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0020N",
-            "rework_type": "Silicon Swap"
+            "rework_type": "Silicon Swap",
+            "rework_number": 1
         },
         {
             "id": 66,
@@ -2146,7 +2211,8 @@
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0021W",
             "image_path": "[\"this is picture ATL-0021W-R001-PIC-1\",\"this is picture ATL-0021W-R001-PIC-2\"]",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 67,
@@ -2158,7 +2224,8 @@
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0022F",
             "image_path": "[\"this is picture ATL-0022F-R001-PIC-1\",\"this is picture ATL-0022F-R001-PIC-2\",\"this is picture ATL-0022F-R001-PIC-3\"]",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 68,
@@ -2169,7 +2236,8 @@
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "ATL-0023Q",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 1
         },
         {
             "id": 69,
@@ -2181,7 +2249,8 @@
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0023Q",
             "image_path": "this is picture ATL-0023Q-R001-PIC-1",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 2
         },
         {
             "id": 70,
@@ -2192,7 +2261,8 @@
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0023Q",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 3
         },
         {
             "id": 71,
@@ -2204,7 +2274,8 @@
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0024Y",
             "image_path": "[\"this is picture ATL-0024Y-R001-PIC-1\",\"this is picture ATL-0024Y-R001-PIC-2\"]",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 72,
@@ -2215,7 +2286,8 @@
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0024Y",
-            "rework_type": "Minor"
+            "rework_type": "Minor",
+            "rework_number": 2
         },
         {
             "id": 73,
@@ -2226,7 +2298,8 @@
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0024Y",
-            "rework_type": "Major"
+            "rework_type": "Major",
+            "rework_number": 3
         },
         {
             "id": 74,
@@ -2237,7 +2310,8 @@
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0025H",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         },
         {
             "id": 75,
@@ -2249,7 +2323,8 @@
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0026S",
             "image_path": "[\"this is picture ATL-0026S-R001-PIC-1\",\"this is picture ATL-0026S-R001-PIC-2\"]",
-            "rework_type": "Resistor Swap"
+            "rework_type": "Resistor Swap",
+            "rework_number": 1
         }
     ],
     "demoTags": [
