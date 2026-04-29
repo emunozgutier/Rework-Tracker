@@ -49,6 +49,7 @@ const initDb = () => {
         db.run(`CREATE TABLE IF NOT EXISTS pcbs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             board_number TEXT NOT NULL,
+            crc TEXT,
             status TEXT DEFAULT 'In Progress',
             product_name_and_rev TEXT,
             bom TEXT,
@@ -91,6 +92,11 @@ const initDb = () => {
 
         // Migration: Add number_format column to projects if it doesn't exist
         db.run(`ALTER TABLE projects ADD COLUMN number_format TEXT DEFAULT 'decimal'`, (err) => {
+            // Ignore error if column already exists
+        });
+
+        // Migration: Add crc column to pcbs if it doesn't exist
+        db.run(`ALTER TABLE pcbs ADD COLUMN crc TEXT`, (err) => {
             // Ignore error if column already exists
         });
     });

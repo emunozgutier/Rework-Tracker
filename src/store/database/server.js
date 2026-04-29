@@ -43,6 +43,28 @@ app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures'
 // Initialize Database
 initDb();
 
+// Migration: Split board_number into board_number and crc
+db.all("SELECT id, board_number FROM pcbs WHERE board_number LIKE '%-%'", [], (err, rows) => {
+    if (!err && rows && rows.length > 0) {
+        rows.forEach(row => {
+            const parts = row.board_number.split('-');
+            if (parts.length > 1) {
+                let numPart = parts.slice(-1)[0];
+                let crc = null;
+                if (numPart.length > 1 && /^[a-zA-Z]$/.test(numPart.slice(-1))) {
+                    crc = numPart.slice(-1);
+                    numPart = numPart.slice(0, -1);
+                }
+                let val = parseInt(numPart, 10);
+                if (isNaN(val)) val = parseInt(numPart, 16);
+                if (!isNaN(val)) {
+                    db.run("UPDATE pcbs SET board_number = ?, crc = ? WHERE id = ?", [val.toString(), crc, row.id]);
+                }
+            }
+        });
+    }
+});
+
 // Routes
 
 // Dashboard Summary
@@ -173,7 +195,7 @@ app.post('/api/projects', async (req, res) => {
 // PCBs API
 app.get('/api/pcbs', (req, res) => {
     const query = `
-        SELECT pcbs.*, projects.name as project_name, projects.number_format as number_format, owners.name as owner_name, owners.username as owner_username,
+        SELECT pcbs.*, projects.name as project_name, projects.project_key, projects.number_format as number_format, owners.name as owner_name, owners.username as owner_username,
                (SELECT GROUP_CONCAT(tag_id) FROM pcb_tags WHERE pcb_id = pcbs.id) as tag_ids
         FROM pcbs 
         LEFT JOIN projects ON pcbs.project_id = projects.id
@@ -181,26 +203,52 @@ app.get('/api/pcbs', (req, res) => {
     `;
     db.all(query, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows.map(row => ({
-            id: row.id,
-            board_number: row.board_number,
-            status: row.status,
-            project: row.project_name,
-            project_id: row.project_id,
-            number_format: row.number_format || 'decimal',
-            owner: row.owner_name || 'Unassigned',
-            owner_username: row.owner_username || undefined,
-            product: row.product_name_and_rev,
-            bom: row.bom,
-            tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : []
-        })));
+        res.json(rows.map(row => {
+            let fullBoardName = row.board_number;
+            if (row.project_key && !row.board_number.toString().includes('-')) {
+                let formattedNum = '';
+                if (row.number_format === 'hex') {
+                    formattedNum = parseInt(row.board_number).toString(16).toUpperCase().padStart(4, '0');
+                } else {
+                    formattedNum = parseInt(row.board_number).toString(10).padStart(4, '0');
+                }
+                fullBoardName = `${row.project_key}-${formattedNum}${row.crc || ''}`;
+            }
+
+            return {
+                id: row.id,
+                board_number: fullBoardName,
+                status: row.status,
+                project: row.project_name,
+                project_id: row.project_id,
+                number_format: row.number_format || 'decimal',
+                owner: row.owner_name || 'Unassigned',
+                owner_username: row.owner_username || undefined,
+                product: row.product_name_and_rev,
+                bom: row.bom,
+                tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : []
+            };
+        }));
     });
 });
 
 app.post('/api/pcbs', (req, res) => {
     const { board_number, status, product_name_and_rev, bom, project_id, owner_id } = req.body;
-    const query = "INSERT INTO pcbs (board_number, status, product_name_and_rev, bom, project_id, owner_id) VALUES (?, ?, ?, ?, ?, ?)";
-    db.run(query, [board_number, status, product_name_and_rev, bom, project_id, owner_id], function(err) {
+    let numPart = board_number;
+    let crc = null;
+    if (board_number && board_number.includes('-')) {
+        const parts = board_number.split('-');
+        numPart = parts.slice(-1)[0];
+        if (numPart.length > 1 && /^[a-zA-Z]$/.test(numPart.slice(-1))) {
+            crc = numPart.slice(-1);
+            numPart = numPart.slice(0, -1);
+        }
+        let val = parseInt(numPart, 10);
+        if (isNaN(val)) val = parseInt(numPart, 16);
+        if (!isNaN(val)) numPart = val.toString();
+    }
+    const query = "INSERT INTO pcbs (board_number, crc, status, product_name_and_rev, bom, project_id, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    db.run(query, [numPart, crc, status, product_name_and_rev, bom, project_id, owner_id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: this.lastID, board_number });
     });
@@ -278,11 +326,20 @@ app.post('/api/reworks', upload.any(), (req, res) => {
     const { pcb_id, title, description, owner_id, rework_type, new_product } = req.body;
     
     // 1. Get the PCB board_number
-    db.get("SELECT board_number FROM pcbs WHERE id = ?", [pcb_id], (err, row) => {
+    db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [pcb_id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "PCB not found" });
         
-        const boardName = row.board_number;
+        let boardName = row.board_number;
+        if (row.project_key && !row.board_number.toString().includes('-')) {
+            let formattedNum = '';
+            if (row.number_format === 'hex') {
+                formattedNum = parseInt(row.board_number).toString(16).toUpperCase().padStart(4, '0');
+            } else {
+                formattedNum = parseInt(row.board_number).toString(10).padStart(4, '0');
+            }
+            boardName = `${row.project_key}-${formattedNum}${row.crc || ''}`;
+        }
         
         // 2. Query existing reworks to find the next sequence
         db.get("SELECT rework_name FROM reworks WHERE pcb_id = ? ORDER BY id DESC LIMIT 1", [pcb_id], (err, lastRework) => {
@@ -349,8 +406,9 @@ app.put('/api/projects/:id', (req, res) => {
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
     const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : null;
 
-    db.get("SELECT number_format FROM projects WHERE id = ?", [req.params.id], (err, row) => {
+    db.get("SELECT number_format, project_key FROM projects WHERE id = ?", [req.params.id], (err, row) => {
         const oldFormat = row ? (row.number_format || 'hex') : 'hex';
+        const oldProjectKey = row ? row.project_key : null;
         
         db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, formfactors = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), silicon_corners || null, number_format || 'decimal', req.params.id], function(err) {
             if (err) {
@@ -369,56 +427,50 @@ app.put('/api/projects/:id', (req, res) => {
             const newFormat = number_format || 'decimal';
             
             // Migrate all PCBs to the new format
-            db.all("SELECT id, board_number FROM pcbs WHERE project_id = ?", [req.params.id], (err, pcbs) => {
+            db.all("SELECT id, board_number, crc FROM pcbs WHERE project_id = ?", [req.params.id], (err, pcbs) => {
                 if (err || !pcbs || pcbs.length === 0) return res.json({ updated: changes, name: cleanName });
                 
                 let completed = 0;
                 let hasUpdates = false;
                 
                 pcbs.forEach(pcb => {
-                    const oldBoardStr = pcb.board_number;
-                    const parts = oldBoardStr.split('-');
-                    if (parts.length > 1) {
-                        let numPart = parts.slice(-1)[0];
-                        numPart = numPart.substring(0, numPart.length - 1);
-                        
-                        let val;
-                        if (numPart.toLowerCase().startsWith('0x')) {
-                            val = parseInt(numPart.substring(2), 16);
-                        } else if (oldFormat === 'decimal' && /^\\d+$/.test(numPart)) {
-                            val = parseInt(numPart, 10);
+                    let oldBoardStr = pcb.board_number;
+                    if (!oldBoardStr.toString().includes('-') && oldProjectKey) {
+                        let formattedNum = '';
+                        if (oldFormat === 'hex') {
+                            formattedNum = parseInt(oldBoardStr).toString(16).toUpperCase().padStart(4, '0');
                         } else {
-                            val = parseInt(numPart, 16);
+                            formattedNum = parseInt(oldBoardStr).toString(10).padStart(4, '0');
                         }
-                        
-                        if (!isNaN(val)) {
-                            let newNumStr = '';
-                            if (newFormat === 'hex') {
-                                newNumStr = val.toString(16).toUpperCase().padStart(4, '0');
-                            } else {
-                                newNumStr = val.toString(10).padStart(4, '0');
-                            }
-                            
-                            const newBoardNameBase = `${finalProjectKey}-${newNumStr}`;
-                            let newBoardNumber = newBoardNameBase;
-                            
-                            if (newFormat !== 'hex') {
-                                const crc = generateCRC(newBoardNameBase);
-                                newBoardNumber = `${newBoardNameBase}${crc}`;
-                            }
-                            
-                            if (newBoardNumber !== oldBoardStr) {
-                                hasUpdates = true;
-                                db.run("UPDATE pcbs SET board_number = ? WHERE id = ?", [newBoardNumber, pcb.id], () => {
-                                    db.run("UPDATE reworks SET rework_name = REPLACE(rework_name, ?, ?) WHERE pcb_id = ?", [oldBoardStr, newBoardNumber, pcb.id], () => {
-                                        completed++;
-                                        if (completed === pcbs.length) res.json({ updated: changes, name: cleanName, migrated: true });
-                                    });
-                                });
-                                return; // wait for callback
-                            }
-                        }
+                        oldBoardStr = `${oldProjectKey}-${formattedNum}${pcb.crc || ''}`;
                     }
+
+                    let val = parseInt(pcb.board_number.toString().includes('-') ? pcb.board_number.split('-').slice(-1)[0].replace(/[a-zA-Z]$/, '') : pcb.board_number, oldFormat === 'hex' ? 16 : 10);
+                    if (isNaN(val)) val = 1;
+
+                    let newCrc = pcb.crc;
+                    let newBoardStr = '';
+                    if (newFormat === 'hex') {
+                        newBoardStr = `${finalProjectKey}-${val.toString(16).toUpperCase().padStart(4, '0')}`;
+                        newCrc = null;
+                    } else {
+                        const newNumStr = val.toString(10).padStart(4, '0');
+                        const baseStr = `${finalProjectKey}-${newNumStr}`;
+                        newCrc = generateCRC(baseStr);
+                        newBoardStr = `${baseStr}${newCrc}`;
+                    }
+
+                    if (newBoardStr !== oldBoardStr) {
+                        hasUpdates = true;
+                        db.run("UPDATE pcbs SET crc = ? WHERE id = ?", [newCrc, pcb.id], () => {
+                            db.run("UPDATE reworks SET rework_name = REPLACE(rework_name, ?, ?) WHERE pcb_id = ?", [oldBoardStr, newBoardStr, pcb.id], () => {
+                                completed++;
+                                if (completed === pcbs.length) res.json({ updated: changes, name: cleanName, migrated: true });
+                            });
+                        });
+                        return; // wait for callback
+                    }
+                    
                     completed++;
                     if (completed === pcbs.length) {
                         res.json({ updated: changes, name: cleanName, migrated: hasUpdates });
@@ -478,8 +530,21 @@ app.delete('/api/pcbs/:id/tags/:tag_id', (req, res) => {
 
 app.put('/api/pcbs/:id', (req, res) => {
     const { board_number, status, product_name_and_rev, bom, project_id, owner_id } = req.body;
-    const query = "UPDATE pcbs SET board_number = ?, status = ?, product_name_and_rev = ?, bom = ?, project_id = ?, owner_id = ? WHERE id = ?";
-    db.run(query, [board_number, status, product_name_and_rev, bom, project_id, owner_id, req.params.id], function(err) {
+    let numPart = board_number;
+    let crc = null;
+    if (board_number && board_number.includes('-')) {
+        const parts = board_number.split('-');
+        numPart = parts.slice(-1)[0];
+        if (numPart.length > 1 && /^[a-zA-Z]$/.test(numPart.slice(-1))) {
+            crc = numPart.slice(-1);
+            numPart = numPart.slice(0, -1);
+        }
+        let val = parseInt(numPart, 10);
+        if (isNaN(val)) val = parseInt(numPart, 16);
+        if (!isNaN(val)) numPart = val.toString();
+    }
+    const query = "UPDATE pcbs SET board_number = ?, crc = ?, status = ?, product_name_and_rev = ?, bom = ?, project_id = ?, owner_id = ? WHERE id = ?";
+    db.run(query, [numPart, crc, status, product_name_and_rev, bom, project_id, owner_id, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });
