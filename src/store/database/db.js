@@ -58,7 +58,6 @@ const initDb = () => {
         db.run(`CREATE TABLE IF NOT EXISTS pcbs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             board_number TEXT NOT NULL,
-            crc TEXT,
             status TEXT DEFAULT 'In Progress',
             board_flavor TEXT,
             board_rev TEXT,
@@ -107,10 +106,6 @@ const initDb = () => {
             // Ignore error if column already exists
         });
 
-        // Migration: Add crc column to pcbs if it doesn't exist
-        db.run(`ALTER TABLE pcbs ADD COLUMN crc TEXT`, (err) => {
-            // Ignore error if column already exists
-        });
 
         // Migration: Add new split columns to pcbs if they don't exist
         db.run(`ALTER TABLE pcbs ADD COLUMN board_flavor TEXT`, () => {});

@@ -187,11 +187,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 2.0",
             "product": "Dione A0 TT Demo - Rev 2.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "2.0"
         },
         {
             "id": 2,
@@ -204,11 +204,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.0",
             "product": "Dione A0 TT Demo - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 3,
@@ -221,11 +221,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 1.0",
             "product": "Dione A0 TT Validation - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 4,
@@ -238,11 +238,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 1.1",
             "product": "Dione A0 TT Validation - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 5,
@@ -255,11 +255,11 @@
             "product_name_and_rev": "Dione A0 TT Chamber - Rev 1.0",
             "product": "Dione A0 TT Chamber - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Chamber",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Chamber",
+            "board_rev": "1.0"
         },
         {
             "id": 6,
@@ -272,11 +272,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 7,
@@ -289,11 +289,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 2.0",
             "product": "Dione A0 TT Demo - Rev 2.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "2.0"
         },
         {
             "id": 8,
@@ -306,11 +306,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 1.1",
             "product": "Dione A0 TT Validation - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 9,
@@ -323,11 +323,11 @@
             "product_name_and_rev": "Dione A0 TT Chamber - Rev 1.0",
             "product": "Dione A0 TT Chamber - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Chamber",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Chamber",
+            "board_rev": "1.0"
         },
         {
             "id": 10,
@@ -340,11 +340,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 1.1",
             "product": "Dione A0 TT Validation - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 11,
@@ -357,11 +357,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 1.1",
             "product": "Dione A0 TT Validation - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 12,
@@ -374,11 +374,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.0",
             "product": "Dione A0 TT Demo - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 13,
@@ -391,11 +391,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 14,
@@ -408,11 +408,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 15,
@@ -425,11 +425,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 1.0",
             "product": "Dione A0 TT Validation - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 16,
@@ -442,11 +442,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 17,
@@ -459,11 +459,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 18,
@@ -476,11 +476,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 1.1",
             "product": "Dione A0 TT Validation - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 19,
@@ -493,11 +493,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 2.0",
             "product": "Dione A0 TT Validation - Rev 2.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "2.0"
         },
         {
             "id": 20,
@@ -510,11 +510,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 21,
@@ -527,11 +527,11 @@
             "product_name_and_rev": "Dione A0 TT Chamber - Rev 1.1",
             "product": "Dione A0 TT Chamber - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Chamber",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Chamber",
+            "board_rev": "1.1"
         },
         {
             "id": 22,
@@ -544,11 +544,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 23,
@@ -561,11 +561,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 2.0",
             "product": "Dione A0 TT Demo - Rev 2.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "2.0"
         },
         {
             "id": 24,
@@ -578,11 +578,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.0",
             "product": "Dione A0 TT Demo - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 25,
@@ -595,11 +595,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 26,
@@ -612,11 +612,11 @@
             "product_name_and_rev": "Dione A0 TT Validation - Rev 2.0",
             "product": "Dione A0 TT Validation - Rev 2.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "2.0"
         },
         {
             "id": 27,
@@ -629,11 +629,11 @@
             "product_name_and_rev": "Dione A0 TT Chamber - Rev 1.0",
             "product": "Dione A0 TT Chamber - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Chamber",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Chamber",
+            "board_rev": "1.0"
         },
         {
             "id": 28,
@@ -646,11 +646,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.0",
             "product": "Dione A0 TT Demo - Rev 1.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 29,
@@ -663,11 +663,11 @@
             "product_name_and_rev": "Dione A0 TT Demo - Rev 1.1",
             "product": "Dione A0 TT Demo - Rev 1.1",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 30,
@@ -680,11 +680,11 @@
             "product_name_and_rev": "Dione A0 TT Chamber - Rev 2.0",
             "product": "Dione A0 TT Chamber - Rev 2.0",
             "project_key": "DIO",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Chamber",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Chamber",
+            "board_rev": "2.0"
         },
         {
             "id": 31,
@@ -697,11 +697,11 @@
             "product_name_and_rev": "Titan C0 TT Validation - Rev 2.0",
             "product": "Titan C0 TT Validation - Rev 2.0",
             "project_key": "TIT",
-            "silicon_revision": "C0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "C0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "2.0"
         },
         {
             "id": 32,
@@ -714,11 +714,11 @@
             "product_name_and_rev": "Titan B0 SS Chamber - Rev 1.0",
             "product": "Titan B0 SS Chamber - Rev 1.0",
             "project_key": "TIT",
-            "silicon_revision": "B0",
-            "silicon_version": "SS",
-            "flavor": "Chamber",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "SS",
+            "board_flavor": "Chamber",
+            "board_rev": "1.0"
         },
         {
             "id": 33,
@@ -731,11 +731,11 @@
             "product_name_and_rev": "Titan B0 FF Demo - Rev 1.0",
             "product": "Titan B0 FF Demo - Rev 1.0",
             "project_key": "TIT",
-            "silicon_revision": "B0",
-            "silicon_version": "FF",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "FF",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 34,
@@ -748,11 +748,11 @@
             "product_name_and_rev": "Titan C0 TT Validation - Rev 1.0",
             "product": "Titan C0 TT Validation - Rev 1.0",
             "project_key": "TIT",
-            "silicon_revision": "C0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "C0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 35,
@@ -765,11 +765,11 @@
             "product_name_and_rev": "Titan A0 SS Validation - Rev 1.1",
             "product": "Titan A0 SS Validation - Rev 1.1",
             "project_key": "TIT",
-            "silicon_revision": "A0",
-            "silicon_version": "SS",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "SS",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 36,
@@ -782,11 +782,11 @@
             "product_name_and_rev": "Titan C0 FF Demo - Rev 2.0",
             "product": "Titan C0 FF Demo - Rev 2.0",
             "project_key": "TIT",
-            "silicon_revision": "C0",
-            "silicon_version": "FF",
-            "flavor": "Demo",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "C0",
+            "silicon_corner": "FF",
+            "board_flavor": "Demo",
+            "board_rev": "2.0"
         },
         {
             "id": 37,
@@ -799,11 +799,11 @@
             "product_name_and_rev": "Titan B0 TT Demo - Rev 1.0",
             "product": "Titan B0 TT Demo - Rev 1.0",
             "project_key": "TIT",
-            "silicon_revision": "B0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 38,
@@ -816,11 +816,11 @@
             "product_name_and_rev": "Titan B0 SS Demo - Rev 1.0",
             "product": "Titan B0 SS Demo - Rev 1.0",
             "project_key": "TIT",
-            "silicon_revision": "B0",
-            "silicon_version": "SS",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "SS",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 39,
@@ -833,11 +833,11 @@
             "product_name_and_rev": "Titan B0 FF Demo - Rev 1.0",
             "product": "Titan B0 FF Demo - Rev 1.0",
             "project_key": "TIT",
-            "silicon_revision": "B0",
-            "silicon_version": "FF",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "FF",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 40,
@@ -850,11 +850,11 @@
             "product_name_and_rev": "Titan B0 TT Validation - Rev 1.0",
             "product": "Titan B0 TT Validation - Rev 1.0",
             "project_key": "TIT",
-            "silicon_revision": "B0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 41,
@@ -867,11 +867,11 @@
             "product_name_and_rev": "Titan C0 SS Demo - Rev 1.0",
             "product": "Titan C0 SS Demo - Rev 1.0",
             "project_key": "TIT",
-            "silicon_revision": "C0",
-            "silicon_version": "SS",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "C0",
+            "silicon_corner": "SS",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 42,
@@ -884,11 +884,11 @@
             "product_name_and_rev": "Titan C0 FF Chamber - Rev 2.0",
             "product": "Titan C0 FF Chamber - Rev 2.0",
             "project_key": "TIT",
-            "silicon_revision": "C0",
-            "silicon_version": "FF",
-            "flavor": "Chamber",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "C0",
+            "silicon_corner": "FF",
+            "board_flavor": "Chamber",
+            "board_rev": "2.0"
         },
         {
             "id": 43,
@@ -901,11 +901,11 @@
             "product_name_and_rev": "Atlas B1 TT Validation - Rev 2.0",
             "product": "Atlas B1 TT Validation - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "B1",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B1",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "2.0"
         },
         {
             "id": 44,
@@ -918,11 +918,11 @@
             "product_name_and_rev": "Atlas B0 SS Demo - Rev 1.0",
             "product": "Atlas B0 SS Demo - Rev 1.0",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "SS",
-            "flavor": "Demo",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "SS",
+            "board_flavor": "Demo",
+            "board_rev": "1.0"
         },
         {
             "id": 45,
@@ -935,11 +935,11 @@
             "product_name_and_rev": "Atlas A0 FF Demo - Rev 2.0",
             "product": "Atlas A0 FF Demo - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "FF",
-            "flavor": "Demo",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "FF",
+            "board_flavor": "Demo",
+            "board_rev": "2.0"
         },
         {
             "id": 46,
@@ -952,11 +952,11 @@
             "product_name_and_rev": "Atlas B1 TT Validation - Rev 1.1",
             "product": "Atlas B1 TT Validation - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "B1",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B1",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 47,
@@ -969,11 +969,11 @@
             "product_name_and_rev": "Atlas B0 SS Demo - Rev 1.1",
             "product": "Atlas B0 SS Demo - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "SS",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "SS",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 48,
@@ -986,11 +986,11 @@
             "product_name_and_rev": "Atlas A0 FF Validation - Rev 1.1",
             "product": "Atlas A0 FF Validation - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "FF",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "FF",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 49,
@@ -1003,11 +1003,11 @@
             "product_name_and_rev": "Atlas B0 TT Demo - Rev 2.0",
             "product": "Atlas B0 TT Demo - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "2.0"
         },
         {
             "id": 50,
@@ -1020,11 +1020,11 @@
             "product_name_and_rev": "Atlas A0 SS Validation - Rev 1.1",
             "product": "Atlas A0 SS Validation - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "SS",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "SS",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 51,
@@ -1037,11 +1037,11 @@
             "product_name_and_rev": "Atlas B0 FF Chamber - Rev 2.0",
             "product": "Atlas B0 FF Chamber - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "FF",
-            "flavor": "Chamber",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "FF",
+            "board_flavor": "Chamber",
+            "board_rev": "2.0"
         },
         {
             "id": 52,
@@ -1054,11 +1054,11 @@
             "product_name_and_rev": "Atlas B0 TT Validation - Rev 1.0",
             "product": "Atlas B0 TT Validation - Rev 1.0",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 53,
@@ -1071,11 +1071,11 @@
             "product_name_and_rev": "Atlas B1 SS Validation - Rev 1.0",
             "product": "Atlas B1 SS Validation - Rev 1.0",
             "project_key": "ATL",
-            "silicon_revision": "B1",
-            "silicon_version": "SS",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B1",
+            "silicon_corner": "SS",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 54,
@@ -1088,11 +1088,11 @@
             "product_name_and_rev": "Atlas A0 FF Validation - Rev 1.0",
             "product": "Atlas A0 FF Validation - Rev 1.0",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "FF",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "FF",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 55,
@@ -1105,11 +1105,11 @@
             "product_name_and_rev": "Atlas A0 TT Chamber - Rev 1.1",
             "product": "Atlas A0 TT Chamber - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Chamber",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Chamber",
+            "board_rev": "1.1"
         },
         {
             "id": 56,
@@ -1122,11 +1122,11 @@
             "product_name_and_rev": "Atlas B0 SS Validation - Rev 1.0",
             "product": "Atlas B0 SS Validation - Rev 1.0",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "SS",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "SS",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 57,
@@ -1139,11 +1139,11 @@
             "product_name_and_rev": "Atlas B1 FF Chamber - Rev 2.0",
             "product": "Atlas B1 FF Chamber - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "B1",
-            "silicon_version": "FF",
-            "flavor": "Chamber",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B1",
+            "silicon_corner": "FF",
+            "board_flavor": "Chamber",
+            "board_rev": "2.0"
         },
         {
             "id": 58,
@@ -1156,11 +1156,11 @@
             "product_name_and_rev": "Atlas A0 TT Chamber - Rev 2.0",
             "product": "Atlas A0 TT Chamber - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Chamber",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Chamber",
+            "board_rev": "2.0"
         },
         {
             "id": 59,
@@ -1173,11 +1173,11 @@
             "product_name_and_rev": "Atlas A0 SS Demo - Rev 1.1",
             "product": "Atlas A0 SS Demo - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "SS",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "SS",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 60,
@@ -1190,11 +1190,11 @@
             "product_name_and_rev": "Atlas B1 FF Chamber - Rev 2.0",
             "product": "Atlas B1 FF Chamber - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "B1",
-            "silicon_version": "FF",
-            "flavor": "Chamber",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B1",
+            "silicon_corner": "FF",
+            "board_flavor": "Chamber",
+            "board_rev": "2.0"
         },
         {
             "id": 61,
@@ -1207,11 +1207,11 @@
             "product_name_and_rev": "Atlas B0 TT Validation - Rev 1.1",
             "product": "Atlas B0 TT Validation - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 62,
@@ -1224,11 +1224,11 @@
             "product_name_and_rev": "Atlas B1 SS Chamber - Rev 1.1",
             "product": "Atlas B1 SS Chamber - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "B1",
-            "silicon_version": "SS",
-            "flavor": "Chamber",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B1",
+            "silicon_corner": "SS",
+            "board_flavor": "Chamber",
+            "board_rev": "1.1"
         },
         {
             "id": 63,
@@ -1241,11 +1241,11 @@
             "product_name_and_rev": "Atlas B0 FF Validation - Rev 1.1",
             "product": "Atlas B0 FF Validation - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "FF",
-            "flavor": "Validation",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "FF",
+            "board_flavor": "Validation",
+            "board_rev": "1.1"
         },
         {
             "id": 64,
@@ -1258,11 +1258,11 @@
             "product_name_and_rev": "Atlas B0 TT Demo - Rev 1.1",
             "product": "Atlas B0 TT Demo - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "B0",
-            "silicon_version": "TT",
-            "flavor": "Demo",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B0",
+            "silicon_corner": "TT",
+            "board_flavor": "Demo",
+            "board_rev": "1.1"
         },
         {
             "id": 65,
@@ -1275,11 +1275,11 @@
             "product_name_and_rev": "Atlas B1 SS Demo - Rev 2.0",
             "product": "Atlas B1 SS Demo - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "B1",
-            "silicon_version": "SS",
-            "flavor": "Demo",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "B1",
+            "silicon_corner": "SS",
+            "board_flavor": "Demo",
+            "board_rev": "2.0"
         },
         {
             "id": 66,
@@ -1292,11 +1292,11 @@
             "product_name_and_rev": "Atlas A0 FF Validation - Rev 2.0",
             "product": "Atlas A0 FF Validation - Rev 2.0",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "FF",
-            "flavor": "Validation",
-            "pcb_rev": "2.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "FF",
+            "board_flavor": "Validation",
+            "board_rev": "2.0"
         },
         {
             "id": 67,
@@ -1309,11 +1309,11 @@
             "product_name_and_rev": "Atlas A0 TT Validation - Rev 1.0",
             "product": "Atlas A0 TT Validation - Rev 1.0",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "TT",
-            "flavor": "Validation",
-            "pcb_rev": "1.0",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "TT",
+            "board_flavor": "Validation",
+            "board_rev": "1.0"
         },
         {
             "id": 68,
@@ -1326,11 +1326,11 @@
             "product_name_and_rev": "Atlas A0 SS Chamber - Rev 1.1",
             "product": "Atlas A0 SS Chamber - Rev 1.1",
             "project_key": "ATL",
-            "silicon_revision": "A0",
-            "silicon_version": "SS",
-            "flavor": "Chamber",
-            "pcb_rev": "1.1",
-            "bom": "BOM1"
+            "bom": "BOM1",
+            "silicon_rev": "A0",
+            "silicon_corner": "SS",
+            "board_flavor": "Chamber",
+            "board_rev": "1.1"
         }
     ],
     "demoOwners": [
