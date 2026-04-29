@@ -602,8 +602,19 @@ app.delete('/api/projects/:id', (req, res) => {
 
 // --- PCBs API Expansions ---
 app.get('/api/pcbs/:id', (req, res) => {
-    db.get("SELECT * FROM pcbs WHERE id = ?", [req.params.id], (err, row) => {
+    db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [req.params.id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "PCB not found" });
+
+        if (row.project_key && !row.board_number.toString().includes('-')) {
+            let formattedNum = '';
+            if (row.number_format === 'hex') {
+                formattedNum = parseInt(row.board_number).toString(16).toUpperCase().padStart(4, '0');
+            } else {
+                formattedNum = parseInt(row.board_number).toString(10).padStart(4, '0');
+            }
+            row.board_number = `${row.project_key}-${formattedNum}${row.crc || ''}`;
+        }
         res.json(row);
     });
 });
