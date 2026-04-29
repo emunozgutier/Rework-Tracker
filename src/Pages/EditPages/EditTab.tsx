@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { useTagStore } from '../../store/storeTag';
 import { useOwnerStore } from '../../store/storeOwner';
+import { COLORS } from '../../store/storeStyles';
 
 interface EditTabProps {
     id: string | number;
@@ -59,7 +60,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
         setSaving(false);
     };
 
-    const colors = ['#818cf8', '#ef4444', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];
+    const colors = [COLORS.indigo, COLORS.red, COLORS.emerald, COLORS.amber, COLORS.blue, COLORS.pink, COLORS.purpleAccent];
 
     if (loading) return <div className="loading">Loading Tag...</div>;
 
