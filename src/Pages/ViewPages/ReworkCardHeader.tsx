@@ -3,6 +3,8 @@ import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
 import { COLORS } from '../../store/storeStyles';
 
+import { BoardName } from '../../components/BoardName';
+
 interface ReworkCardHeaderProps {
     rework: any;
     isExpanded: boolean;
@@ -17,9 +19,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
     const parentPcb = pcbs.find(p => p.id === rework.pcb_id);
     const resolvedBoardName = parentPcb ? parentPcb.board_number : (rework.board_number || rework.pcb_board_number || 'UNKNOWN');
 
-    const shortName = showFullTitle 
-        ? `${resolvedBoardName}-R${String(rework.rework_number || rework.id).padStart(3, '0')}`
-        : `R${String(rework.rework_number || rework.id).padStart(3, '0')}`;
+    const reworkSuffix = `R${String(rework.rework_number || rework.id).padStart(3, '0')}`;
 
     return (
         <div 
@@ -30,7 +30,14 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0, flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, width: '100%' }}>
                     <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)', fontWeight: 'bold' }}>
-                        {shortName}
+                        {showFullTitle ? (
+                            <>
+                                <BoardName name={resolvedBoardName} />
+                                <span>-{reworkSuffix}</span>
+                            </>
+                        ) : (
+                            <span>{reworkSuffix}</span>
+                        )}
                     </span>
                     <span style={{ 
                         flexShrink: 0,
