@@ -49,64 +49,17 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 setBoardNumber(hexPart);
                 setStatus(pcb.status);
                 setBom(pcb.bom || '');
+                // Use new split fields directly
+                setSiliconVersion(pcb.silicon_corner || '');
+                setSelectedFormfactor(pcb.board_flavor || '');
+                setSelectedRevision(pcb.silicon_rev === "No part yet" ? "" : (pcb.silicon_rev || ''));
                 
-                // Try to split product_name_and_rev
-                const project = projData.find((p: any) => p.id === pcb.project_id);
-                let rawProduct = pcb.product_name_and_rev || '';
-                let foundRev = '';
-                let foundFormfactor = '';
-                let foundSilicon = '';
-                
-                if (project) {
-                    // Extract Silicon Corner if present at the end
-                    if (project.silicon_corners) {
-                        const corners = project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean);
-                        for (const corner of corners) {
-                            if (rawProduct.endsWith(` ${corner}`) || rawProduct === corner) {
-                                foundSilicon = corner;
-                                rawProduct = rawProduct.slice(0, rawProduct.length - corner.length).trim();
-                                break;
-                            }
-                        }
-                    }
-
-                    if (project.formfactors && project.formfactors.length > 0) {
-                        for (const ff of project.formfactors) {
-                            if (rawProduct.startsWith(ff.name)) {
-                                foundFormfactor = ff.name;
-                                rawProduct = rawProduct.slice(ff.name.length).trim();
-                                for (const rev of ff.revisions) {
-                                    if (rawProduct.endsWith(` ${rev}`) || rawProduct === rev) {
-                                        foundRev = rev;
-                                        rawProduct = rawProduct.slice(0, rawProduct.length - rev.length).trim();
-                                        break;
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    if (!foundFormfactor && project.revisions) {
-                        for (const rev of project.revisions) {
-                            if (rawProduct.endsWith(` ${rev}`) || rawProduct === rev) {
-                                foundRev = rev;
-                                rawProduct = rawProduct.slice(0, rawProduct.length - rev.length).trim();
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                if (rawProduct === "No part yet") {
+                if (pcb.silicon_rev === "No part yet" || (!pcb.silicon_rev && pcb.product === "No part yet")) {
                     setNoPartYet(true);
-                    setPcbRev('');
                 } else {
                     setNoPartYet(false);
-                    setPcbRev(rawProduct);
                 }
-                setSiliconVersion(foundSilicon);
-                setSelectedFormfactor(foundFormfactor);
-                setSelectedRevision(foundRev);
+                setPcbRev(pcb.board_rev || '');
                 setSelectedProject(pcb.project_id.toString());
                 setSelectedOwner(pcb.owner_id ? pcb.owner_id.toString() : '');
             }
@@ -126,13 +79,15 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
         const cornerPart = noPartYet ? "" : siliconVersion;
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
-        const combinedProduct = [ffPart, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
         
         const success = await updatePcb(id, {
             board_number: finalBoardName,
             status,
-            product_name_and_rev: combinedProduct,
+            board_flavor: ffPart,
+            board_rev: finalPcbRev,
+            silicon_rev: revPart,
+            silicon_corner: cornerPart,
             bom: bom.trim(),
             project_id: selectedProject ? parseInt(selectedProject) : null,
             owner_id: selectedOwner ? parseInt(selectedOwner) : null

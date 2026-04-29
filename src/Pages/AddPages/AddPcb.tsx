@@ -172,21 +172,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
         const cornerPart = noPartYet ? "" : siliconVersion;
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
-        
-        const rawParts = [ffPart, finalPcbRev, revPart, cornerPart].filter(Boolean);
-        const cleanParts: string[] = [];
-        let hasNA = false;
-        for (const part of rawParts) {
-            if (isNA(part)) {
-                if (!hasNA) {
-                    cleanParts.push("N/A");
-                    hasNA = true;
-                }
-            } else {
-                cleanParts.push(part);
-            }
-        }
-        const combinedProduct = cleanParts.join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.trim()}`;
         
         const numberFormat = selectedProjData?.number_format || 'decimal';
@@ -205,7 +190,10 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const success = await addPcb({
             board_number: finalBoardWithCrc,
             status,
-            product_name_and_rev: combinedProduct,
+            board_flavor: ffPart,
+            board_rev: finalPcbRev,
+            silicon_rev: revPart,
+            silicon_corner: cornerPart,
             bom: bom.trim(),
             project_id: selectedProject ? parseInt(selectedProject) : null,
             owner_id: selectedOwner ? parseInt(selectedOwner) : null

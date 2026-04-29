@@ -51,7 +51,10 @@ const initDb = () => {
             board_number TEXT NOT NULL,
             crc TEXT,
             status TEXT DEFAULT 'In Progress',
-            product_name_and_rev TEXT,
+            board_flavor TEXT,
+            board_rev TEXT,
+            silicon_rev TEXT,
+            silicon_corner TEXT,
             bom TEXT,
             project_id INTEGER,
             owner_id INTEGER,
@@ -99,6 +102,12 @@ const initDb = () => {
         db.run(`ALTER TABLE pcbs ADD COLUMN crc TEXT`, (err) => {
             // Ignore error if column already exists
         });
+
+        // Migration: Add new split columns to pcbs if they don't exist
+        db.run(`ALTER TABLE pcbs ADD COLUMN board_flavor TEXT`, () => {});
+        db.run(`ALTER TABLE pcbs ADD COLUMN board_rev TEXT`, () => {});
+        db.run(`ALTER TABLE pcbs ADD COLUMN silicon_rev TEXT`, () => {});
+        db.run(`ALTER TABLE pcbs ADD COLUMN silicon_corner TEXT`, () => {});
     });
 };
 

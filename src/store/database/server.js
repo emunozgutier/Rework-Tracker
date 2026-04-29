@@ -65,6 +65,72 @@ db.all("SELECT id, board_number FROM pcbs WHERE board_number LIKE '%-%'", [], (e
     }
 });
 
+// Migration: Split product_name_and_rev into board_flavor, board_rev, silicon_rev, silicon_corner
+db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name_and_rev IS NOT NULL AND board_flavor IS NULL", [], (err, pcbs) => {
+    if (!err && pcbs && pcbs.length > 0) {
+        db.all("SELECT id, formfactors, silicon_corners FROM projects", [], (err, projects) => {
+            if (err || !projects) return;
+            pcbs.forEach(pcb => {
+                const project = projects.find(p => p.id === pcb.project_id);
+                let rawProduct = pcb.product_name_and_rev || '';
+                let foundRev = '';
+                let foundFormfactor = '';
+                let foundSilicon = '';
+
+                if (project) {
+                    if (project.silicon_corners) {
+                        let parsedCorners = [];
+                        try { parsedCorners = typeof project.silicon_corners === 'string' ? project.silicon_corners.split(',').map(s => s.trim()).filter(Boolean) : []; } catch(e){}
+                        for (const corner of parsedCorners) {
+                            if (rawProduct.endsWith(` ${corner}`) || rawProduct === corner) {
+                                foundSilicon = corner;
+                                rawProduct = rawProduct.slice(0, rawProduct.length - corner.length).trim();
+                                break;
+                            }
+                        }
+                    }
+
+                    if (project.formfactors) {
+                        let parsedFF = [];
+                        try { parsedFF = JSON.parse(project.formfactors); } catch(e){}
+                        for (const ff of parsedFF) {
+                            if (rawProduct.startsWith(ff.name)) {
+                                foundFormfactor = ff.name;
+                                rawProduct = rawProduct.slice(ff.name.length).trim();
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // What's left is board_rev and silicon_rev
+                let boardRev = '';
+                let siliconRev = '';
+                const remainingParts = rawProduct.split(' ').filter(Boolean);
+                if (remainingParts.length > 0) {
+                    boardRev = remainingParts[0];
+                    if (remainingParts.length > 1) {
+                        siliconRev = remainingParts.slice(1).join(' ');
+                    }
+                }
+
+                db.run("UPDATE pcbs SET board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ? WHERE id = ?", [foundFormfactor, boardRev, siliconRev, foundSilicon, pcb.id], (err) => {
+                    // Check if this was the last item to migrate
+                    if (pcbs.indexOf(pcb) === pcbs.length - 1) {
+                        // After all updates, safely drop the old column
+                        db.run("ALTER TABLE pcbs DROP COLUMN product_name_and_rev", () => {
+                            // Ignore error if column already dropped
+                        });
+                    }
+                });
+            });
+        });
+    } else {
+        // Drop column immediately if migration isn't needed but it exists
+        db.run("ALTER TABLE pcbs DROP COLUMN product_name_and_rev", () => {});
+    }
+});
+
 // Routes
 
 // Dashboard Summary
@@ -224,7 +290,11 @@ app.get('/api/pcbs', (req, res) => {
                 number_format: row.number_format || 'decimal',
                 owner: row.owner_name || 'Unassigned',
                 owner_username: row.owner_username || undefined,
-                product: row.product_name_and_rev,
+                product: [row.board_flavor, row.board_rev, row.silicon_rev, row.silicon_corner].filter(Boolean).join(' ') || '',
+                board_flavor: row.board_flavor || '',
+                board_rev: row.board_rev || '',
+                silicon_rev: row.silicon_rev || '',
+                silicon_corner: row.silicon_corner || '',
                 bom: row.bom,
                 tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : []
             };
@@ -233,7 +303,7 @@ app.get('/api/pcbs', (req, res) => {
 });
 
 app.post('/api/pcbs', (req, res) => {
-    const { board_number, status, product_name_and_rev, bom, project_id, owner_id } = req.body;
+    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
     let crc = null;
     if (board_number && board_number.includes('-')) {
@@ -247,8 +317,8 @@ app.post('/api/pcbs', (req, res) => {
         if (isNaN(val)) val = parseInt(numPart, 16);
         if (!isNaN(val)) numPart = val.toString();
     }
-    const query = "INSERT INTO pcbs (board_number, crc, status, product_name_and_rev, bom, project_id, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    db.run(query, [numPart, crc, status, product_name_and_rev, bom, project_id, owner_id], function(err) {
+    const query = "INSERT INTO pcbs (board_number, crc, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    db.run(query, [numPart, crc, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: this.lastID, board_number });
     });
@@ -529,7 +599,7 @@ app.delete('/api/pcbs/:id/tags/:tag_id', (req, res) => {
 });
 
 app.put('/api/pcbs/:id', (req, res) => {
-    const { board_number, status, product_name_and_rev, bom, project_id, owner_id } = req.body;
+    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
     let crc = null;
     if (board_number && board_number.includes('-')) {
@@ -543,8 +613,8 @@ app.put('/api/pcbs/:id', (req, res) => {
         if (isNaN(val)) val = parseInt(numPart, 16);
         if (!isNaN(val)) numPart = val.toString();
     }
-    const query = "UPDATE pcbs SET board_number = ?, crc = ?, status = ?, product_name_and_rev = ?, bom = ?, project_id = ?, owner_id = ? WHERE id = ?";
-    db.run(query, [numPart, crc, status, product_name_and_rev, bom, project_id, owner_id, req.params.id], function(err) {
+    const query = "UPDATE pcbs SET board_number = ?, crc = ?, status = ?, board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ? WHERE id = ?";
+    db.run(query, [numPart, crc, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });
