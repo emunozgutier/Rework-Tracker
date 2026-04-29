@@ -43,27 +43,6 @@ app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures'
 // Initialize Database
 initDb();
 
-// Migration: Split board_number into board_number and crc
-db.all("SELECT id, board_number FROM pcbs WHERE board_number LIKE '%-%'", [], (err, rows) => {
-    if (!err && rows && rows.length > 0) {
-        rows.forEach(row => {
-            const parts = row.board_number.split('-');
-            if (parts.length > 1) {
-                let numPart = parts.slice(-1)[0];
-                let crc = null;
-                if (numPart.length > 1 && /^[a-zA-Z]$/.test(numPart.slice(-1))) {
-                    crc = numPart.slice(-1);
-                    numPart = numPart.slice(0, -1);
-                }
-                let val = parseInt(numPart, 10);
-                if (isNaN(val)) val = parseInt(numPart, 16);
-                if (!isNaN(val)) {
-                    db.run("UPDATE pcbs SET board_number = ?, crc = ? WHERE id = ?", [val.toString(), crc, row.id]);
-                }
-            }
-        });
-    }
-});
 
 // Migration: Split product_name_and_rev into board_flavor, board_rev, silicon_rev, silicon_corner
 db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name_and_rev IS NOT NULL AND board_flavor IS NULL", [], (err, pcbs) => {
@@ -325,7 +304,11 @@ app.get('/api/pcbs', (req, res) => {
                 } else {
                     formattedNum = parseInt(row.board_number).toString(10).padStart(4, '0');
                 }
-                fullBoardName = `${row.project_key}-${formattedNum}${row.crc || ''}`;
+                let generatedCrc = '';
+                if (row.number_format !== 'hex') {
+                    generatedCrc = generateCRC(`${row.project_key}-${formattedNum}`);
+                }
+                fullBoardName = `${row.project_key}-${formattedNum}${generatedCrc}`;
             }
 
             return {
@@ -352,20 +335,18 @@ app.get('/api/pcbs', (req, res) => {
 app.post('/api/pcbs', (req, res) => {
     const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
-    let crc = null;
     if (board_number && board_number.includes('-')) {
         const parts = board_number.split('-');
         numPart = parts.slice(-1)[0];
         if (numPart.length > 1 && /^[a-zA-Z]$/.test(numPart.slice(-1))) {
-            crc = numPart.slice(-1);
             numPart = numPart.slice(0, -1);
         }
         let val = parseInt(numPart, 10);
         if (isNaN(val)) val = parseInt(numPart, 16);
         if (!isNaN(val)) numPart = val.toString();
     }
-    const query = "INSERT INTO pcbs (board_number, crc, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    db.run(query, [numPart, crc, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id], function(err) {
+    const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: this.lastID, board_number });
     });
@@ -540,55 +521,7 @@ app.put('/api/projects/:id', (req, res) => {
             const changes = this.changes;
             const newFormat = number_format || 'decimal';
             
-            // Migrate all PCBs to the new format
-            db.all("SELECT id, board_number, crc FROM pcbs WHERE project_id = ?", [req.params.id], (err, pcbs) => {
-                if (err || !pcbs || pcbs.length === 0) return res.json({ updated: changes, name: cleanName });
-                
-                let completed = 0;
-                let hasUpdates = false;
-                
-                pcbs.forEach(pcb => {
-                    let oldBoardStr = pcb.board_number;
-                    if (!oldBoardStr.toString().includes('-') && oldProjectKey) {
-                        let formattedNum = '';
-                        if (oldFormat === 'hex') {
-                            formattedNum = parseInt(oldBoardStr).toString(16).toUpperCase().padStart(4, '0');
-                        } else {
-                            formattedNum = parseInt(oldBoardStr).toString(10).padStart(4, '0');
-                        }
-                        oldBoardStr = `${oldProjectKey}-${formattedNum}${pcb.crc || ''}`;
-                    }
-
-                    let val = parseInt(pcb.board_number.toString().includes('-') ? pcb.board_number.split('-').slice(-1)[0].replace(/[a-zA-Z]$/, '') : pcb.board_number, oldFormat === 'hex' ? 16 : 10);
-                    if (isNaN(val)) val = 1;
-
-                    let newCrc = pcb.crc;
-                    let newBoardStr = '';
-                    if (newFormat === 'hex') {
-                        newBoardStr = `${finalProjectKey}-${val.toString(16).toUpperCase().padStart(4, '0')}`;
-                        newCrc = null;
-                    } else {
-                        const newNumStr = val.toString(10).padStart(4, '0');
-                        const baseStr = `${finalProjectKey}-${newNumStr}`;
-                        newCrc = generateCRC(baseStr);
-                        newBoardStr = `${baseStr}${newCrc}`;
-                    }
-
-                    if (newBoardStr !== oldBoardStr) {
-                        hasUpdates = true;
-                        db.run("UPDATE pcbs SET crc = ? WHERE id = ?", [newCrc, pcb.id], () => {
-                            completed++;
-                            if (completed === pcbs.length) res.json({ updated: changes, name: cleanName, migrated: true });
-                        });
-                        return; // wait for callback
-                    }
-                    
-                    completed++;
-                    if (completed === pcbs.length) {
-                        res.json({ updated: changes, name: cleanName, migrated: hasUpdates });
-                    }
-                });
-            });
+            res.json({ updated: changes, name: cleanName });
         });
     });
 });
@@ -613,7 +546,11 @@ app.get('/api/pcbs/:id', (req, res) => {
             } else {
                 formattedNum = parseInt(row.board_number).toString(10).padStart(4, '0');
             }
-            row.board_number = `${row.project_key}-${formattedNum}${row.crc || ''}`;
+            let generatedCrc = '';
+            if (row.number_format !== 'hex') {
+                generatedCrc = generateCRC(`${row.project_key}-${formattedNum}`);
+            }
+            row.board_number = `${row.project_key}-${formattedNum}${generatedCrc}`;
         }
         res.json(row);
     });
@@ -654,20 +591,18 @@ app.delete('/api/pcbs/:id/tags/:tag_id', (req, res) => {
 app.put('/api/pcbs/:id', (req, res) => {
     const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
-    let crc = null;
     if (board_number && board_number.includes('-')) {
         const parts = board_number.split('-');
         numPart = parts.slice(-1)[0];
         if (numPart.length > 1 && /^[a-zA-Z]$/.test(numPart.slice(-1))) {
-            crc = numPart.slice(-1);
             numPart = numPart.slice(0, -1);
         }
         let val = parseInt(numPart, 10);
         if (isNaN(val)) val = parseInt(numPart, 16);
         if (!isNaN(val)) numPart = val.toString();
     }
-    const query = "UPDATE pcbs SET board_number = ?, crc = ?, status = ?, board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ? WHERE id = ?";
-    db.run(query, [numPart, crc, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, req.params.id], function(err) {
+    const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ? WHERE id = ?";
+    db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });
