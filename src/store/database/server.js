@@ -388,7 +388,7 @@ app.get('/api/owners', (req, res) => {
 
 app.post('/api/owners', (req, res) => {
     const { name, username } = req.body;
-    const cleanUsername = username ? username.replace(/\s+/g, '') : null;
+    const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
     db.run("INSERT INTO owners (name, username) VALUES (?, ?)", [name, cleanUsername], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
@@ -684,7 +684,7 @@ app.get('/api/owners/:id', (req, res) => {
 
 app.put('/api/owners/:id', (req, res) => {
     const { name, username } = req.body;
-    const cleanUsername = username ? username.replace(/\s+/g, '') : null;
+    const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
     db.run("UPDATE owners SET name = ?, username = ? WHERE id = ?", [name, cleanUsername, req.params.id], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {

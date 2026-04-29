@@ -53,7 +53,7 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                         id="username"
                         type="text" 
                         value={username} 
-                        onChange={(e) => setUsername(e.target.value)} 
+                        onChange={(e) => setUsername(e.target.value.toLowerCase())} 
                         placeholder="e.g. jsmith"
                         pattern="^\S+$"
                         maxLength={8}

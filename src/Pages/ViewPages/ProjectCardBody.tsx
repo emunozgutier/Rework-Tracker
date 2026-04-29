@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { EditButton, ViewButton } from '../../components/forms/ActionButtons';
 import { usePcbStore } from '../../store/storePcb';
 import { useStore } from '../../store/useStore';
@@ -19,17 +19,76 @@ interface ProjectCardBodyProps {
 }
 
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
-    const { pcbs: allPcbs, setSelectedProjects } = usePcbStore();
-    const { setActiveTab, editItem } = useStore();
+    const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
+    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView } = useStore();
     
     // Get actual PCB objects for this project
     const projectPcbs = allPcbs.filter(p => p.project === project.name);
 
-    const [isBlinking, setIsBlinking] = useState(false);
+    const LongPressPcbCard = ({ pcb }: { pcb: any }) => {
+        const [progress, setProgress] = useState(0);
+        const intervalRef = useRef<any>(null);
 
-    const handlePcbClick = () => {
-        setIsBlinking(true);
-        setTimeout(() => setIsBlinking(false), 2000); // blink for 2 seconds (time for 3 loops)
+        const startPress = () => {
+            // Prevent default to avoid selecting text while holding
+            // e.preventDefault(); 
+            setProgress(0);
+            const startTime = Date.now();
+            intervalRef.current = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const percentage = Math.min((elapsed / 3000) * 100, 100);
+                setProgress(percentage);
+                if (percentage >= 100) {
+                    clearInterval(intervalRef.current);
+                    // Trigger navigation
+                    setSelectedBoardNumbers([pcb.board_number]);
+                    setExpandedPcb(pcb.board_number);
+                    setIsolatedView(true);
+                    setActiveTab('pcbs');
+                }
+            }, 30);
+        };
+
+        const cancelPress = () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            setProgress(0);
+        };
+
+        return (
+            <div 
+                style={{ 
+                    position: 'relative', 
+                    border: '1px solid var(--border)', 
+                    borderRadius: '8px', 
+                    background: 'var(--bg-element)', 
+                    overflow: 'hidden',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    cursor: 'pointer'
+                }}
+                onMouseDown={startPress}
+                onMouseUp={cancelPress}
+                onMouseLeave={cancelPress}
+                onTouchStart={startPress}
+                onTouchEnd={cancelPress}
+            >
+                <div 
+                    style={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        left: 0, 
+                        height: '100%', 
+                        width: `${progress}%`, 
+                        backgroundColor: 'rgba(168, 85, 247, 0.3)', 
+                        transition: progress === 0 ? 'none' : 'width 0.05s linear',
+                        zIndex: 0
+                    }} 
+                />
+                <div style={{ position: 'relative', zIndex: 1, pointerEvents: 'none' }}>
+                    <PcbCardHeader pcb={pcb} isExpanded={false} onToggle={() => {}} hideActions={true} />
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -47,7 +106,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         setSelectedProjects([project.id.toString()]);
                         setActiveTab('pcbs');
                     }}
-                    className={`view-pcbs-btn ${isBlinking ? 'blink-button' : ''}`}
+                    className="view-pcbs-btn"
                     label="View PCBs Info"
                 />
             </div>
@@ -55,14 +114,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
             {projectPcbs.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {projectPcbs.map((pcb, index) => (
-                        <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-element)' }}>
-                            <PcbCardHeader 
-                                pcb={pcb} 
-                                isExpanded={false}
-                                onToggle={() => handlePcbClick()}
-                                hideActions={true}
-                            />
-                        </div>
+                        <LongPressPcbCard key={index} pcb={pcb} />
                     ))}
                 </div>
             ) : (
