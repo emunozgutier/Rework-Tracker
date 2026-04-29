@@ -273,7 +273,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 <TagFilter />
             )}
 
-            <div className={`cards-grid ${['projects', 'pcbs', 'reworks', 'tags'].includes(type) ? 'single-column' : ''}`}>
+            <div className={`cards-grid ${['projects', 'pcbs', 'reworks', 'tags', 'owners'].includes(type) ? 'single-column' : ''}`}>
                 {items.length === 0 ? (
                     <div className="empty-state">No {type} found.</div>
                 ) : (
