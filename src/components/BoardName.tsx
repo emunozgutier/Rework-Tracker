@@ -11,12 +11,20 @@ export function BoardName({ name }: { name: string }) {
             if (lastPart.length > 1 && /^[a-zA-Z]$/.test(lastPart.slice(-1))) {
                 const crc = lastPart.slice(-1);
                 const base = name.slice(0, -1);
+                
+                // If it is a hex number, avoid coloring the CRC purple to prevent visual confusion
+                const isHex = base.includes('0x') || base.includes('0X');
+                
                 return (
                     <span>
                         {base}
-                        <span style={{ color: '#a855f7', fontWeight: 'bold' }}>
-                            {crc}
-                        </span>
+                        {isHex ? (
+                            <span>{crc}</span>
+                        ) : (
+                            <span style={{ color: '#a855f7', fontWeight: 'bold' }}>
+                                {crc}
+                            </span>
+                        )}
                     </span>
                 );
             }
