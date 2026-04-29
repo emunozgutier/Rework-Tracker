@@ -31,16 +31,16 @@ export function PcbFilter() {
             if (!pObj || !selectedProjects.includes(pObj.id.toString())) return false;
         }
         if (ignoreField !== 'revision' && selectedRevisions.length > 0) {
-            if (!pcb.product || !selectedRevisions.some((rev: string) => pcb.product.includes(rev))) return false;
+            if (!pcb.silicon_rev || !selectedRevisions.includes(pcb.silicon_rev)) return false;
         }
         if (ignoreField !== 'corner' && selectedCorners.length > 0) {
-            if (!pcb.product || !selectedCorners.some((corner: string) => pcb.product.includes(corner))) return false;
+            if (!pcb.silicon_corner || !selectedCorners.includes(pcb.silicon_corner)) return false;
         }
         if (ignoreField !== 'flavor' && selectedFlavors.length > 0) {
-            if (!pcb.product || !selectedFlavors.some((ff: string) => pcb.product.includes(ff))) return false;
+            if (!pcb.board_flavor || !selectedFlavors.includes(pcb.board_flavor)) return false;
         }
         if (ignoreField !== 'pcbrev' && selectedPcbRevs.length > 0) {
-            if (!pcb.product || !selectedPcbRevs.some((pr: string) => pcb.product.includes(pr))) return false;
+            if (!pcb.board_rev || !selectedPcbRevs.includes(pcb.board_rev)) return false;
         }
         if (ignoreField !== 'tag' && selectedTags.length > 0) {
             if (!pcb.tag_ids || !selectedTags.some((tagId: string) => pcb.tag_ids?.includes(parseInt(tagId)))) return false;
@@ -107,7 +107,7 @@ export function PcbFilter() {
                         }
 
                         return Array.from(allRevs).sort().map(rev => {
-                            const count = pcbs.filter(pcb => pcb.product && pcb.product.includes(rev) && matchPcb(pcb, 'revision')).length;
+                            const count = pcbs.filter(pcb => pcb.silicon_rev === rev && matchPcb(pcb, 'revision')).length;
                             if (count === 0 && hasAnyOtherFilter('revision')) return null;
                             return <option key={rev} value={rev}>{rev === 'No part yet' ? 'N/A (No part yet)' : rev} ({count})</option>;
                         });
@@ -121,7 +121,7 @@ export function PcbFilter() {
                         activeProjects.forEach((p: any) => { if (p.silicon_corners) p.silicon_corners.split(',').forEach((c: string) => allCorners.add(c.trim())); });
 
                         return Array.from(allCorners).filter(Boolean).sort().map(corner => {
-                            const count = pcbs.filter(pcb => pcb.product && pcb.product.includes(corner) && matchPcb(pcb, 'corner')).length;
+                            const count = pcbs.filter(pcb => pcb.silicon_corner === corner && matchPcb(pcb, 'corner')).length;
                             if (count === 0 && hasAnyOtherFilter('corner')) return null;
                             return <option key={corner} value={corner}>{corner} ({count})</option>;
                         });
@@ -149,7 +149,7 @@ export function PcbFilter() {
                         activeProjects.forEach((p: any) => { if (p.formfactors) p.formfactors.forEach((ff: any) => allFlavors.add(ff.name)); });
 
                         return Array.from(allFlavors).sort().map(ff => {
-                            const count = pcbs.filter(pcb => pcb.product && pcb.product.includes(ff) && matchPcb(pcb, 'flavor')).length;
+                            const count = pcbs.filter(pcb => pcb.board_flavor === ff && matchPcb(pcb, 'flavor')).length;
                             if (count === 0 && hasAnyOtherFilter('flavor')) return null;
                             return <option key={ff} value={ff}>{ff} ({count})</option>;
                         });
@@ -171,7 +171,7 @@ export function PcbFilter() {
                         });
 
                         return Array.from(allPcbRevs).sort().map(pr => {
-                            const count = pcbs.filter(pcb => pcb.product && pcb.product.includes(pr) && matchPcb(pcb, 'pcbrev')).length;
+                            const count = pcbs.filter(pcb => pcb.board_rev === pr && matchPcb(pcb, 'pcbrev')).length;
                             if (count === 0 && hasAnyOtherFilter('pcbrev')) return null;
                             return <option key={pr} value={pr}>{pr} ({count})</option>;
                         });

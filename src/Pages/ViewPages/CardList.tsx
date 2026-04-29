@@ -103,19 +103,16 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 items = items.filter(pcb => projNames.includes(pcb.project));
             }
             if (selectedRevisions.length > 0) {
-                items = items.filter(pcb => selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev)));
+                items = items.filter(pcb => selectedRevisions.includes(pcb.silicon_rev));
             }
             if (selectedCorners.length > 0) {
-                items = items.filter(pcb => {
-                    const projectData = projects.find(p => p.name === pcb.project);
-                    return projectData && projectData.silicon_corners && selectedCorners.some(corner => projectData.silicon_corners?.includes(corner));
-                });
+                items = items.filter(pcb => selectedCorners.includes(pcb.silicon_corner));
             }
             if (selectedFlavors.length > 0) {
-                items = items.filter(pcb => selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)));
+                items = items.filter(pcb => selectedFlavors.includes(pcb.board_flavor));
             }
             if (selectedPcbRevs.length > 0) {
-                items = items.filter(pcb => selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr)));
+                items = items.filter(pcb => selectedPcbRevs.includes(pcb.board_rev));
             }
             if (selectedTags.length > 0) {
                 items = items.filter(pcb => selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))));
