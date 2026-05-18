@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { COLORS } from '../../store/storeStyles';
 import { EditButton, ViewButton } from '../../components/forms/ActionButtons';
 import { usePcbStore } from '../../store/storePcb';
@@ -29,10 +29,21 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const LongPressPcbCard = ({ pcb }: { pcb: any }) => {
         const [progress, setProgress] = useState(0);
         const intervalRef = useRef<any>(null);
+        const timeoutRef = useRef<any>(null);
+        const isPressingRef = useRef(false);
+
+        useEffect(() => {
+            return () => {
+                if (intervalRef.current) clearInterval(intervalRef.current);
+                if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            };
+        }, []);
 
         const startPress = () => {
             // Prevent default to avoid selecting text while holding
             // e.preventDefault(); 
+            isPressingRef.current = true;
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
             setProgress(0);
             const startTime = Date.now();
             intervalRef.current = setInterval(() => {
@@ -51,8 +62,20 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
         };
 
         const cancelPress = () => {
+            if (!isPressingRef.current) return;
+            isPressingRef.current = false;
+            
             if (intervalRef.current) clearInterval(intervalRef.current);
-            setProgress(0);
+            setProgress(prev => {
+                if (prev < 30) {
+                    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+                    timeoutRef.current = setTimeout(() => {
+                        setProgress(0);
+                    }, 500);
+                    return 30;
+                }
+                return 0;
+            });
         };
 
         return (
@@ -81,7 +104,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         height: '100%', 
                         width: `${progress}%`, 
                         backgroundColor: COLORS.indigoFill, 
-                        transition: progress === 0 ? 'none' : 'width 0.05s linear',
+                        transition: progress === 0 ? 'none' : progress === 30 ? 'width 0.2s ease-out' : 'width 0.05s linear',
                         zIndex: 0
                     }} 
                 />
