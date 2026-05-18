@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { usePcbStore } from './storePcb';
 import { useReworkStore } from './storeRework';
+import { useTagStore } from './storeTag';
 
 type Page = 
     | 'projects' | 'projects_add' | 'projects_edit'
@@ -73,8 +74,9 @@ export const useStore = create<NavigationState>((set) => ({
     setCorrectedUrl: (url) => set({ correctedUrl: url }),
 
     setActiveTab: (tab) => {
-        if (tab !== 'pcbs') usePcbStore.getState().resetFilters();
-        if (tab !== 'reworks') useReworkStore.getState().resetFilters();
+        usePcbStore.getState().resetFilters();
+        useReworkStore.getState().resetFilters();
+        useTagStore.getState().resetFilters();
 
         set({ 
             activeTab: tab, 

@@ -172,7 +172,8 @@ export function NetworkQRCode() {
                             textDecoration: 'none',
                             border: '1px solid rgba(255, 255, 255, 0.05)',
                             transition: 'all 0.2s ease',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)';
