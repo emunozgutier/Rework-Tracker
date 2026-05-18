@@ -112,7 +112,7 @@ export function UrlManager() {
                 return;
             }
 
-            if (path.length >= 2 && /^[A-Za-z0-9]+$/.test(path)) {
+            if (path.length === 3 && /^[A-Za-z0-9]{3}$/.test(path)) {
                 useStore.getState().setActiveTab('pcbs');
                 useStore.getState().setExpandedPcb(`SHORT:${path}`);
                 useStore.getState().setIsolatedView(true);

@@ -186,22 +186,22 @@ function generateCRC(input) {
 
 const RESERVED_URLS = new Set(['project', 'projects', 'pcb', 'pcbs', 'rework', 'reworks', 'owners', 'tags', 'crc', 'api', 'demo']);
 
-function generateShortCode(length = 2, attempt = 1) {
+function generateShortCode(attempt = 1) {
     return new Promise((resolve, reject) => {
-        if (attempt > 10) return resolve(generateShortCode(length + 1, 1));
+        if (attempt > 20) return reject(new Error("Unable to generate short code"));
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let code = '';
-        for (let i = 0; i < length; i++) {
+        for (let i = 0; i < 3; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         
         if (RESERVED_URLS.has(code.toLowerCase())) {
-            return resolve(generateShortCode(length, attempt + 1));
+            return resolve(generateShortCode(attempt + 1));
         }
         
         db.get("SELECT id FROM pcbs WHERE short_code = ?", [code], (err, row) => {
             if (err) return reject(err);
-            if (row) resolve(generateShortCode(length, attempt + 1));
+            if (row) resolve(generateShortCode(attempt + 1));
             else resolve(code);
         });
     });
