@@ -51,9 +51,8 @@ export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHead
                     color: 'var(--text-muted)',
                     fontSize: '0.85rem'
                 }}>
-                    <span style={{ fontWeight: 600, color: 'var(--text)' }}>PCBs</span>
-                    <span style={{ opacity: 0.3 }}>|</span>
-                    <span>{tag.pcb_count || 0} Tagged</span>
+                    <span style={{ fontWeight: 600, color: 'var(--text)' }}>{tag.pcb_count || 0}</span>
+                    <span>PCBs</span>
                 </div>
                 <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none' }}>
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
