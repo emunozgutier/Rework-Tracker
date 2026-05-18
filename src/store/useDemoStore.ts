@@ -7,7 +7,7 @@ interface DemoState {
 }
 
 const initialDemoState = typeof window !== 'undefined' 
-    ? window.location.hostname.includes('github.io') || window.location.pathname.includes('/demo') || window.location.search.includes('demo')
+    ? window.location.hostname.includes('github.io') || window.location.hostname.includes('localhost') || window.location.pathname.includes('/demo') || window.location.search.includes('demo')
     : false;
 
 export const useDemoStore = create<DemoState>()(
