@@ -29,14 +29,14 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
         >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0, flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, width: '100%' }}>
-                    <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)', fontWeight: 'bold' }}>
+                    <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap' }}>
                         {showFullTitle ? (
                             <>
                                 <BoardName name={resolvedBoardName} />
-                                <span>-{reworkSuffix}</span>
+                                <span style={{ color: COLORS.purple, fontWeight: 'bold' }}>-{reworkSuffix}</span>
                             </>
                         ) : (
-                            <span>{reworkSuffix}</span>
+                            <span style={{ color: COLORS.purple, fontWeight: 'bold' }}>{reworkSuffix}</span>
                         )}
                     </span>
                     <span style={{ 

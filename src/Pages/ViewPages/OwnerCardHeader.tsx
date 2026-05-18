@@ -41,12 +41,6 @@ export function OwnerCardHeader({ owner, onEdit }: OwnerCardHeaderProps) {
                 <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: 'var(--accent)', color: 'var(--accent)' }}>
                     {owner.pcb_count || 0} PCBs
                 </span>
-                <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: '#f43f5e', color: '#f43f5e' }}>
-                    {owner.rework_count || 0} Reworks
-                </span>
-                <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: '#10b981', color: '#10b981' }}>
-                    {owner.tag_count || 0} Tags
-                </span>
             </div>
         </div>
     );

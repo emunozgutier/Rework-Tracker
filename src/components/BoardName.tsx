@@ -1,6 +1,6 @@
 import { COLORS } from '../store/storeStyles';
 
-export function BoardName({ name, isHex }: { name: string; isHex?: boolean }) {
+export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: string; isHex?: boolean; crcColor?: string }) {
     if (!name) return null;
     
     // If it's a hex number, there is no CRC, so just return the raw string
@@ -20,7 +20,7 @@ export function BoardName({ name, isHex }: { name: string; isHex?: boolean }) {
                 return (
                     <span>
                         {base}
-                        <span style={{ color: COLORS.purple, fontWeight: 'bold' }}>
+                        <span style={{ color: crcColor, fontWeight: 'bold' }}>
                             {crc}
                         </span>
                     </span>
