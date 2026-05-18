@@ -40,7 +40,8 @@ const initDb = () => {
         db.run(`CREATE TABLE IF NOT EXISTS owners (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            username TEXT UNIQUE
+            username TEXT UNIQUE,
+            email TEXT
         )`);
         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
 
@@ -112,6 +113,9 @@ const initDb = () => {
         db.run(`ALTER TABLE pcbs ADD COLUMN board_rev TEXT`, () => {});
         db.run(`ALTER TABLE pcbs ADD COLUMN silicon_rev TEXT`, () => {});
         db.run(`ALTER TABLE pcbs ADD COLUMN silicon_corner TEXT`, () => {});
+        
+        // Migration: Add email column to owners if it doesn't exist
+        db.run(`ALTER TABLE owners ADD COLUMN email TEXT`, () => {});
     });
 };
 

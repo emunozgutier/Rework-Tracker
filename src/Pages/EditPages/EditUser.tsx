@@ -13,6 +13,7 @@ interface EditUserProps {
 export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(true);
     const { updateOwner, deleteOwner, error } = useOwnerStore();
     const [saving, setSaving] = useState(false);
@@ -24,6 +25,7 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
                 if (data) {
                     setName(data.name);
                     setUsername(data.username || '');
+                    setEmail(data.email || '');
                 }
                 setLoading(false);
             })
@@ -36,7 +38,7 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const success = await updateOwner(id, { name, username });
+        const success = await updateOwner(id, { name, username, email });
         if (success) onSuccess();
         setSaving(false);
     };
@@ -90,6 +92,16 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
                         maxLength={8}
                         title="Username cannot contain spaces and must be 8 characters or fewer"
                         required 
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="email">Email Address (Optional)</label>
+                    <input 
+                        id="email"
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        placeholder="e.g. jsmith@example.com"
                     />
                 </div>
                 <button type="submit" className="submit-button" disabled={saving}>

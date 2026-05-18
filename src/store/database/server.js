@@ -370,16 +370,16 @@ app.get('/api/owners', (req, res) => {
 });
 
 app.post('/api/owners', (req, res) => {
-    const { name, username } = req.body;
+    const { name, username, email } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("INSERT INTO owners (name, username) VALUES (?, ?)", [name, cleanUsername], function(err) {
+    db.run("INSERT INTO owners (name, username, email) VALUES (?, ?, ?)", [name, cleanUsername, email || null], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
             }
             return res.status(500).json({ error: err.message });
         }
-        res.status(201).json({ id: this.lastID, name, username: cleanUsername });
+        res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null });
     });
 });
 
@@ -631,9 +631,9 @@ app.get('/api/owners/:id', (req, res) => {
 });
 
 app.put('/api/owners/:id', (req, res) => {
-    const { name, username } = req.body;
+    const { name, username, email } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("UPDATE owners SET name = ?, username = ? WHERE id = ?", [name, cleanUsername, req.params.id], function(err) {
+    db.run("UPDATE owners SET name = ?, username = ?, email = ? WHERE id = ?", [name, cleanUsername, email || null, req.params.id], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already in use.` });

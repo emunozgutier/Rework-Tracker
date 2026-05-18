@@ -11,11 +11,12 @@ interface AddUserProps {
 export function AddUser({ onBack, onSuccess }: AddUserProps) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const { addOwner, loading, error } = useOwnerStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await addOwner({ name, username });
+        const success = await addOwner({ name, username, email });
         if (success) {
             onSuccess();
         }
@@ -59,6 +60,16 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                         maxLength={8}
                         title="Username cannot contain spaces and must be 8 characters or fewer"
                         required 
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="email">Email Address (Optional)</label>
+                    <input 
+                        id="email"
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        placeholder="e.g. jsmith@example.com"
                     />
                 </div>
                 <button type="submit" className="submit-button" disabled={loading}>

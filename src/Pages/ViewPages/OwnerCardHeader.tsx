@@ -20,13 +20,20 @@ export function OwnerCardHeader({ owner, onEdit }: OwnerCardHeaderProps) {
                 >
                     <Edit2 size={16} />
                 </button>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0, fontFamily: 'monospace' }}>
-                        {owner.username ? `@${owner.username}` : 'No username'}
-                    </span>
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }} title={owner.name}>
-                        {owner.name && owner.name.length > 20 ? `${owner.name.substring(0, 20)}...` : owner.name}
-                    </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0, fontFamily: 'monospace' }}>
+                            {owner.username ? `@${owner.username}` : 'No username'}
+                        </span>
+                        <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }} title={owner.name}>
+                            {owner.name && owner.name.length > 20 ? `${owner.name.substring(0, 20)}...` : owner.name}
+                        </span>
+                    </div>
+                    {owner.email && (
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                            {owner.email}
+                        </span>
+                    )}
                 </div>
             </div>
             
