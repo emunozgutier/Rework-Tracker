@@ -10,7 +10,7 @@ export function NetworkQRCode() {
     const [qrInfo, setQrInfo] = useState<{ version: number, size: number } | null>(null);
     const { qrModalBoard, setQrModalBoard } = useStore();
     const pcbs = usePcbStore(state => state.pcbs);
-    const [useShortUrl, setUseShortUrl] = useState(true);
+    const [useShortUrl, setUseShortUrl] = useState(false);
     
     let url = '';
     let displayDomain = '';
