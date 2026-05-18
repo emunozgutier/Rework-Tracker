@@ -189,7 +189,7 @@ const RESERVED_URLS = new Set(['project', 'projects', 'pcb', 'pcbs', 'rework', '
 function generateShortCode(attempt = 1) {
     return new Promise((resolve, reject) => {
         if (attempt > 20) return reject(new Error("Unable to generate short code"));
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYabcdefghjkmnpqrstuvwxy3456789';
         let code = '';
         for (let i = 0; i < 3; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
