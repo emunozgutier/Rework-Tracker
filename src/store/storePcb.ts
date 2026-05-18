@@ -19,6 +19,7 @@ export interface Pcb {
     silicon_corner?: string;
     bom?: string;
     tag_ids?: number[];
+    short_code?: string;
 }
 
 interface PcbState {

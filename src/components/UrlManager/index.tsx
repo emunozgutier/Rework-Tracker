@@ -93,6 +93,13 @@ export function UrlManager() {
                 return;
             }
             
+            if (path.length === 4 && /^[A-Za-z0-9]{4}$/.test(path)) {
+                useStore.getState().setActiveTab('pcbs');
+                useStore.getState().setExpandedPcb(`SHORT:${path}`);
+                useStore.getState().setIsolatedView(true);
+                return;
+            }
+            
             const validPages = ['project', 'projects', 'pcb', 'pcbs', 'rework', 'reworks', 'owners', 'tags'];
             
             if (validPages.includes(path)) {
@@ -159,6 +166,18 @@ export function UrlManager() {
     // 3. Strictly validate PCBs when data loads
     useEffect(() => {
         if (activeTab === 'pcbs' && expandedPcb && pcbs.length > 0) {
+             if (expandedPcb.startsWith('SHORT:')) {
+                 const code = expandedPcb.slice(6).toUpperCase();
+                 const pcb = pcbs.find(p => p.short_code && p.short_code.toUpperCase() === code);
+                 if (pcb) {
+                     useStore.getState().setExpandedPcb(pcb.board_number);
+                     useStore.getState().setIsolatedView(true);
+                 } else {
+                     useStore.getState().setPage('wrong_url');
+                 }
+                 return;
+             }
+             
              const exists = pcbs.some(p => p.board_number === expandedPcb);
              if (!exists) {
                  useStore.getState().setPage('wrong_url');

@@ -67,6 +67,7 @@ const initDb = () => {
             bom TEXT,
             project_id INTEGER,
             owner_id INTEGER,
+            short_code TEXT UNIQUE,
             FOREIGN KEY (project_id) REFERENCES projects (id),
             FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`);
@@ -113,6 +114,7 @@ const initDb = () => {
         db.run(`ALTER TABLE pcbs ADD COLUMN board_rev TEXT`, () => {});
         db.run(`ALTER TABLE pcbs ADD COLUMN silicon_rev TEXT`, () => {});
         db.run(`ALTER TABLE pcbs ADD COLUMN silicon_corner TEXT`, () => {});
+        db.run(`ALTER TABLE pcbs ADD COLUMN short_code TEXT`, () => {});
         
         // Migration: Add email column to owners if it doesn't exist
         db.run(`ALTER TABLE owners ADD COLUMN email TEXT`, () => {});

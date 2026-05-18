@@ -137,6 +137,18 @@ db.all("SELECT id, formfactors FROM projects", [], (err, projects) => {
     }
 });
 
+// Migration: add short codes to existing PCBs
+db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err, pcbs) => {
+    if (!err && pcbs && pcbs.length > 0) {
+        pcbs.forEach(async pcb => {
+            try {
+                const code = await generateShortCode();
+                db.run("UPDATE pcbs SET short_code = ? WHERE id = ?", [code, pcb.id]);
+            } catch(e) {}
+        });
+    }
+});
+
 // Routes
 
 // Dashboard Summary
@@ -170,6 +182,22 @@ function generateCRC(input) {
         sum += char.charCodeAt(0) * (i + 1);
     }
     return CHARSET[sum % CHARSET.length];
+}
+
+function generateShortCode(attempt = 1) {
+    return new Promise((resolve, reject) => {
+        if (attempt > 20) return reject(new Error("Unable to generate short code"));
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // excluding I, O, 1, 0
+        let code = '';
+        for (let i = 0; i < 4; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        db.get("SELECT id FROM pcbs WHERE short_code = ?", [code], (err, row) => {
+            if (err) return reject(err);
+            if (row) resolve(generateShortCode(attempt + 1));
+            else resolve(code);
+        });
+    });
 }
 
 function sanitizeProjectName(name) {
@@ -328,13 +356,14 @@ app.get('/api/pcbs', (req, res) => {
                 silicon_rev: row.silicon_rev || '',
                 silicon_corner: row.silicon_corner || '',
                 bom: row.bom,
-                tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : []
+                tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : [],
+                short_code: row.short_code
             };
         }));
     });
 });
 
-app.post('/api/pcbs', (req, res) => {
+app.post('/api/pcbs', async (req, res) => {
     const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
@@ -347,11 +376,16 @@ app.post('/api/pcbs', (req, res) => {
         if (isNaN(val)) val = parseInt(numPart, 16);
         if (!isNaN(val)) numPart = val.toString();
     }
-    const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json({ id: this.lastID, board_number });
-    });
+    try {
+        const short_code = await generateShortCode();
+        const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ id: this.lastID, board_number, short_code });
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Owners API
