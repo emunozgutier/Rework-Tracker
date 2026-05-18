@@ -6,7 +6,9 @@ interface DemoState {
     setDemoMode: (val: boolean) => void;
 }
 
-const initialDemoState = typeof window !== 'undefined' ? window.location.hostname.includes('github.io') : false;
+const initialDemoState = typeof window !== 'undefined' 
+    ? window.location.hostname.includes('github.io') || window.location.pathname.includes('/demo') || window.location.search.includes('demo')
+    : false;
 
 export const useDemoStore = create<DemoState>()(
     (set) => ({
