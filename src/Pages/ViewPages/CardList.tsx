@@ -75,7 +75,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        if (type === 'pcbs' && expandedPcb && isolatedView && !hasAutoFiltered) {
+        if (type === 'pcbs' && expandedPcb && !expandedPcb.startsWith('SHORT:') && isolatedView && !hasAutoFiltered) {
             if (selectedBoardNumbers.length === 0) {
                 setSelectedBoardNumbers([expandedPcb]);
             }
