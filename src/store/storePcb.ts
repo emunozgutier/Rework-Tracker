@@ -25,6 +25,7 @@ export interface Pcb {
 interface PcbState {
     pcbs: Pcb[];
     loading: boolean;
+    hasFetched: boolean;
     error: string | null;
     fetchPcbs: () => Promise<void>;
     addPcb: (data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
@@ -54,6 +55,7 @@ interface PcbState {
 export const usePcbStore = create<PcbState>((set, get) => ({
     pcbs: [],
     loading: false,
+    hasFetched: false,
     error: null,
     selectedProjects: [],
     selectedRevisions: [],
@@ -92,9 +94,9 @@ export const usePcbStore = create<PcbState>((set, get) => ({
             const res = await apiFetch(`${API_BASE}/pcbs`);
             if (!res.ok) throw new Error('Failed to fetch pcbs');
             const data = await res.json();
-            set({ pcbs: data, loading: false });
+            set({ pcbs: data, loading: false, hasFetched: true });
         } catch (err: any) {
-            set({ error: err.message, loading: false });
+            set({ error: err.message, loading: false, hasFetched: true });
         }
     },
 

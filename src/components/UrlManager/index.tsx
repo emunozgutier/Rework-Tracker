@@ -41,6 +41,7 @@ export function UrlManager() {
 
     const pcbs = usePcbStore(state => state.pcbs);
     const loading = usePcbStore(state => state.loading);
+    const hasFetched = usePcbStore(state => state.hasFetched);
 
     // 1. Listen to POPSTATE to sync URL -> Store
     useEffect(() => {
@@ -167,11 +168,12 @@ export function UrlManager() {
 
     // 3. Strictly validate PCBs when data loads
     useEffect(() => {
-        if (activeTab === 'pcbs' && expandedPcb && !loading) {
+        if (activeTab === 'pcbs' && expandedPcb && hasFetched && !loading) {
              if (expandedPcb.startsWith('SHORT:')) {
                  const code = expandedPcb.slice(6).toUpperCase();
                  const pcb = pcbs.find(p => p.short_code && p.short_code.toUpperCase() === code);
                  if (pcb) {
+                     useStore.getState().setPage('pcbs');
                      useStore.getState().setExpandedPcb(pcb.board_number);
                      useStore.getState().setIsolatedView(true);
                  } else {
@@ -183,9 +185,11 @@ export function UrlManager() {
              const exists = pcbs.some(p => p.board_number === expandedPcb);
              if (!exists) {
                  useStore.getState().setPage('wrong_url');
+             } else {
+                 useStore.getState().setPage('pcbs');
              }
         }
-    }, [activeTab, expandedPcb, pcbs, loading]);
+    }, [activeTab, expandedPcb, pcbs, loading, hasFetched]);
 
     return null;
 }
