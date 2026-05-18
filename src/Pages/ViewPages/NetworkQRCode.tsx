@@ -7,6 +7,7 @@ import { usePcbStore } from '../../store/storePcb';
 
 export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
+    const [qrInfo, setQrInfo] = useState<{ version: number, size: number } | null>(null);
     const { qrModalBoard, setQrModalBoard } = useStore();
     const pcbs = usePcbStore(state => state.pcbs);
     const [useShortUrl, setUseShortUrl] = useState(true);
@@ -42,9 +43,13 @@ export function NetworkQRCode() {
         if (!url) return;
         const generateQR = async () => {
             try {
+                const info = QRCode.create(url, { errorCorrectionLevel: 'L' });
+                setQrInfo({ version: info.version, size: info.modules.size });
+
                 const dataUrl = await QRCode.toDataURL(url, {
                     margin: 2,
-                    width: 250,
+                    width: 400, // Generate high resolution
+                    errorCorrectionLevel: 'L', // Lowest error correction for simplest look
                     color: {
                         dark: '#000000',
                         light: '#ffffff'
@@ -121,7 +126,12 @@ export function NetworkQRCode() {
                     borderRadius: '12px',
                     marginBottom: '20px'
                 }}>
-                    {qrDataUrl && <img src={qrDataUrl} alt="PCB QR Code" style={{ display: 'block', width: '250px', height: '250px' }} />}
+                    {qrDataUrl && <img 
+                        src={qrDataUrl} 
+                        alt="PCB QR Code" 
+                        title={qrInfo ? `QR Version: ${qrInfo.version} (${qrInfo.size}x${qrInfo.size} modules)` : undefined}
+                        style={{ display: 'block', width: '250px', height: '250px' }} 
+                    />}
                 </div>
                 
                 {hasShortCode && (
