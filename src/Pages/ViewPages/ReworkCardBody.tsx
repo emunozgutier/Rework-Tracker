@@ -48,7 +48,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0, width: '100%' }}>
                     
                     <div className="rework-body-row">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '110px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '110px', justifyContent: 'center' }}>
                             <span style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600 }}>
                                 {new Date(rework.timestamp).toLocaleDateString()}
                             </span>
@@ -59,7 +59,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
 
                         <div className="rework-body-divider"></div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
                             <div style={{ 
                                 display: 'inline-flex', 
                                 alignItems: 'center', 
@@ -85,7 +85,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             }}>
                                 {rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'R swap' : (rework.rework_type || 'Minor')}
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '6px' }}>
                                 <span style={{ 
                                     background: 'rgba(255, 255, 255, 0.1)',
                                     color: 'var(--text)',
