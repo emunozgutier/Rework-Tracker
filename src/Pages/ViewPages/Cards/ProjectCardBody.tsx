@@ -21,7 +21,7 @@ interface ProjectCardBodyProps {
 
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
-    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage } = useStore();
+    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile } = useStore();
     
     // Get actual PCB objects for this project
     const projectPcbs = allPcbs.filter(p => p.project === project.name);
@@ -123,7 +123,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                 <EditButton 
                     onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
-                    label="Edit Project"
+                    label={isMobile ? "Edit" : "Edit Project"}
                 />
                 <ViewButton 
                     onClick={(e) => {
@@ -133,7 +133,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         setPage('pcbs');
                     }}
                     className="view-pcbs-btn"
-                    label="View PCBs Info"
+                    label={isMobile ? "View PCBs" : "View PCBs Info"}
                 />
             </div>
 
