@@ -46,6 +46,16 @@ describe('Projects API - Silicon Version', () => {
         expect(data.updated).toBeDefined();
     });
 
+    it('should verify the API returns revisions as an array correctly parsed', async () => {
+        const res = await fetch(`${API_URL}/projects`);
+        const projects = await res.json();
+        const project = projects.find((p: any) => p.id === projectId);
+        expect(project).toBeDefined();
+        expect(Array.isArray(project.revisions)).toBe(true);
+        expect(project.revisions).toContain('B0');
+        expect(project.revisions).toContain('A0');
+    });
+
     it('should delete the test project', async () => {
         if (!projectId) return;
         const res = await fetch(`${API_URL}/projects/${projectId}`, {
