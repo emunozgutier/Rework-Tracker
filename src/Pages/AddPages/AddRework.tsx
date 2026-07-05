@@ -116,7 +116,15 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const activePcb = pcbs.find(p => p.id.toString() === selectedPcb);
     const selectedProjData = projects.find(p => p.id === activePcb?.project_id);
     const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
-    const availableSiliconRevisions = selectedProjData?.revisions || [];
+    
+    let availableSiliconRevisions: string[] = [];
+    if (selectedProjData?.revisions) {
+        if (Array.isArray(selectedProjData.revisions)) {
+            availableSiliconRevisions = selectedProjData.revisions;
+        } else {
+            availableSiliconRevisions = (selectedProjData.revisions as unknown as string).split(',').map(r => r.trim());
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -153,6 +161,8 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
             const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
             const new_product = [foundPcbFlavor, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
             formData.append('new_product', new_product);
+            formData.append('new_silicon_rev', revPart);
+            formData.append('new_silicon_corner', cornerPart);
         }
         images.forEach(img => {
             formData.append('images', img);

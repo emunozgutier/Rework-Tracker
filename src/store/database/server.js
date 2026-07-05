@@ -466,7 +466,7 @@ app.get('/api/reworks', (req, res) => {
 });
 
 app.post('/api/reworks', upload.any(), (req, res) => {
-    const { pcb_id, title, description, owner_id, rework_type, new_product } = req.body;
+    const { pcb_id, title, description, owner_id, rework_type, new_product, new_silicon_rev, new_silicon_corner } = req.body;
     
     // 1. Get the PCB board_number
     db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [pcb_id], (err, row) => {
@@ -521,8 +521,15 @@ app.post('/api/reworks', upload.any(), (req, res) => {
                 if (err) return res.status(500).json({ error: err.message });
                 const reworkId = this.lastID;
                 
-                // 4. Update PCB if it's a Silicon Swap (skipping old legacy string update to prevent crash)
-                res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, title: title || null, rework_type: rework_type || 'Minor', image_path });
+                // 4. Update PCB if it's a Silicon Swap
+                if (rework_type === 'Silicon Swap' && new_silicon_rev !== undefined) {
+                    db.run("UPDATE pcbs SET silicon_rev = ?, silicon_corner = ? WHERE id = ?", [new_silicon_rev, new_silicon_corner, pcb_id], function(updateErr) {
+                        if (updateErr) return res.status(500).json({ error: updateErr.message });
+                        res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, title: title || null, rework_type, image_path, new_product });
+                    });
+                } else {
+                    res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, title: title || null, rework_type: rework_type || 'Minor', image_path });
+                }
             });
         });
     });
