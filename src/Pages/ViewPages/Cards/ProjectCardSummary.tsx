@@ -11,8 +11,8 @@ interface ProjectCardSummaryProps {
 
 export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
     return (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1, minWidth: '120px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Silicon Versions</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
                     {project.revisions?.length > 0 ? project.revisions.map((rev, i) => (
@@ -21,7 +21,7 @@ export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
                 </div>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1, minWidth: '120px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Silicon Corners</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
                     {project.silicon_corners ? project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean).map((sc: string, i: number) => (
@@ -30,7 +30,7 @@ export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
                 </div>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1, minWidth: '120px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>PCB Flavors</span>
                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
                     {project.formfactors && project.formfactors.length > 0 ? project.formfactors.map((ff, i) => (
@@ -39,7 +39,7 @@ export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
                 </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '80px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Total Count</span>
                 <span style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text)', lineHeight: '1', marginTop: '2px' }}>{project.pcb_count}</span>
             </div>
