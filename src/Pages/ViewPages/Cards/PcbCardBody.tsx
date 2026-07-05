@@ -118,10 +118,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     tabs={isMobile ? mobileTabsList : tabsList}
                     activeTab={activeTabIndex}
                     onTabChange={(t) => { setActiveTabIndex(t); setIsAssigningTag(false); }}
-                />
-            </div>
-
-            <div style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.02)', borderBottomLeftRadius: '12px', borderBottomRightRadius: '12px', border: '1px solid var(--border)', borderTop: 'none' }}>
+                >
                 {activeTabName === 'Rework' && (
                     <>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -134,12 +131,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                         setActiveTab('reworks'); 
                                     }}
                                     className=""
-                                    label="View All Reworks"
+                                    label="View Reworks"
+                                    icon={null}
                                     style={{ flex: 'none' }}
                                 />
                                 <AddButton 
                                     onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
-                                    label="Add Rework log"
+                                    label="Add Rework"
+                                    icon={null}
                                     style={{ flex: 'none' }}
                                 />
                             </div>
@@ -255,6 +254,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                         })()}
                     </>
                 )}
+            </FormTabs>
             </div>
 
             <RemoveTag 

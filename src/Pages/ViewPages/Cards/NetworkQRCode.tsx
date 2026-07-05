@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { COLORS } from '../../../store/storeStyles';
-import { X } from 'lucide-react';
 import { useStore } from '../../../store/useStore';
 import { usePcbStore } from '../../../store/storePcb';
+import { Popup } from '../../../components/Popup';
 
 export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
@@ -69,57 +69,13 @@ export function NetworkQRCode() {
     }
 
     return (
-        <div style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '24px'
-        }} onClick={() => setQrModalBoard(null)}>
-            <div className="item-card" style={{
-                cursor: 'default',
-                padding: '32px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3)',
-                position: 'relative',
-                maxWidth: '90%',
-                width: '380px',
-            }} onClick={(e) => e.stopPropagation()}>
-                <button 
-                    onClick={() => setQrModalBoard(null)}
-                    style={{
-                        position: 'absolute',
-                        top: '16px',
-                        right: '16px',
-                        background: 'rgba(255,255,255,0.1)',
-                        border: 'none',
-                        color: 'var(--text-muted)',
-                        cursor: 'pointer',
-                        padding: '8px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.color = '#fff';
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.color = 'var(--text-muted)';
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                    }}
-                    title="Close"
-                >
-                    <X size={20} />
-                </button>
-                <h3 style={{ margin: '0 0 16px 0', color: 'var(--text)', fontSize: '1.25rem', fontWeight: 600 }}>PCB Board Identity</h3>
+        <Popup 
+            isOpen={!!qrModalBoard} 
+            onClose={() => setQrModalBoard(null)} 
+            title="PCB Board Identity"
+            maxWidth="380px"
+        >
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                 <div style={{ 
                     backgroundColor: '#fff', 
                     padding: '16px', 
@@ -192,6 +148,6 @@ export function NetworkQRCode() {
                     </a>
                 </div>
             </div>
-        </div>
+        </Popup>
     );
 }
