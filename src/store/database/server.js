@@ -307,11 +307,9 @@ app.post('/api/projects', async (req, res) => {
             const newProjectId = this.lastID;
             
             if (flavors && flavors.length > 0) {
-                const stmt = db.prepare("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)");
                 flavors.forEach(f => {
-                    stmt.run([newProjectId, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])]);
+                    db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [newProjectId, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])]);
                 });
-                stmt.finalize();
             }
             
             res.status(201).json({ id: newProjectId, name: cleanName, project_key: finalProjectKey });
@@ -553,11 +551,9 @@ app.put('/api/projects/:id', (req, res) => {
             
             db.run("DELETE FROM pcb_flavors WHERE project_id = ?", [req.params.id], () => {
                 if (flavors && flavors.length > 0) {
-                    const stmt = db.prepare("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)");
                     flavors.forEach(f => {
-                        stmt.run([req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])]);
+                        db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])]);
                     });
-                    stmt.finalize();
                 }
             });
 
