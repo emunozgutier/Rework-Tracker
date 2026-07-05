@@ -6,10 +6,9 @@ import { useReworkStore } from '../../store/storeRework';
 interface ReworkViewProps {
     title: string;
     onAdd: () => void;
-    onEdit: (id: string | number) => void;
 }
 
-export function ReworkView({ title, onAdd, onEdit }: ReworkViewProps) {
+export function ReworkView({ title, onAdd }: ReworkViewProps) {
     const { reworks, loading: reworksLoading, fetchReworks, selectedBoards, setSelectedBoards } = useReworkStore();
 
     useEffect(() => {

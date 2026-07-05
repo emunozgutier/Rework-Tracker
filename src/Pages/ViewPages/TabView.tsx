@@ -34,10 +34,10 @@ export function TabView({ title, onAdd, onEdit }: TabViewProps) {
     let items = tags;
 
     if (selectedTagTypes && selectedTagTypes.length > 0) {
-        items = items.filter(tag => selectedTagTypes.includes(tag.type));
+        items = items.filter(tag => selectedTagTypes.includes(tag.type || ''));
     }
     if (selectedTagOwners && selectedTagOwners.length > 0) {
-        items = items.filter(tag => selectedTagOwners.includes(tag.owner_name));
+        items = items.filter(tag => selectedTagOwners.includes(tag.owner_name || ''));
     }
     if (searchQuery) {
         const sq = searchQuery.toLowerCase();

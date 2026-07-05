@@ -53,17 +53,17 @@ function App() {
       case 'sandbox': return <TestBoardTypo />;
       
       case 'projects':
-        return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;
+        return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
       case 'pcbs':
-        return <PcbView title="PCB Boards" onAdd={() => addItem('pcbs_add')} onEdit={(id) => editItem('pcbs_edit', id)} />;
+        return <PcbView title="PCB Boards" onAdd={() => addItem('pcbs_add')} />;
       case 'reworks':
-        return <ReworkView title="Rework History" onAdd={() => addItem('reworks_add')} onEdit={(id) => editItem('reworks_edit', id)} />;
+        return <ReworkView title="Rework History" onAdd={() => addItem('reworks_add')} />;
       case 'owners':
         return <UserView title="Owners" onAdd={() => addItem('owners_add')} onEdit={(id) => editItem('owners_edit', id)} />;
       case 'tags':
         return <TabView title="Tags" onAdd={() => addItem('tags_add')} onEdit={(id) => editItem('tags_edit', id)} />;
       default:
-        return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;
+        return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
     }
   };
 

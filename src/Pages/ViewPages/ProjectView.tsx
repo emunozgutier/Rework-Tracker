@@ -7,10 +7,9 @@ import { usePcbStore } from '../../store/storePcb';
 interface ProjectViewProps {
     title: string;
     onAdd: () => void;
-    onEdit: (id: string | number) => void;
 }
 
-export function ProjectView({ title, onAdd, onEdit }: ProjectViewProps) {
+export function ProjectView({ title, onAdd }: ProjectViewProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
     const { fetchPcbs } = usePcbStore();
 

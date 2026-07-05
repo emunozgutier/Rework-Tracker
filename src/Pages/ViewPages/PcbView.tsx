@@ -12,10 +12,9 @@ import { useStore } from '../../store/useStore';
 interface PcbViewProps {
     title: string;
     onAdd: () => void;
-    onEdit: (id: string | number) => void;
 }
 
-export function PcbView({ title, onAdd, onEdit }: PcbViewProps) {
+export function PcbView({ title, onAdd }: PcbViewProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
     const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, setSelectedBoardNumbers, resetFilters } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
@@ -59,16 +58,16 @@ export function PcbView({ title, onAdd, onEdit }: PcbViewProps) {
         items = items.filter(pcb => projNames.includes(pcb.project));
     }
     if (selectedRevisions.length > 0) {
-        items = items.filter(pcb => selectedRevisions.includes(pcb.silicon_rev));
+        items = items.filter(pcb => selectedRevisions.includes(pcb.silicon_rev || ''));
     }
     if (selectedCorners.length > 0) {
-        items = items.filter(pcb => selectedCorners.includes(pcb.silicon_corner));
+        items = items.filter(pcb => selectedCorners.includes(pcb.silicon_corner || ''));
     }
     if (selectedFlavors.length > 0) {
-        items = items.filter(pcb => selectedFlavors.includes(pcb.board_flavor));
+        items = items.filter(pcb => selectedFlavors.includes(pcb.board_flavor || ''));
     }
     if (selectedPcbRevs.length > 0) {
-        items = items.filter(pcb => selectedPcbRevs.includes(pcb.board_rev));
+        items = items.filter(pcb => selectedPcbRevs.includes(pcb.board_rev || ''));
     }
     if (selectedTags.length > 0) {
         items = items.filter(pcb => selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))));
