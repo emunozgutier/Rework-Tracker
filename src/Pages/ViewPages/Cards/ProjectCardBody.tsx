@@ -53,11 +53,11 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                 if (percentage >= 100) {
                     clearInterval(intervalRef.current);
                     // Trigger navigation
+                    setActiveTab('pcbs');
                     setSelectedBoardNumbers([pcb.board_number]);
                     setExpandedPcb(pcb.board_number);
                     setIsolatedView(true);
                     setPage('pcbs');
-                    setActiveTab('pcbs');
                 }
             }, 30);
         };
@@ -128,9 +128,9 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                 <ViewButton 
                     onClick={(e) => {
                         e.stopPropagation();
+                        setActiveTab('pcbs');
                         setSelectedProjects([project.id.toString()]);
                         setPage('pcbs');
-                        setActiveTab('pcbs');
                     }}
                     className="view-pcbs-btn"
                     label="View PCBs Info"
