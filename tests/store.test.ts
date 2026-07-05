@@ -74,6 +74,9 @@ describe('Store and Database Integration Tests', () => {
             project_id: projectId,
             owner_id: ownerId
         });
+        if (!success) {
+            console.log("addPcb failed with store error:", usePcbStore.getState().error);
+        }
         expect(success).toBe(true);
         
         const updatedStore = usePcbStore.getState();
@@ -145,10 +148,15 @@ describe('Store and Database Integration Tests', () => {
     it('should add a rework', async () => {
         const store = useReworkStore.getState();
         const success = await store.addRework({
-            pcb_id: pcbId,
-            description: 'Test rework action',
+            pcb_id: pcbId.toString(),
+            title: 'Test Rework',
+            description: 'Vitest test description',
+            status: 'Completed',
             owner_id: ownerId ? ownerId.toString() : '-1'
         });
+        if (!success) {
+            console.log("addRework failed with store error:", useReworkStore.getState().error);
+        }
         expect(success).toBe(true);
     });
 

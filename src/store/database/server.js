@@ -43,7 +43,7 @@ app.use(apiLoggerMiddleware);
 app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures')));
 
 // Initialize Database
-initDb();
+initDb().then(() => {
 
 
 // Migration: Split product_name_and_rev into board_flavor, board_rev, silicon_rev, silicon_corner
@@ -149,6 +149,15 @@ db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err, pcbs) => {
             } catch(e) {}
         });
     }
+});
+
+    // Start Server
+    app.listen(port, '0.0.0.0', () => {
+        console.log(`Server running at http://0.0.0.0:${port}`);
+    });
+}).catch(err => {
+    console.error("Database initialization failed:", err);
+    process.exit(1);
 });
 
 // Routes
@@ -661,13 +670,41 @@ app.put('/api/pcbs/:id', (req, res) => {
 });
 
 app.delete('/api/pcbs/:id', (req, res) => {
-    const pcbId = req.params.id;
-    db.serialize(() => {
-        db.run("DELETE FROM reworks WHERE pcb_id = ?", [pcbId]);
-        db.run("DELETE FROM pcb_tags WHERE pcb_id = ?", [pcbId]);
-        db.run("DELETE FROM pcbs WHERE id = ?", [pcbId], function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ deleted: this.changes });
+    const pcbId = parseInt(req.params.id, 10);
+    const checkQuery = `
+        SELECT 
+            created_at, 
+            (SELECT COUNT(*) FROM reworks WHERE pcb_id = pcbs.id) as rework_count 
+        FROM pcbs 
+        WHERE id = ?
+    `;
+    db.get(checkQuery, [pcbId], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "PCB not found" });
+
+        if (row.rework_count > 0) {
+            return res.status(400).json({ error: "Cannot delete PCB because it has rework logs attached." });
+        }
+
+        let daysDiff = 999; // Default to blocked if no created_at
+        if (row.created_at) {
+            const dateStr = row.created_at.includes('T') ? row.created_at : row.created_at.replace(' ', 'T') + 'Z';
+            const createdAt = new Date(dateStr);
+            if (!isNaN(createdAt.getTime())) {
+                daysDiff = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+            }
+        }
+
+        if (daysDiff > 3) {
+            return res.status(400).json({ error: "Cannot delete PCB because it was created more than 3 days ago." });
+        }
+
+        db.serialize(() => {
+            db.run("DELETE FROM pcb_tags WHERE pcb_id = ?", [pcbId]);
+            db.run("DELETE FROM pcbs WHERE id = ?", [pcbId], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({ deleted: this.changes });
+            });
         });
     });
 });
@@ -850,7 +887,4 @@ app.post('/api/test/cleanup', (req, res) => {
     });
 });
 
-// Start Server
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server running at http://0.0.0.0:${port}`);
-});
+

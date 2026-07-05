@@ -92,6 +92,19 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const pcbReworks = reworks.filter((r: any) => r.pcb_id === pcb.id);
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+    const hasReworks = pcbReworks.length > 0;
+    let daysSinceCreation = 999;
+    if (pcb.created_at) {
+        const createdAt = new Date(pcb.created_at.includes('T') ? pcb.created_at : pcb.created_at.replace(' ', 'T') + 'Z');
+        if (!isNaN(createdAt.getTime())) {
+            daysSinceCreation = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+        }
+    }
+    const cannotDelete = hasReworks || daysSinceCreation > 3;
+    const deleteTooltip = hasReworks 
+        ? "Cannot delete PCB because it has rework logs attached" 
+        : (daysSinceCreation > 3 ? "Cannot delete PCB because it was created more than 3 days ago" : "");
+
     return (
         <div className="card-expanded-content">
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -109,6 +122,12 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     <DeleteButton 
                         onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
                         label={isMobile ? "Delete" : "Delete PCB"}
+                        disabled={cannotDelete}
+                        title={deleteTooltip}
+                        style={{
+                            opacity: cannotDelete ? 0.35 : 1,
+                            cursor: cannotDelete ? 'not-allowed' : 'pointer'
+                        }}
                     />
                 )}
             </div>

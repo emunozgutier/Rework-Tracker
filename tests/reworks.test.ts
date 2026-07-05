@@ -1,5 +1,8 @@
+/**
+ * @vitest-environment node
+ */
 import { describe, it, expect, afterAll } from 'vitest';
-import { cleanupTestData } from './cleanup';
+import { cleanupTestData, updateCreatedAt } from './cleanup';
 
 const API_URL = 'http://localhost:5002/api';
 
@@ -66,9 +69,37 @@ describe('Reworks API - Silicon Swap', () => {
         expect(pcb.product).toBe('Flavor1 B0');
     });
 
-    it('should clean up', async () => {
-        await fetch(`${API_URL}/pcbs/${pcbId}`, { method: 'DELETE' });
-        await fetch(`${API_URL}/projects/${projectId}`, { method: 'DELETE' });
+    it('should block deleting PCB if it has rework logs', async () => {
+        const deleteRes = await fetch(`${API_URL}/pcbs/${pcbId}`, { method: 'DELETE' });
+        expect(deleteRes.status).toBe(400);
+        const data = await deleteRes.json();
+        expect(data.error).toContain('rework logs');
+    });
+
+    it('should block deleting PCB if created more than 3 days ago', async () => {
+        // Create a new PCB without any rework logs
+        const resPcb = await fetch(`${API_URL}/pcbs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                project_id: projectId,
+                board_number: '9999',
+                board_flavor: 'Flavor1',
+                silicon_rev: 'A0'
+            })
+        });
+        expect(resPcb.status).toBe(201);
+        const pcbData = await resPcb.json();
+        const tempPcbId = pcbData.id;
+
+        // Update its created_at to 4 days ago
+        await updateCreatedAt(tempPcbId, 4);
+
+        // Verify delete request now fails with 400
+        const deleteRes = await fetch(`${API_URL}/pcbs/${tempPcbId}`, { method: 'DELETE' });
+        expect(deleteRes.status).toBe(400);
+        const data = await deleteRes.json();
+        expect(data.error).toContain('3 days');
     });
 
     afterAll(async () => {

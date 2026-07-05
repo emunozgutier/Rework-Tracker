@@ -44,7 +44,7 @@ export function RemoveTag({ isOpen, onClose, onConfirm, tag, pcb }: RemoveTagPro
     return (
         <Popup isOpen={isOpen} onClose={onClose} title={titleElement} maxWidth="500px">
             <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
-                You are about to permanently remove the tag <strong style={{color: 'var(--text)'}}>{tag.name}</strong> from PCB <strong style={{color: 'var(--accent)'}}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></strong>. This action cannot be undone.
+                You are about to permanently remove the tag <strong style={{color: 'var(--text)'}}>{tag.name}</strong> from PCB <span className="board-num" style={{ fontWeight: 700, color: 'var(--text)' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></span>. This action cannot be undone.
             </p>
 
             <div style={{ marginBottom: '24px' }}>

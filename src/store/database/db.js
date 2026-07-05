@@ -9,8 +9,9 @@ const dbPath = path.resolve(__dirname, 'pcb_tracker.db');
 const db = new sqlite3.Database(dbPath);
 
 const initDb = () => {
-    db.serialize(() => {
-        db.run('PRAGMA foreign_keys = ON');
+    return new Promise((resolve, reject) => {
+        db.serialize(() => {
+            db.run('PRAGMA foreign_keys = ON');
         
         // Projects Table
         db.run(`CREATE TABLE IF NOT EXISTS projects (
@@ -68,6 +69,7 @@ const initDb = () => {
             project_id INTEGER,
             owner_id INTEGER,
             short_code TEXT UNIQUE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (project_id) REFERENCES projects (id),
             FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`);
@@ -118,7 +120,17 @@ const initDb = () => {
         
         // Migration: Add email column to owners if it doesn't exist
         db.run(`ALTER TABLE owners ADD COLUMN email TEXT`, () => {});
+        
+        db.run(`ALTER TABLE pcbs ADD COLUMN created_at DATETIME`, (err) => {
+            if (err) {
+                console.log("Migration created_at log:", err.message);
+            } else {
+                console.log("Migration created_at: successfully created column!");
+            }
+            resolve();
+        });
     });
+});
 };
 
 export { db, initDb };
