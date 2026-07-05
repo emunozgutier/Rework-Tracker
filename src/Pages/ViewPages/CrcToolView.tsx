@@ -1,4 +1,4 @@
-export function CrcTool() {
+export function CrcToolView() {
     return (
         <div className="card-list-container">
             <div className="list-header" style={{ flexWrap: 'wrap', gap: '16px' }}>
