@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { cleanupTestData } from './cleanup';
 import request from 'supertest';
 
 // Assuming server is running on localhost:5002, or we could just use a fetch test
@@ -71,9 +72,9 @@ describe('Projects API - Silicon Version', () => {
 
     afterAll(async () => {
         try {
-            await fetch(`${API_URL}/test/cleanup`, { method: 'POST' });
+            await cleanupTestData();
         } catch (e) {
-            console.error('Failed to run test database cleanup:', e);
+            console.error('Failed to run database cleanup:', e);
         }
     });
 });

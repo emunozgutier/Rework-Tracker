@@ -1,4 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest';
+import { cleanupTestData } from './cleanup';
 
 const API_URL = 'http://localhost:5002/api';
 
@@ -72,9 +73,9 @@ describe('Reworks API - Silicon Swap', () => {
 
     afterAll(async () => {
         try {
-            await fetch(`${API_URL}/test/cleanup`, { method: 'POST' });
+            await cleanupTestData();
         } catch (e) {
-            console.error('Failed to run test database cleanup:', e);
+            console.error('Failed to run database cleanup:', e);
         }
     });
 });

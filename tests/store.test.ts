@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { cleanupTestData } from './cleanup';
 import { useProjectStore } from '../src/store/storeProject';
 import { usePcbStore } from '../src/store/storePcb';
 import { useOwnerStore } from '../src/store/storeOwner';
@@ -152,11 +153,10 @@ describe('Store and Database Integration Tests', () => {
     });
 
     afterAll(async () => {
-        // Centralized API cleanup
         try {
-            await fetch('http://localhost:5002/api/test/cleanup', { method: 'POST' });
+            await cleanupTestData();
         } catch (e) {
-            console.error('Failed to run test database cleanup:', e);
+            console.error('Failed to run database cleanup:', e);
         }
     });
 });
