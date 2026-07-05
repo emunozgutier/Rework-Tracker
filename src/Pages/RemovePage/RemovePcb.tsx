@@ -20,7 +20,22 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
     if (!isOpen || !pcb) return null;
 
     const expectedText = pcb.board_number;
-    const isValid = inputValue === expectedText;
+    
+    // Support either full board number (with CRC) or base board number (without CRC)
+    let expectedTextWithoutCrc = expectedText;
+    if (expectedText.length > 5 && expectedText.includes('-')) {
+        const parts = expectedText.split('-');
+        if (parts.length >= 2) {
+            const lastPart = parts[parts.length - 1];
+            if (lastPart.length > 1 && /^[a-zA-Z]$/.test(lastPart.slice(-1))) {
+                expectedTextWithoutCrc = expectedText.slice(0, -1);
+            }
+        }
+    }
+
+    const cleanInput = inputValue.trim().toLowerCase();
+    const isValid = cleanInput === expectedText.trim().toLowerCase() || 
+                    cleanInput === expectedTextWithoutCrc.trim().toLowerCase();
 
     const handleConfirm = () => {
         if (isValid) {
