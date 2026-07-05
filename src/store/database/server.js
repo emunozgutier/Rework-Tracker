@@ -127,7 +127,9 @@ db.all("SELECT id, formfactors FROM projects", [], (err, projects) => {
                         ff.name, 
                         JSON.stringify(ff.revisions || []), 
                         JSON.stringify(ff.boms || [])
-                    ]);
+                    ], (err) => {
+                        if (err) console.error("Migration error inserting flavor:", err.message);
+                    });
                 });
             }
         });
@@ -308,7 +310,9 @@ app.post('/api/projects', async (req, res) => {
             
             if (flavors && flavors.length > 0) {
                 flavors.forEach(f => {
-                    db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [newProjectId, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])]);
+                    db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [newProjectId, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (err) => {
+                        if (err) console.error("Error inserting flavor (POST):", err.message, f);
+                    });
                 });
             }
             
@@ -552,7 +556,9 @@ app.put('/api/projects/:id', (req, res) => {
             db.run("DELETE FROM pcb_flavors WHERE project_id = ?", [req.params.id], () => {
                 if (flavors && flavors.length > 0) {
                     flavors.forEach(f => {
-                        db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])]);
+                        db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (err) => {
+                            if (err) console.error("Error inserting flavor (PUT):", err.message, f);
+                        });
                     });
                 }
             });

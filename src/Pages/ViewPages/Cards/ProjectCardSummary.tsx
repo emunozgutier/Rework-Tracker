@@ -15,7 +15,7 @@ export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Silicon Versions</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
-                    {project.revisions?.length > 0 ? project.revisions.map((rev, i) => (
+                    {(Array.isArray(project.revisions) ? project.revisions : (project.revisions ? (project.revisions as unknown as string).split(',').map(r => r.trim()) : [])).length > 0 ? (Array.isArray(project.revisions) ? project.revisions : (project.revisions as unknown as string).split(',').map(r => r.trim())).map((rev, i) => (
                         <span key={i} className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>{rev}</span>
                     )) : <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>None defined</span>}
                 </div>
