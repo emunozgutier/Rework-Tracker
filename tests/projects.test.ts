@@ -54,6 +54,11 @@ describe('Projects API - Silicon Version', () => {
         expect(Array.isArray(project.revisions)).toBe(true);
         expect(project.revisions).toContain('B0');
         expect(project.revisions).toContain('A0');
+
+        // Verify that the PCB flavors are correctly parsed and returned
+        expect(Array.isArray(project.flavors)).toBe(true);
+        expect(project.flavors.length).toBe(1);
+        expect(project.flavors[0].name).toBe('Flavor1');
     });
 
     it('should delete the test project', async () => {
@@ -62,5 +67,13 @@ describe('Projects API - Silicon Version', () => {
             method: 'DELETE'
         });
         expect(res.status).toBe(200);
+    });
+
+    afterAll(async () => {
+        try {
+            await fetch(`${API_URL}/test/cleanup`, { method: 'POST' });
+        } catch (e) {
+            console.error('Failed to run test database cleanup:', e);
+        }
     });
 });

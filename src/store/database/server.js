@@ -779,6 +779,77 @@ app.delete('/api/reworks/:id', (req, res) => {
     });
 });
 
+app.post('/api/test/cleanup', (req, res) => {
+    db.serialize(() => {
+        db.run('PRAGMA foreign_keys = OFF');
+        
+        // 1. Delete pcb_tags of test pcbs
+        db.run(`
+            DELETE FROM pcb_tags 
+            WHERE pcb_id IN (
+                SELECT id FROM pcbs 
+                WHERE board_number LIKE '%vitest%' 
+                   OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+            )
+        `);
+
+        // 2. Delete reworks of test pcbs or test owners
+        db.run(`
+            DELETE FROM reworks 
+            WHERE pcb_id IN (
+                SELECT id FROM pcbs 
+                WHERE board_number LIKE '%vitest%' 
+                   OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+            )
+            OR owner_id IN (SELECT id FROM owners WHERE name LIKE '%vitest%' OR username LIKE '%vitest%')
+            OR description LIKE '%Vitest%'
+            OR title LIKE '%Silicon Swap to B0%'
+        `);
+
+        // 3. Delete pcbs
+        db.run(`
+            DELETE FROM pcbs 
+            WHERE board_number LIKE '%vitest%' 
+               OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+               OR owner_id IN (SELECT id FROM owners WHERE name LIKE '%vitest%' OR username LIKE '%vitest%')
+        `);
+
+        // 4. Delete pcb_flavors
+        db.run(`
+            DELETE FROM pcb_flavors 
+            WHERE project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+        `);
+
+        // 5. Delete projects
+        db.run(`
+            DELETE FROM projects 
+            WHERE name LIKE '%vitest%' 
+               OR name LIKE '%Test Project%' 
+               OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR')
+        `);
+
+        // 6. Delete tags
+        db.run(`
+            DELETE FROM tags 
+            WHERE name LIKE '%vitest%' 
+               OR name LIKE '%test%' 
+               OR owner_id IN (SELECT id FROM owners WHERE name LIKE '%vitest%' OR username LIKE '%vitest%')
+        `);
+
+        // 7. Delete owners
+        db.run(`
+            DELETE FROM owners 
+            WHERE name LIKE '%vitest%' 
+               OR username LIKE '%vitest%'
+        `);
+
+        db.run('PRAGMA foreign_keys = ON', (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ message: "Test data successfully cleaned up" });
+        });
+    });
+});
+
 // Start Server
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server running at http://0.0.0.0:${port}`);

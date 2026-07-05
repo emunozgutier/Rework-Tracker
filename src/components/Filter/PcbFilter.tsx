@@ -146,7 +146,7 @@ export function PcbFilter() {
                     {(() => {
                         const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allFlavors = new Set<string>();
-                        activeProjects.forEach((p: any) => { if (p.formfactors) p.formfactors.forEach((ff: any) => allFlavors.add(ff.name)); });
+                        activeProjects.forEach((p: any) => { if (p.flavors) p.flavors.forEach((ff: any) => allFlavors.add(ff.name)); });
 
                         return Array.from(allFlavors).sort().map(ff => {
                             const count = pcbs.filter(pcb => pcb.board_flavor === ff && matchPcb(pcb, 'flavor')).length;
@@ -161,8 +161,8 @@ export function PcbFilter() {
                         const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allPcbRevs = new Set<string>();
                         activeProjects.forEach((p: any) => { 
-                            if (p.formfactors) {
-                                p.formfactors.forEach((ff: any) => {
+                            if (p.flavors) {
+                                p.flavors.forEach((ff: any) => {
                                     if (ff.revisions) {
                                         ff.revisions.forEach((r: string) => allPcbRevs.add(r));
                                     }

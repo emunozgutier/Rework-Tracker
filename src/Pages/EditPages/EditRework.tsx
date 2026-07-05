@@ -65,8 +65,8 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
             let foundFormfactor = '';
             let finalPcbRev = '';
 
-            if (selectedProjData.formfactors && selectedProjData.formfactors.length > 0) {
-                for (const ff of selectedProjData.formfactors) {
+            if (selectedProjData.flavors && selectedProjData.flavors.length > 0) {
+                for (const ff of selectedProjData.flavors) {
                     if (rawProduct.startsWith(ff.name)) {
                         foundFormfactor = ff.name;
                         rawProduct = rawProduct.slice(ff.name.length).trim();

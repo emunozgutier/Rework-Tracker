@@ -1,7 +1,7 @@
 /**
  * @vitest-environment node
  */
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 describe('Rework POST /api/reworks Multipart Uploads', () => {
     
@@ -74,6 +74,14 @@ describe('Rework POST /api/reworks Multipart Uploads', () => {
         } catch (e) {
             console.error('Test server connection failed:', e);
             throw e;
+        }
+    });
+
+    afterAll(async () => {
+        try {
+            await fetch('http://localhost:5002/api/test/cleanup', { method: 'POST' });
+        } catch (e) {
+            console.error('Failed to run test database cleanup:', e);
         }
     });
 });

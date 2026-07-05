@@ -14,7 +14,7 @@ interface ProjectCardBodyProps {
         pcb_count: number;
         pcbs: string[];
         revisions: string[];
-        formfactors?: { name: string; revisions: string[] }[];
+        flavors?: { name: string; revisions: string[] }[];
         silicon_corners?: string;
     };
 }

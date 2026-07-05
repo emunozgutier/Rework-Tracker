@@ -4,7 +4,7 @@ interface ProjectCardSummaryProps {
     project: {
         pcb_count: number;
         revisions: string[];
-        formfactors?: { name: string; revisions: string[] }[];
+        flavors?: { name: string; revisions: string[] }[];
         silicon_corners?: string;
     };
 }
@@ -33,7 +33,7 @@ export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>PCB Flavors</span>
                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
-                    {project.formfactors && project.formfactors.length > 0 ? project.formfactors.map((ff, i) => (
+                    {project.flavors && project.flavors.length > 0 ? project.flavors.map((ff, i) => (
                         <span key={i} className="pcb-pill" style={{ padding: '2px 8px' }}>{ff.name}</span>
                     )) : <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>None assigned</span>}
                 </div>

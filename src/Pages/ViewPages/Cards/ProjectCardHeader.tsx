@@ -6,7 +6,7 @@ interface ProjectCardHeaderProps {
         name: string;
         pcb_count: number;
         revisions: string[];
-        formfactors?: any[];
+        flavors?: any[];
         project_key: string;
     };
     isExpanded: boolean;
@@ -47,7 +47,7 @@ export function ProjectCardHeader({ project, isExpanded, onToggle }: ProjectCard
                     }}>
                         <span style={{ fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>PCBs</span>
                         <span style={{ opacity: 0.3 }}>|</span>
-                        <span style={{ whiteSpace: 'nowrap' }}>{project.formfactors?.length || 0} Flavors</span>
+                        <span style={{ whiteSpace: 'nowrap' }}>{project.flavors?.length || 0} Flavors</span>
                         <span style={{ opacity: 0.3 }}>|</span>
                         <span style={{ whiteSpace: 'nowrap' }}>{project.pcb_count} Count</span>
                     </span>

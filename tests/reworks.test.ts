@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
 
 const API_URL = 'http://localhost:5002/api';
 
@@ -68,5 +68,13 @@ describe('Reworks API - Silicon Swap', () => {
     it('should clean up', async () => {
         await fetch(`${API_URL}/pcbs/${pcbId}`, { method: 'DELETE' });
         await fetch(`${API_URL}/projects/${projectId}`, { method: 'DELETE' });
+    });
+
+    afterAll(async () => {
+        try {
+            await fetch(`${API_URL}/test/cleanup`, { method: 'POST' });
+        } catch (e) {
+            console.error('Failed to run test database cleanup:', e);
+        }
     });
 });

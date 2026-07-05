@@ -152,26 +152,11 @@ describe('Store and Database Integration Tests', () => {
     });
 
     afterAll(async () => {
-        // Cleanup test data
-        const pcbs = usePcbStore.getState();
-        const reworks = useReworkStore.getState();
-        const projects = useProjectStore.getState();
-        
-        if (pcbId) {
-            const rwks = useReworkStore.getState().reworks.filter(r => r.pcb_id === pcbId);
-            for (const r of rwks) await fetch(`http://localhost:5002/api/reworks/${r.id}`, { method: 'DELETE' });
-            
-            await fetch(`http://localhost:5002/api/pcbs/${pcbId}`, { method: 'DELETE' });
+        // Centralized API cleanup
+        try {
+            await fetch('http://localhost:5002/api/test/cleanup', { method: 'POST' });
+        } catch (e) {
+            console.error('Failed to run test database cleanup:', e);
         }
-        if (projectId) await projects.deleteProject(projectId);
-        
-        if (projectId2) {
-            const pcbs2 = usePcbStore.getState().pcbs.filter(p => (p as any).project.toLowerCase() === 'VitestProjectTwo'.toLowerCase());
-            for (const p of pcbs2) await fetch(`http://localhost:5002/api/pcbs/${p.id}`, { method: 'DELETE' });
-            await projects.deleteProject(projectId2);
-        }
-        
-        if (ownerId) await fetch(`http://localhost:5002/api/owners/${ownerId}`, { method: 'DELETE' });
-        if (tagId) await fetch(`http://localhost:5002/api/tags/${tagId}`, { method: 'DELETE' });
     });
 });
