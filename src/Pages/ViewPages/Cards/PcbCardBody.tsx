@@ -101,9 +101,11 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
         }
     }
     const cannotDelete = hasReworks || daysSinceCreation > 3;
-    const deleteTooltip = hasReworks 
-        ? "Cannot delete PCB because it has rework logs attached" 
-        : (daysSinceCreation > 3 ? "Cannot delete PCB because it was created more than 3 days ago" : "");
+    const deleteTooltip = (hasReworks && daysSinceCreation > 3)
+        ? "Cannot delete PCB: it is older than 3 days and has reworks (delete them first)"
+        : hasReworks 
+            ? "Cannot delete PCB: it has reworks (delete them first)" 
+            : (daysSinceCreation > 3 ? "Cannot delete PCB: it is older than 3 days" : "");
 
     return (
         <div className="card-expanded-content">

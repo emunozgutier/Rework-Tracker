@@ -48,57 +48,64 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0, width: '100%' }}>
                     
                     <div className="rework-body-row">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '110px', justifyContent: 'center' }}>
-                            <span style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600 }}>
-                                {new Date(rework.timestamp).toLocaleDateString()}
-                            </span>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                {new Date(rework.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                        </div>
-
-                        <div className="rework-body-divider"></div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
-                            <div style={{ 
-                                display: 'inline-flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center',
-                                padding: '4px 12px', 
-                                background: rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.1)' 
-                                          : rework.rework_type === 'Silicon Swap' ? COLORS.purpleLight 
-                                : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeLight
-                                          : 'rgba(59, 130, 246, 0.1)', 
-                                color: rework.rework_type === 'Major' ? '#ef4444' 
-                                     : rework.rework_type === 'Silicon Swap' ? COLORS.purple 
-                                     : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange
-                                     : '#3b82f6', 
-                                borderRadius: '16px', 
-                                fontSize: '0.75rem', 
-                                fontWeight: 700,
-                                border: `1px solid ${
-                                    rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.2)' 
-                                  : rework.rework_type === 'Silicon Swap' ? COLORS.purpleDark 
-                                  : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeDark
-                                  : 'rgba(59, 130, 246, 0.2)'
-                                }`
-                            }}>
-                                {rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'R swap' : (rework.rework_type || 'Minor')}
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '6px' }}>
-                                <span style={{ 
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    color: 'var(--text)',
-                                    padding: '2px 8px',
-                                    borderRadius: '12px',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 600,
-                                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                                    display: 'inline-flex',
-                                    alignItems: 'center'
-                                }}>
-                                    @{rework.owner_username || rework.owner_name || rework.owner || 'System'}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0, minWidth: 0 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '100px', justifyContent: 'center' }}>
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600 }}>
+                                    {new Date(rework.timestamp).toLocaleDateString()}
                                 </span>
+                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                    {new Date(rework.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            </div>
+
+                            <div className="rework-body-divider"></div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center', minWidth: 0 }}>
+                                <div style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    padding: '4px 12px', 
+                                    background: rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.1)' 
+                                              : rework.rework_type === 'Silicon Swap' ? COLORS.purpleLight 
+                                    : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeLight
+                                              : 'rgba(59, 130, 246, 0.1)', 
+                                    color: rework.rework_type === 'Major' ? '#ef4444' 
+                                         : rework.rework_type === 'Silicon Swap' ? COLORS.purple 
+                                         : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange
+                                         : '#3b82f6', 
+                                    borderRadius: '16px', 
+                                    fontSize: '0.75rem', 
+                                    fontWeight: 700,
+                                    border: `1px solid ${
+                                        rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.2)' 
+                                      : rework.rework_type === 'Silicon Swap' ? COLORS.purpleDark 
+                                      : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeDark
+                                      : 'rgba(59, 130, 246, 0.2)'
+                                    }`,
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    {rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'R swap' : (rework.rework_type || 'Minor')}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '6px' }}>
+                                    <span style={{ 
+                                        background: 'rgba(255, 255, 255, 0.1)',
+                                        color: 'var(--text)',
+                                        padding: '2px 8px',
+                                        borderRadius: '12px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 600,
+                                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        whiteSpace: 'nowrap',
+                                        textOverflow: 'ellipsis',
+                                        overflow: 'hidden',
+                                        maxWidth: '120px'
+                                    }}>
+                                        @{rework.owner_username || rework.owner_name || rework.owner || 'System'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
