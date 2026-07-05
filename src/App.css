@@ -62,9 +62,7 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
-  background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #1e293b;
   padding: 8px;
   border-radius: 16px;
   border: 1px solid var(--border);
@@ -117,7 +115,7 @@ body {
     bottom: auto; 
     width: 100%; 
     left: 0; 
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     border-radius: 12px;
     gap: 8px; /* Reduced gap */
     padding: 6px; /* Reduced padding */
@@ -178,7 +176,7 @@ body {
 .card-list-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .list-header {

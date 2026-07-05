@@ -160,7 +160,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
 
     return (
         <div className="card-list-container">
-            <div className="list-header" style={{ marginBottom: (type === 'pcbs' || type === 'tags') ? '12px' : '24px', flexWrap: 'wrap', gap: '16px' }}>
+            <div className="list-header" style={{ flexWrap: 'wrap', gap: '16px' }}>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <h2 style={{ margin: 0 }}>{title}</h2>
                     {(type === 'pcbs' || type === 'tags') && (
