@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { ProjectCardHeader } from './ProjectCardHeader';
 import { ProjectCardBody } from './ProjectCardBody';
-import { useStore } from '../../store/useStore';
+import { useStore } from '../../../store/useStore';
 
 interface ProjectCardProps {
     project: {

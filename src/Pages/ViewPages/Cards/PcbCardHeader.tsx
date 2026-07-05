@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { BoardName } from '../../components/BoardName';
+import { BoardName } from '../../../components/BoardName';
 
 interface PcbCardHeaderProps {
     pcb: any;

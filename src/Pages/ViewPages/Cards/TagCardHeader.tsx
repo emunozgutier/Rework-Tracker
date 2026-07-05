@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
-import { formatTagName } from '../../store/storeTag';
+import { formatTagName } from '../../../store/storeTag';
 
 interface TagCardHeaderProps {
     tag: any;

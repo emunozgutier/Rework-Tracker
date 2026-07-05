@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { PictureCard } from './PictureCard';
-import { useStore } from '../../store/useStore';
-import { EditButton, ViewButton } from '../../components/forms/ActionButtons';
-import { COLORS } from '../../store/storeStyles';
+import { useStore } from '../../../store/useStore';
+import { EditButton, ViewButton } from '../../../components/forms/ActionButtons';
+import { COLORS } from '../../../store/storeStyles';
 
 interface ReworkCardBodyProps {
     rework: any;

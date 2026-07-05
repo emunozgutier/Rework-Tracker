@@ -1,9 +1,9 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useStore } from '../../store/useStore';
-import { usePcbStore } from '../../store/storePcb';
-import { COLORS } from '../../store/storeStyles';
+import { useStore } from '../../../store/useStore';
+import { usePcbStore } from '../../../store/storePcb';
+import { COLORS } from '../../../store/storeStyles';
 
-import { BoardName } from '../../components/BoardName';
+import { BoardName } from '../../../components/BoardName';
 
 interface ReworkCardHeaderProps {
     rework: any;

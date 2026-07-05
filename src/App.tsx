@@ -2,9 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './App.css'
-import { NetworkQRCode } from './Pages/ViewPages/NetworkQRCode'
+import { NetworkQRCode } from './Pages/ViewPages/Cards/NetworkQRCode'
 import { TabBar } from './components/TabBar'
-import { CardList } from './Pages/ViewPages/CardList'
+import { ProjectView } from './Pages/ViewPages/ProjectView'
+import { PcbView } from './Pages/ViewPages/PcbView'
+import { ReworkView } from './Pages/ViewPages/ReworkView'
+import { UserView } from './Pages/ViewPages/UserView'
+import { TabView } from './Pages/ViewPages/TabView'
 import { AddProject } from './Pages/AddPages/AddProject'
 import { AddPCB } from './Pages/AddPages/AddPcb'
 import { AddUser } from './Pages/AddPages/AddUser'
@@ -49,17 +53,17 @@ function App() {
       case 'sandbox': return <TestBoardTypo />;
       
       case 'projects':
-        return <CardList type="projects" title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;
+        return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;
       case 'pcbs':
-        return <CardList type="pcbs" title="PCB Boards" onAdd={() => addItem('pcbs_add')} onEdit={(id) => editItem('pcbs_edit', id)} />;
+        return <PcbView title="PCB Boards" onAdd={() => addItem('pcbs_add')} onEdit={(id) => editItem('pcbs_edit', id)} />;
       case 'reworks':
-        return <CardList type="reworks" title="Rework History" onAdd={() => addItem('reworks_add')} onEdit={(id) => editItem('reworks_edit', id)} />;
+        return <ReworkView title="Rework History" onAdd={() => addItem('reworks_add')} onEdit={(id) => editItem('reworks_edit', id)} />;
       case 'owners':
-        return <CardList type="owners" title="Owners" onAdd={() => addItem('owners_add')} onEdit={(id) => editItem('owners_edit', id)} />;
+        return <UserView title="Owners" onAdd={() => addItem('owners_add')} onEdit={(id) => editItem('owners_edit', id)} />;
       case 'tags':
-        return <CardList type="tags" title="Tags" onAdd={() => addItem('tags_add')} onEdit={(id) => editItem('tags_edit', id)} />;
+        return <TabView title="Tags" onAdd={() => addItem('tags_add')} onEdit={(id) => editItem('tags_edit', id)} />;
       default:
-        return <CardList type="projects" title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;
+        return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;
     }
   };
 

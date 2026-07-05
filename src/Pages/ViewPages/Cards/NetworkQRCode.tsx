@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { COLORS } from '../../store/storeStyles';
+import { COLORS } from '../../../store/storeStyles';
 import { X } from 'lucide-react';
-import { useStore } from '../../store/useStore';
-import { usePcbStore } from '../../store/storePcb';
+import { useStore } from '../../../store/useStore';
+import { usePcbStore } from '../../../store/storePcb';
 
 export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');

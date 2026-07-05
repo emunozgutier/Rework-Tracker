@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { PcbCardHeader } from './PcbCardHeader';
 import { PcbCardBody } from './PcbCardBody';
-import { useStore } from '../../store/useStore';
+import { useStore } from '../../../store/useStore';
 
 interface PcbCardProps {
     pcb: any;

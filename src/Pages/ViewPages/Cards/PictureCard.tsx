@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { API_BASE } from '../../store/database/apiBridge';
+import { API_BASE } from '../../../store/database/apiBridge';
 
 interface PictureCardProps {
     images: string[];

@@ -1,6 +1,6 @@
 import { ReworkCardHeader } from './ReworkCardHeader';
 import { ReworkCardBody } from './ReworkCardBody';
-import { useStore } from '../../store/useStore';
+import { useStore } from '../../../store/useStore';
 
 interface ReworkCardProps {
     rework: any;
