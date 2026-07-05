@@ -20,6 +20,7 @@ export interface Pcb {
     bom?: string;
     tag_ids?: number[];
     short_code?: string;
+    created_at?: string;
 }
 
 interface PcbState {

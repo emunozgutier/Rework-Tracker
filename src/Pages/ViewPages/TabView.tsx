@@ -86,7 +86,7 @@ export function TabView({ title, onAdd, onEdit }: TabViewProps) {
                     )}
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {activeTagFilterCount > 0 && (
+                    {!isMobile && activeTagFilterCount > 0 && (
                         <button 
                             className="secondary-button" 
                             onClick={resetFilters}
@@ -104,9 +104,28 @@ export function TabView({ title, onAdd, onEdit }: TabViewProps) {
                             }}
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            <span>Clear All</span>
+                            <span>Clear All ({activeTagFilterCount})</span>
                         </button>
                     )}
+                    <button 
+                        className="secondary-button" 
+                        onClick={() => setShowFilters(!showFilters)}
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px', 
+                            padding: '8px 16px', 
+                            borderRadius: '8px', 
+                            backgroundColor: activeTagFilterCount > 0 ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-element)', 
+                            border: `1px solid ${activeTagFilterCount > 0 ? 'var(--accent)' : 'var(--border-color)'}`, 
+                            color: activeTagFilterCount > 0 ? 'var(--accent)' : 'var(--text)', 
+                            cursor: 'pointer',
+                            fontWeight: 500
+                        }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        <span>{showFilters ? 'Hide Filters' : 'Filters'}</span>
+                    </button>
                     {isMobile && (
                         <button 
                             className="secondary-button" 
@@ -128,25 +147,6 @@ export function TabView({ title, onAdd, onEdit }: TabViewProps) {
                             <span>Search</span>
                         </button>
                     )}
-                    <button 
-                        className="secondary-button" 
-                        onClick={() => setShowFilters(!showFilters)}
-                        style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px', 
-                            padding: '8px 16px', 
-                            borderRadius: '8px', 
-                            backgroundColor: activeTagFilterCount > 0 ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-element)', 
-                            border: `1px solid ${activeTagFilterCount > 0 ? 'var(--accent)' : 'var(--border-color)'}`, 
-                            color: activeTagFilterCount > 0 ? 'var(--accent)' : 'var(--text)', 
-                            cursor: 'pointer',
-                            fontWeight: 500
-                        }}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                        <span>{showFilters ? 'Hide Filters' : 'Filters'} {activeTagFilterCount > 0 ? `(${activeTagFilterCount})` : ''}</span>
-                    </button>
                     <button className="add-button" onClick={onAdd}>
                         <Plus size={18} />
                         <span>Add New</span>
@@ -154,6 +154,33 @@ export function TabView({ title, onAdd, onEdit }: TabViewProps) {
                 </div>
             </div>
             
+            {isMobile && activeTagFilterCount > 0 && (
+                <div style={{ display: 'flex', width: '100%', marginBottom: '16px', boxSizing: 'border-box' }}>
+                    <button 
+                        className="secondary-button" 
+                        onClick={resetFilters}
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px', 
+                            padding: '10px 16px', 
+                            borderRadius: '8px', 
+                            backgroundColor: 'rgba(239, 68, 68, 0.08)', 
+                            border: '1px solid rgba(239, 68, 68, 0.3)', 
+                            color: '#ef4444', 
+                            cursor: 'pointer',
+                            fontWeight: 500,
+                            width: '100%',
+                            justifyContent: 'center',
+                            fontSize: '0.85rem'
+                        }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <span>Clear All Active Filters ({activeTagFilterCount})</span>
+                    </button>
+                </div>
+            )}
+
             {isMobile && showMobileSearch && (
                 <div style={{ 
                     position: 'relative', 

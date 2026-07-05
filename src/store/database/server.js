@@ -375,7 +375,8 @@ app.get('/api/pcbs', (req, res) => {
                 silicon_corner: row.silicon_corner || '',
                 bom: row.bom,
                 tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : [],
-                short_code: row.short_code
+                short_code: row.short_code,
+                created_at: row.created_at
             };
         }));
     });
@@ -396,7 +397,7 @@ app.post('/api/pcbs', async (req, res) => {
     }
     try {
         const short_code = await generateShortCode();
-        const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))";
         db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code], function(err) {
             if (err) return res.status(500).json({ error: err.message });
             res.status(201).json({ id: this.lastID, board_number, short_code });
