@@ -79,7 +79,7 @@ function App() {
       </a>
       <header className="app-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', alignItems: 'center', padding: '0 20px', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <h1 style={{ margin: 0 }}>PCB Rework Tracker</h1>
+          <h1 style={{ margin: 0 }}>{isMobile ? 'Rework Tracker' : 'PCB Rework Tracker'}</h1>
           {typeof window !== 'undefined' && window.location.hostname.includes('github.io') && (
             <div 
               className="demo-indicator"
