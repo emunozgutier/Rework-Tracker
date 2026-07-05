@@ -80,7 +80,7 @@ describe('Store and Database Integration Tests', () => {
         expect(success).toBe(true);
         
         const updatedStore = usePcbStore.getState();
-        const added = updatedStore.pcbs.find(p => p.board_number === testPcbName);
+        const added = updatedStore.pcbs.find(p => p.project_id === projectId);
         expect(added).toBeDefined();
         if (added) pcbId = added.id;
     });

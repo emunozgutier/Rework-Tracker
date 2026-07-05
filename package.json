@@ -10,7 +10,7 @@
     "deploy": "gh-pages -d dist",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:run": "vitest --run --environment jsdom",
+    "test:run": "vitest --run --environment jsdom --fileParallelism=false",
     "test": "start-server-and-test 'node src/store/database/server.js' http-get://localhost:5002/api/dashboard test:run"
   },
   "dependencies": {
