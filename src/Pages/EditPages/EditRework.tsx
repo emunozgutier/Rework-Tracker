@@ -82,7 +82,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
             }
 
             const cornerPart = noPartYet ? "" : siliconVersion;
-            const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
+            const revPart = noPartYet ? "No part" : (selectedRevision ? selectedRevision : '');
             new_product = [foundFormfactor, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
         }
 
@@ -212,7 +212,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                                         }
                                     }} 
                                 />
-                                No part yet
+                                No part
                             </label>
                         </div>
                     </FormGroup>

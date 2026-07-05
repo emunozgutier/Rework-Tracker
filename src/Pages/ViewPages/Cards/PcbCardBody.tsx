@@ -97,17 +97,18 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
                 <EditButton 
                     onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
-                    label="Edit PCB"
+                    label={isMobile ? "Edit" : "Edit PCB"}
                 />
 
                 <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
+                    label={isMobile ? "QR" : "QR Code"}
                 />
                 
                 {isLocalhost && (
                     <DeleteButton 
                         onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
-                        label="Delete PCB"
+                        label={isMobile ? "Delete" : "Delete PCB"}
                     />
                 )}
             </div>

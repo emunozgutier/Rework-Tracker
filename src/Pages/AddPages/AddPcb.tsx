@@ -169,7 +169,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         e.preventDefault();
         
         const finalPcbRev = pcbRev;
-        const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
+        const revPart = noPartYet ? "No part" : (selectedRevision ? selectedRevision : '');
         const cornerPart = noPartYet ? "" : siliconVersion;
         const ffPart = selectedPcbFlavor ? selectedPcbFlavor : '';
         const finalBoardName = `${selectedProjectKey}-${boardNumber.trim()}`;
@@ -281,7 +281,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                     }
                                 }} 
                             />
-                            No part yet
+                            No part
                         </label>
                     </div>
                 </FormGroup>

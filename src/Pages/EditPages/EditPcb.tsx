@@ -52,9 +52,9 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 // Use new split fields directly
                 setSiliconVersion(pcb.silicon_corner || '');
                 setSelectedFormfactor(pcb.board_flavor || '');
-                setSelectedRevision(pcb.silicon_rev === "No part yet" ? "" : (pcb.silicon_rev || ''));
+                setSelectedRevision(pcb.silicon_rev === "No part yet" || pcb.silicon_rev === "No part" ? "" : (pcb.silicon_rev || ''));
                 
-                if (pcb.silicon_rev === "No part yet" || (!pcb.silicon_rev && pcb.product === "No part yet")) {
+                if (pcb.silicon_rev === "No part yet" || pcb.silicon_rev === "No part" || (!pcb.silicon_rev && (pcb.product === "No part yet" || pcb.product === "No part"))) {
                     setNoPartYet(true);
                 } else {
                     setNoPartYet(false);
@@ -76,7 +76,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         e.preventDefault();
         setSaving(true);
         const finalPcbRev = pcbRev;
-        const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
+        const revPart = noPartYet ? "No part" : (selectedRevision ? selectedRevision : '');
         const cornerPart = noPartYet ? "" : siliconVersion;
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
         const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
@@ -162,13 +162,13 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         <div className="form-group flex-1">
                             <label>Rev</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-                                {noPartYet ? 'No part yet' : (selectedRevision || 'N/A')}
+                                {noPartYet ? 'No part' : (selectedRevision || 'N/A')}
                             </div>
                         </div>
                         <div className="form-group flex-1">
                             <label>Corner</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-                                {noPartYet ? 'No part yet' : (siliconVersion || 'N/A')}
+                                {noPartYet ? 'No part' : (siliconVersion || 'N/A')}
                             </div>
                         </div>
                     </div>

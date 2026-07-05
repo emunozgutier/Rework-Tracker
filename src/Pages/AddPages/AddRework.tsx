@@ -102,7 +102,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     useEffect(() => {
         if (reworkType === 'Silicon Swap') {
             if (noPartYet) {
-                setTitle('Silicon Swap (No part yet)');
+                setTitle('Silicon Swap (No part)');
             } else {
                 const rev = selectedRevision || 'A0';
                 const corner = siliconVersion || 'TT';
@@ -158,7 +158,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
             }
 
             const cornerPart = noPartYet ? "" : siliconVersion;
-            const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
+            const revPart = noPartYet ? "No part" : (selectedRevision ? selectedRevision : '');
             const new_product = [foundPcbFlavor, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
             formData.append('new_product', new_product);
             formData.append('new_silicon_rev', revPart);
@@ -248,7 +248,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                                         }
                                     }} 
                                 />
-                                No part yet
+                                No part
                             </label>
                         </div>
                     </FormGroup>

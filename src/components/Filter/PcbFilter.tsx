@@ -101,15 +101,15 @@ export function PcbFilter() {
                         const allRevs = new Set<string>();
                         activeProjects.forEach((p: any) => { if (p.revisions) p.revisions.forEach((r: string) => allRevs.add(r)); });
                         
-                        // Dynamically inject implicit 'No part yet' placeholder if any board matches
-                        if (pcbs.some(pcb => pcb.product && pcb.product.includes('No part yet'))) {
-                            allRevs.add('No part yet');
+                        // Dynamically inject implicit 'No part' placeholder if any board matches
+                        if (pcbs.some(pcb => pcb.product && (pcb.product.includes('No part yet') || pcb.product.includes('No part')))) {
+                            allRevs.add('No part');
                         }
 
                         return Array.from(allRevs).sort().map(rev => {
-                            const count = pcbs.filter(pcb => pcb.silicon_rev === rev && matchPcb(pcb, 'revision')).length;
+                            const count = pcbs.filter(pcb => (pcb.silicon_rev === rev || (rev === 'No part' && (pcb.silicon_rev === 'No part yet' || pcb.silicon_rev === 'No part'))) && matchPcb(pcb, 'revision')).length;
                             if (count === 0 && hasAnyOtherFilter('revision')) return null;
-                            return <option key={rev} value={rev}>{rev === 'No part yet' ? 'N/A (No part yet)' : rev} ({count})</option>;
+                            return <option key={rev} value={rev}>{rev === 'No part' || rev === 'No part yet' ? 'N/A (No part)' : rev} ({count})</option>;
                         });
                     })()}
                 </PcbFilterElement>
