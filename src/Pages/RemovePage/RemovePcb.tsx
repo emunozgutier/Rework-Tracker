@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BoardName } from '../../components/BoardName';
 import { Popup } from '../../components/Popup';
 
@@ -11,31 +11,23 @@ interface RemovePcbProps {
 
 export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
     const [inputValue, setInputValue] = useState('');
+    const inputRef = useRef<HTMLInputElement>(null);
     
-    // Reset state when opened or closed
     useEffect(() => {
-        if (isOpen) setInputValue('');
+        if (isOpen) {
+            setInputValue('');
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 80);
+            return () => clearTimeout(timer);
+        }
     }, [isOpen]);
 
     if (!isOpen || !pcb) return null;
 
     const expectedText = pcb.board_number;
-    
-    // Support either full board number (with CRC) or base board number (without CRC)
-    let expectedTextWithoutCrc = expectedText;
-    if (expectedText.length > 5 && expectedText.includes('-')) {
-        const parts = expectedText.split('-');
-        if (parts.length >= 2) {
-            const lastPart = parts[parts.length - 1];
-            if (lastPart.length > 1 && /^[a-zA-Z]$/.test(lastPart.slice(-1))) {
-                expectedTextWithoutCrc = expectedText.slice(0, -1);
-            }
-        }
-    }
-
     const cleanInput = inputValue.trim().toLowerCase();
-    const isValid = cleanInput === expectedText.trim().toLowerCase() || 
-                    cleanInput === expectedTextWithoutCrc.trim().toLowerCase();
+    const isValid = cleanInput === expectedText.trim().toLowerCase();
 
     const handleConfirm = () => {
         if (isValid) {
@@ -55,6 +47,19 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
         </h2>
     );
 
+    let borderStyle = '1px solid var(--border)';
+    let boxShadowStyle = 'none';
+    
+    if (inputValue) {
+        if (isValid) {
+            borderStyle = '1px solid #10b981';
+            boxShadowStyle = '0 0 10px rgba(16, 185, 129, 0.3)';
+        } else {
+            borderStyle = '1px solid #ef4444';
+            boxShadowStyle = '0 0 10px rgba(239, 68, 68, 0.3)';
+        }
+    }
+
     return (
         <Popup isOpen={isOpen} onClose={onClose} title={titleElement} maxWidth="500px">
             <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
@@ -66,22 +71,29 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
                     Please type <span className="board-num" style={{ fontWeight: 700, color: 'var(--text)' }}><BoardName name={expectedText} isHex={pcb.number_format === 'hex'} /></span> to confirm:
                 </label>
                 <input
+                    ref={inputRef}
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && isValid) {
+                            handleConfirm();
+                        }
+                    }}
                     placeholder={expectedText}
                     style={{
                         width: '100%',
                         padding: '12px 16px',
                         borderRadius: '8px',
-                        border: `1px solid ${inputValue && !isValid ? '#ef4444' : 'var(--border)'}`,
+                        border: borderStyle,
+                        boxShadow: boxShadowStyle,
                         background: 'rgba(255, 255, 255, 0.05)',
                         color: 'var(--text)',
                         fontSize: '1rem',
                         outline: 'none',
-                        fontFamily: 'monospace'
+                        fontFamily: 'monospace',
+                        transition: 'border-color 0.2s, box-shadow 0.2s'
                     }}
-                    autoFocus
                 />
             </div>
 

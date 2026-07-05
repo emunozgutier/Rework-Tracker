@@ -127,7 +127,14 @@ const initDb = () => {
             } else {
                 console.log("Migration created_at: successfully created column!");
             }
-            resolve();
+            db.run("UPDATE pcbs SET created_at = datetime('now') WHERE created_at IS NULL", (updateErr) => {
+                if (updateErr) {
+                    console.log("Migration created_at update error:", updateErr.message);
+                } else {
+                    console.log("Migration created_at: successfully initialized null timestamps to now!");
+                }
+                resolve();
+            });
         });
     });
 });
