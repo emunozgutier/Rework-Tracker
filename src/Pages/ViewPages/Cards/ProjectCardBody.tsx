@@ -21,7 +21,7 @@ interface ProjectCardBodyProps {
 
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
-    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView } = useStore();
+    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage } = useStore();
     
     // Get actual PCB objects for this project
     const projectPcbs = allPcbs.filter(p => p.project === project.name);
@@ -56,6 +56,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     setSelectedBoardNumbers([pcb.board_number]);
                     setExpandedPcb(pcb.board_number);
                     setIsolatedView(true);
+                    setPage('pcbs');
                     setActiveTab('pcbs');
                 }
             }, 30);
@@ -128,6 +129,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     onClick={(e) => {
                         e.stopPropagation();
                         setSelectedProjects([project.id.toString()]);
+                        setPage('pcbs');
                         setActiveTab('pcbs');
                     }}
                     className="view-pcbs-btn"
