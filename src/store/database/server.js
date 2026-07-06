@@ -40,6 +40,142 @@ app.use((req, res, next) => {
 });
 app.use(apiLoggerMiddleware);
 
+// --- Request Deduplication & Serialization Middlewares ---
+const inFlightRequests = new Map();
+
+function deduplicate(req, res, next) {
+    if (req.method === 'GET') {
+        return next();
+    }
+
+    const fileSignature = (req.files || []).map(f => `${f.originalname}-${f.size}`).join(',');
+    const bodyKey = JSON.stringify(req.body || {});
+    const key = `${req.method}:${req.originalUrl}:${bodyKey}:${fileSignature}`;
+    console.log("[DEDUPLICATE KEY]", key);
+
+    if (inFlightRequests.has(key)) {
+        console.log(`[Server Deduplicate] Duplicate request detected for key: ${key}.`);
+        const pending = inFlightRequests.get(key);
+        
+        if (pending.response) {
+            console.log(`[Server Deduplicate] Returning cached response for key: ${key}.`);
+            res.status(pending.response.statusCode);
+            res.set(pending.response.headers);
+            res.send(pending.response.body);
+            return;
+        }
+        
+        pending.listeners.push((response) => {
+            res.status(response.statusCode);
+            res.set(response.headers);
+            res.send(response.body);
+        });
+        return;
+    }
+
+    const pending = {
+        listeners: [],
+        response: null
+    };
+    inFlightRequests.set(key, pending);
+
+    const originalSend = res.send;
+    res.send = function (body) {
+        res.send = originalSend;
+
+        const responseData = {
+            statusCode: res.statusCode,
+            headers: res.getHeaders(),
+            body: body
+        };
+
+        pending.response = responseData;
+
+        // Keep in cache for 3 seconds to catch quick staggered retries/double-submits
+        setTimeout(() => {
+            inFlightRequests.delete(key);
+        }, 3000);
+
+        originalSend.call(res, body);
+
+        pending.listeners.forEach((listener) => {
+            try {
+                listener(responseData);
+            } catch (e) {
+                console.error('[Server Deduplicate] Failed to notify listener:', e);
+            }
+        });
+    };
+
+    res.on('close', () => {
+        if (inFlightRequests.has(key) && inFlightRequests.get(key) === pending && !pending.response) {
+            inFlightRequests.delete(key);
+            pending.listeners.forEach((listener) => {
+                try {
+                    listener({
+                        statusCode: 500,
+                        headers: {},
+                        body: JSON.stringify({ error: "Original request closed prematurely" })
+                    });
+                } catch (e) {}
+            });
+        }
+    });
+
+    next();
+}
+
+let writeQueue = Promise.resolve();
+
+function serializeWrites(req, res, next) {
+    if (req.method === 'GET') {
+        return next();
+    }
+
+    writeQueue = writeQueue.then(() => {
+        return new Promise((resolve) => {
+            let resolved = false;
+            const release = () => {
+                if (!resolved) {
+                    resolved = true;
+                    resolve();
+                }
+            };
+
+            const timeoutId = setTimeout(release, 10000); // 10s safety fallback
+
+            res.on('finish', () => {
+                clearTimeout(timeoutId);
+                release();
+            });
+            res.on('close', () => {
+                clearTimeout(timeoutId);
+                release();
+            });
+
+            next();
+        });
+    });
+}
+
+// Apply deduplication to all JSON write operations first
+app.use((req, res, next) => {
+    const isMultipart = req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data');
+    if (isMultipart) {
+        return next();
+    }
+    deduplicate(req, res, next);
+});
+
+// Apply serialization to JSON write operations second
+app.use((req, res, next) => {
+    const isMultipart = req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data');
+    if (isMultipart) {
+        return next();
+    }
+    serializeWrites(req, res, next);
+});
+
 app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures')));
 
 // Initialize Database
@@ -475,7 +611,7 @@ app.get('/api/reworks', (req, res) => {
     });
 });
 
-app.post('/api/reworks', upload.any(), (req, res) => {
+app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req, res) => {
     const { pcb_id, title, description, owner_id, rework_type, new_product, new_silicon_rev, new_silicon_corner } = req.body;
     
     // 1. Get the PCB board_number

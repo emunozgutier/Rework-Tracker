@@ -30,13 +30,80 @@ function createResponse(data: any, status = 200) {
     } as Response;
 }
 
+const inFlightDemoRequests = new Map<string, { listeners: Array<(res: Response) => void>; response: Response | null }>();
+let demoWriteQueue = Promise.resolve();
+
 export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<Response> {
     const isDemoMode = useDemoStore.getState().isDemoMode;
     
     if (!isDemoMode) {
         return fetch(fullUrl, options);
     }
-    
+
+    const method = options?.method || 'GET';
+
+    // GET requests don't need deduplication or queueing
+    if (method === 'GET') {
+        return processDemoRequest(fullUrl, options);
+    }
+
+    // Deduplicate identical in-flight write requests (POST, PUT, DELETE)
+    let bodyStr = '';
+    if (options?.body) {
+        if (typeof options.body === 'string') {
+            bodyStr = options.body;
+        } else if (options.body instanceof FormData) {
+            bodyStr = JSON.stringify(Object.fromEntries(options.body.entries()));
+        }
+    }
+    const key = `${method}:${fullUrl}:${bodyStr}`;
+
+    if (inFlightDemoRequests.has(key)) {
+        console.log(`[Demo Deduplicate] Duplicate request detected: ${key}`);
+        const pending = inFlightDemoRequests.get(key)!;
+        if (pending.response) {
+            console.log(`[Demo Deduplicate] Returning cached response for key: ${key}`);
+            return Promise.resolve(pending.response);
+        }
+        return new Promise<Response>((resolve) => {
+            pending.listeners.push(resolve);
+        });
+    }
+
+    const pending: { listeners: Array<(res: Response) => void>; response: Response | null } = {
+        listeners: [],
+        response: null
+    };
+    inFlightDemoRequests.set(key, pending);
+
+    // Queue all writes to prevent race conditions (e.g. concurrent inserts trying to generate same sequence ID)
+    return new Promise<Response>((resolve, reject) => {
+        demoWriteQueue = demoWriteQueue.then(async () => {
+            try {
+                const response = await processDemoRequest(fullUrl, options);
+                pending.response = response;
+                
+                // Keep in cache for 3 seconds to catch quick staggered retries/double-submits
+                setTimeout(() => {
+                    inFlightDemoRequests.delete(key);
+                }, 3000);
+                
+                resolve(response);
+                pending.listeners.forEach((listener) => {
+                    listener(response);
+                });
+            } catch (err) {
+                inFlightDemoRequests.delete(key);
+                reject(err);
+                pending.listeners.forEach((listener) => {
+                    listener(createResponse({ error: err instanceof Error ? err.message : String(err) }, 500));
+                });
+            }
+        });
+    });
+}
+
+async function processDemoRequest(fullUrl: string, options?: RequestInit): Promise<Response> {
     // DEMO MODE MOCK LOGIC
     await delay(300); // Simulate network latency
     
