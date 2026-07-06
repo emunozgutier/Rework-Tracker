@@ -2,39 +2,30 @@ import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { COLORS } from '../../../store/storeStyles';
 import { useStore } from '../../../store/useStore';
-import { usePcbStore } from '../../../store/storePcb';
 import { Popup } from '../../../components/Popup';
 
 export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
     const [qrInfo, setQrInfo] = useState<{ version: number, size: number } | null>(null);
     const { qrModalBoard, setQrModalBoard } = useStore();
-    const pcbs = usePcbStore(state => state.pcbs);
-    const [useShortUrl, setUseShortUrl] = useState(false);
     
     let url = '';
     let displayDomain = '';
     let displayPath = '';
-
-    const pcb = pcbs.find(p => p.board_number === qrModalBoard);
-    const hasShortCode = pcb && pcb.short_code;
-    const actualUseShortUrl = useShortUrl && hasShortCode;
 
     if (qrModalBoard) {
         if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
             const base = import.meta.env.BASE_URL || '/';
             const cleanBase = base.endsWith('/') ? base : base + '/';
             displayDomain = window.location.origin;
-            displayPath = actualUseShortUrl 
-                ? `/${cleanBase}${pcb.short_code}`.replace(/\/\//g, '/')
-                : `/${cleanBase}pcbs/${encodeURIComponent(qrModalBoard)}/view`.replace(/\/\//g, '/');
+            displayPath = `/${cleanBase}pcbs/${encodeURIComponent(qrModalBoard)}/view`.replace(/\/\//g, '/');
             url = displayDomain + displayPath;
         } else {
             const localIp = typeof __LOCAL_IP__ !== 'undefined' ? __LOCAL_IP__ : window.location.hostname;
             const port = typeof __PORT__ !== 'undefined' ? __PORT__ : window.location.port;
             const portSuffix = port ? `:${port}` : '';
             displayDomain = `http://${localIp}${portSuffix}`;
-            displayPath = actualUseShortUrl ? `/${pcb.short_code}` : `/pcbs/${encodeURIComponent(qrModalBoard)}/view`;
+            displayPath = `/pcbs/${encodeURIComponent(qrModalBoard)}/view`;
             url = displayDomain + displayPath;
         }
     }
@@ -90,27 +81,6 @@ export function NetworkQRCode() {
                     />}
                 </div>
                 
-                {hasShortCode && (
-                    <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                        <span>Full URL</span>
-                        <div 
-                            style={{ 
-                                width: '40px', height: '20px', borderRadius: '10px', 
-                                background: useShortUrl ? 'var(--accent)' : 'rgba(255,255,255,0.2)', 
-                                position: 'relative', cursor: 'pointer', transition: 'all 0.2s' 
-                            }}
-                            onClick={() => setUseShortUrl(!useShortUrl)}
-                        >
-                            <div style={{ 
-                                width: '16px', height: '16px', borderRadius: '50%', background: '#fff', 
-                                position: 'absolute', top: '2px', left: useShortUrl ? '22px' : '2px', 
-                                transition: 'all 0.2s' 
-                            }} />
-                        </div>
-                        <span style={{ color: useShortUrl ? 'var(--accent)' : 'inherit' }}>Short URL</span>
-                    </div>
-                )}
-                
                 <div style={{ textAlign: 'center', width: '100%' }}>
                     <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '8px' }}>{qrModalBoard}</div>
                     <a 
@@ -151,3 +121,4 @@ export function NetworkQRCode() {
         </Popup>
     );
 }
+

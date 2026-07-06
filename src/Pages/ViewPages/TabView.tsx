@@ -113,6 +113,7 @@ export function TabView({ title, onAdd, onEdit }: TabViewProps) {
                         style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
+                            justifyContent: 'center',
                             gap: '8px', 
                             padding: '8px 16px', 
                             borderRadius: '8px', 
@@ -120,7 +121,8 @@ export function TabView({ title, onAdd, onEdit }: TabViewProps) {
                             border: `1px solid ${activeTagFilterCount > 0 ? 'var(--accent)' : 'var(--border-color)'}`, 
                             color: activeTagFilterCount > 0 ? 'var(--accent)' : 'var(--text)', 
                             cursor: 'pointer',
-                            fontWeight: 500
+                            fontWeight: 500,
+                            width: '145px'
                         }}
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>

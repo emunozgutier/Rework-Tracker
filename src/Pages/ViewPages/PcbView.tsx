@@ -156,6 +156,7 @@ export function PcbView({ title, onAdd }: PcbViewProps) {
                         style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
+                            justifyContent: 'center',
                             gap: '8px', 
                             padding: '8px 16px', 
                             borderRadius: '8px', 
@@ -163,7 +164,8 @@ export function PcbView({ title, onAdd }: PcbViewProps) {
                             border: `1px solid ${activePcbFilterCount > 0 ? 'var(--accent)' : 'var(--border-color)'}`, 
                             color: activePcbFilterCount > 0 ? 'var(--accent)' : 'var(--text)', 
                             cursor: 'pointer',
-                            fontWeight: 500
+                            fontWeight: 500,
+                            width: '145px'
                         }}
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
