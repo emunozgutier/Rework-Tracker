@@ -1,15 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { BoardName } from '../../components/BoardName';
 import { Popup } from '../../components/Popup';
 
-interface RemovePcbProps {
+interface RemoveProjectProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
-    pcb: any;
+    project: any;
 }
 
-export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
+export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemoveProjectProps) {
     const [inputValue, setInputValue] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     
@@ -25,9 +24,9 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
 
     const [isFocused, setIsFocused] = useState(false);
 
-    if (!isOpen || !pcb) return null;
+    if (!isOpen || !project) return null;
 
-    const expectedText = pcb.board_number;
+    const expectedText = project.name;
     const cleanInput = inputValue.trim().toLowerCase();
     const isValid = cleanInput === expectedText.trim().toLowerCase();
 
@@ -45,7 +44,7 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
                 <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                 <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
             </svg>
-            Remove PCB
+            Remove Project
         </h2>
     );
 
@@ -68,12 +67,12 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
     return (
         <Popup isOpen={isOpen} onClose={onClose} title={titleElement} maxWidth="500px">
             <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
-                You are about to permanently remove PCB <span className="board-num" style={{ fontWeight: 700, color: 'var(--text)' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></span>. This action cannot be undone.
+                You are about to permanently remove Project <strong style={{ color: 'var(--text)' }}>{project.name}</strong>. This action cannot be undone.
             </p>
 
             <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text)' }}>
-                    Please type <span className="board-num" style={{ fontWeight: 700, color: 'var(--text)' }}><BoardName name={expectedText} isHex={pcb.number_format === 'hex'} /></span> to confirm:
+                    Please type <strong style={{ color: 'var(--text)' }}>{expectedText}</strong> to confirm:
                 </label>
                 <input
                     ref={inputRef}
@@ -98,7 +97,6 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
                         color: 'var(--text)',
                         fontSize: '1rem',
                         outline: 'none',
-                        fontFamily: 'monospace',
                         transition: 'border-color 0.2s, box-shadow 0.2s'
                     }}
                 />
@@ -133,7 +131,7 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
                         transition: 'all 0.2s'
                     }}
                 >
-                    Remove PCB
+                    Remove Project
                 </button>
             </div>
         </Popup>

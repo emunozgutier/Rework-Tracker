@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { COLORS } from '../../../store/storeStyles';
-import { EditButton, ViewButton } from '../../../components/forms/ActionButtons';
+import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { usePcbStore } from '../../../store/storePcb';
+import { useProjectStore } from '../../../store/storeProject';
 import { useStore } from '../../../store/useStore';
 import { PcbCardHeader } from './PcbCardHeader';
 import { ProjectCardSummary } from './ProjectCardSummary';
+import { RemoveProject } from '../../RemovePage/RemoveProject';
 
 interface ProjectCardBodyProps {
     project: {
@@ -21,7 +23,15 @@ interface ProjectCardBodyProps {
 
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
+    const { deleteProject } = useProjectStore();
     const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile } = useStore();
+    
+    const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
+    const cannotDelete = project.pcb_count > 0;
+
+    const confirmRemoveProject = async () => {
+        await deleteProject(project.id);
+    };
     
     // Get actual PCB objects for this project
     const projectPcbs = allPcbs.filter(p => p.project === project.name);
@@ -135,7 +145,27 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     className="view-pcbs-btn"
                     label={isMobile ? "View PCBs" : "View PCBs Info"}
                 />
+                <DeleteButton 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsRemoveProjectOpen(true);
+                    }}
+                    disabled={cannotDelete}
+                    style={{
+                        opacity: cannotDelete ? 0.35 : 1,
+                        cursor: cannotDelete ? 'not-allowed' : 'pointer'
+                    }}
+                    title={cannotDelete ? "Cannot delete project: it has active PCBs (delete them first)" : "Delete Project"}
+                    label={isMobile ? "Delete" : "Delete Project"}
+                />
             </div>
+
+            <RemoveProject 
+                isOpen={isRemoveProjectOpen}
+                onClose={() => setIsRemoveProjectOpen(false)}
+                onConfirm={confirmRemoveProject}
+                project={project}
+            />
 
             {projectPcbs.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
