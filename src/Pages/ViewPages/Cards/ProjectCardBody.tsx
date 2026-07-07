@@ -150,12 +150,6 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         e.stopPropagation();
                         setIsRemoveProjectOpen(true);
                     }}
-                    disabled={cannotDelete}
-                    style={{
-                        opacity: cannotDelete ? 0.35 : 1,
-                        cursor: cannotDelete ? 'not-allowed' : 'pointer'
-                    }}
-                    title={cannotDelete ? "Cannot delete project: it has active PCBs (delete them first)" : "Delete Project"}
                     label={isMobile ? "Delete" : "Delete Project"}
                 />
             </div>

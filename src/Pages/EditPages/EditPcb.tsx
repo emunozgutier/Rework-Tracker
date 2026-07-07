@@ -30,6 +30,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const { updatePcb, deletePcb } = usePcbStore();
     const [saving, setSaving] = useState(false);
     const [isRemoveOpen, setIsRemoveOpen] = useState(false);
+    const [rawPcb, setRawPcb] = useState<any>(null);
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
 
@@ -44,6 +45,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
             setProjects(projData);
             setOwners(ownerData);
             if (pcb) {
+                setRawPcb(pcb);
                 const parts = pcb.board_number.split('-');
                 const hexPart = parts.length > 1 ? parts.slice(1).join('-') : pcb.board_number;
                 setBoardNumber(hexPart);
@@ -221,7 +223,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 isOpen={isRemoveOpen}
                 onClose={() => setIsRemoveOpen(false)}
                 onConfirm={handleConfirmedDelete}
-                pcb={{ board_number: `${selectedProjectKey}-${boardNumber}` }}
+                pcb={rawPcb || { board_number: `${selectedProjectKey}-${boardNumber}` }}
             />
         </div>
     );

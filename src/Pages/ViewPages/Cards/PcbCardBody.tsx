@@ -124,12 +124,6 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     <DeleteButton 
                         onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
                         label={isMobile ? "Delete" : "Delete PCB"}
-                        disabled={cannotDelete}
-                        title={deleteTooltip}
-                        style={{
-                            opacity: cannotDelete ? 0.35 : 1,
-                            cursor: cannotDelete ? 'not-allowed' : 'pointer'
-                        }}
                     />
                 )}
             </div>

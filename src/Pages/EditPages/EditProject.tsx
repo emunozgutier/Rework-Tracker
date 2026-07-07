@@ -5,6 +5,7 @@ import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { useProjectStore } from '../../store/storeProject';
 import { usePcbStore } from '../../store/storePcb';
+import { RemoveProject } from '../RemovePage/RemoveProject';
 
 interface EditProjectProps {
     id: string | number;
@@ -21,6 +22,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [flavors, setFlavors] = useState<{name: string, revisions: string, boms?: string}[]>([]);
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [isRemoveOpen, setIsRemoveOpen] = useState(false);
     
     const { projects, updateProject, deleteProject, loading: saving } = useProjectStore();
     const { pcbs, fetchPcbs } = usePcbStore();
@@ -123,8 +125,11 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         }
     };
 
-    const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this project?')) return;
+    const handleDelete = () => {
+        setIsRemoveOpen(true);
+    };
+
+    const handleConfirmedDelete = async () => {
         const success = await deleteProject(id);
         if (success) {
             onSuccess();
@@ -151,9 +156,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 <button 
                     onClick={handleDelete} 
                     className="delete-icon-button" 
-                    title={pcbCount > 0 ? `Cannot delete project with ${pcbCount} active ${pcbCount === 1 ? 'PCB' : 'PCBs'}` : "Delete Project"}
-                    disabled={pcbCount > 0}
-                    style={{ opacity: pcbCount > 0 ? 0.3 : 1, cursor: pcbCount > 0 ? 'not-allowed' : 'pointer' }}
+                    title="Delete Project"
                 >
                     <Trash2 size={20} color="#ef4444" />
                 </button>
@@ -297,6 +300,13 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                     <span>{saving ? 'Saving...' : 'Update Project'}</span>
                 </button>
             </form>
+
+            <RemoveProject 
+                isOpen={isRemoveOpen}
+                onClose={() => setIsRemoveOpen(false)}
+                onConfirm={handleConfirmedDelete}
+                project={{ id, name, pcb_count: pcbCount }}
+            />
         </div>
     );
 }

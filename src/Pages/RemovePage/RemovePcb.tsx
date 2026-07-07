@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { BoardName } from '../../components/BoardName';
 import { Popup } from '../../components/Popup';
+import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 
 interface RemovePcbProps {
     isOpen: boolean;
@@ -12,6 +13,9 @@ interface RemovePcbProps {
 export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
     const [inputValue, setInputValue] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
+    const [reworkCount, setReworkCount] = useState<number | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     
     useEffect(() => {
         if (isOpen) {
@@ -23,7 +27,24 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
         }
     }, [isOpen]);
 
-    const [isFocused, setIsFocused] = useState(false);
+    useEffect(() => {
+        if (isOpen && pcb && pcb.id) {
+            setLoading(true);
+            apiFetch(`${API_BASE}/reworks`)
+                .then(res => res.json())
+                .then(data => {
+                    const count = Array.isArray(data) ? data.filter((r: any) => String(r.pcb_id) === String(pcb.id)).length : 0;
+                    setReworkCount(count);
+                    setLoading(false);
+                })
+                .catch(() => {
+                    setReworkCount(0);
+                    setLoading(false);
+                });
+        } else {
+            setReworkCount(0);
+        }
+    }, [isOpen, pcb?.id]);
 
     if (!isOpen || !pcb) return null;
 
@@ -31,8 +52,23 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
     const cleanInput = inputValue.trim().toLowerCase();
     const isValid = cleanInput === expectedText.trim().toLowerCase();
 
+    // 1. Requirement: 0 reworks
+    const isReworksValid = reworkCount === 0;
+
+    // 2. Requirement: age <= 3 days
+    const getCreationDays = () => {
+        if (!pcb.created_at) return 0;
+        const createdAt = new Date(pcb.created_at.includes('T') ? pcb.created_at : pcb.created_at.replace(' ', 'T') + 'Z');
+        if (isNaN(createdAt.getTime())) return 0;
+        return (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    };
+    const daysOld = getCreationDays();
+    const isAgeValid = daysOld <= 3;
+
+    const requirementsMet = isReworksValid && isAgeValid && !loading;
+
     const handleConfirm = () => {
-        if (isValid) {
+        if (isValid && requirementsMet) {
             onConfirm();
             onClose();
         }
@@ -65,15 +101,78 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
         boxShadowStyle = '0 0 0 2px rgba(99, 102, 241, 0.2)';
     }
 
+    const checkIcon = (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+    );
+
+    const crossIcon = (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+    );
+
     return (
         <Popup isOpen={isOpen} onClose={onClose} title={titleElement} maxWidth="500px">
-            <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px', lineHeight: '1.6' }}>
                 You are about to permanently remove PCB <span className="board-num" style={{ fontWeight: 700, color: 'var(--text)' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></span>. This action cannot be undone.
             </p>
 
+            {/* Requirements Display */}
+            <div style={{
+                background: 'rgba(0, 0, 0, 0.2)',
+                padding: '16px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                marginBottom: '20px'
+            }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600 }}>Deletion Safety Requirements:</h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: isReworksValid ? '#10b981' : '#ef4444' }}>
+                        {loading ? (
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Checking...</span>
+                        ) : isReworksValid ? checkIcon : crossIcon}
+                        <span>
+                            No Rework History logs ({reworkCount ?? 0} found)
+                        </span>
+                    </li>
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: isAgeValid ? '#10b981' : '#ef4444' }}>
+                        {isAgeValid ? checkIcon : crossIcon}
+                        <span>
+                            Board created within last 3 days (Age: {daysOld.toFixed(1)} days)
+                        </span>
+                    </li>
+                </ul>
+            </div>
+
+            {!requirementsMet && (
+                <div style={{ 
+                    color: '#ef4444', 
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                    border: '1px solid rgba(239, 68, 68, 0.2)', 
+                    borderRadius: '8px', 
+                    padding: '12px 16px', 
+                    fontSize: '0.9rem', 
+                    marginBottom: '24px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    lineHeight: '1.4' 
+                }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>This PCB cannot be deleted because it does not meet all safety requirements.</span>
+                </div>
+            )}
+
             <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text)' }}>
-                    Please type <span className="board-num" style={{ fontWeight: 700, color: 'var(--text)' }}><BoardName name={expectedText} isHex={pcb.number_format === 'hex'} /></span> to confirm:
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: requirementsMet ? 'var(--text)' : 'var(--text-muted)' }}>
+                    Please type <span className="board-num" style={{ fontWeight: 700, color: requirementsMet ? 'var(--text)' : 'var(--text-muted)' }}><BoardName name={expectedText} isHex={pcb.number_format === 'hex'} /></span> to confirm:
                 </label>
                 <input
                     ref={inputRef}
@@ -82,23 +181,25 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
                     onChange={(e) => setInputValue(e.target.value)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
+                    disabled={!requirementsMet}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' && isValid) {
+                        if (e.key === 'Enter' && isValid && requirementsMet) {
                             handleConfirm();
                         }
                     }}
-                    placeholder={expectedText}
+                    placeholder={requirementsMet ? expectedText : "Deletion disabled"}
                     style={{
                         width: '100%',
                         padding: '12px 16px',
                         borderRadius: '8px',
                         border: borderStyle,
                         boxShadow: boxShadowStyle,
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        color: 'var(--text)',
+                        background: requirementsMet ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.01)',
+                        color: requirementsMet ? 'var(--text)' : 'var(--text-muted)',
                         fontSize: '1rem',
                         outline: 'none',
                         fontFamily: 'monospace',
+                        cursor: requirementsMet ? 'text' : 'not-allowed',
                         transition: 'border-color 0.2s, box-shadow 0.2s'
                     }}
                 />
@@ -121,14 +222,14 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
                 </button>
                 <button
                     onClick={handleConfirm}
-                    disabled={!isValid}
+                    disabled={!isValid || !requirementsMet}
                     style={{
                         padding: '10px 20px',
-                        background: isValid ? '#ef4444' : 'rgba(239, 68, 68, 0.2)',
+                        background: (isValid && requirementsMet) ? '#ef4444' : 'rgba(239, 68, 68, 0.15)',
                         border: 'none',
-                        color: isValid ? '#fff' : 'rgba(255, 255, 255, 0.5)',
+                        color: (isValid && requirementsMet) ? '#fff' : 'rgba(255, 255, 255, 0.3)',
                         borderRadius: '8px',
-                        cursor: isValid ? 'pointer' : 'not-allowed',
+                        cursor: (isValid && requirementsMet) ? 'pointer' : 'not-allowed',
                         fontWeight: 600,
                         transition: 'all 0.2s'
                     }}
