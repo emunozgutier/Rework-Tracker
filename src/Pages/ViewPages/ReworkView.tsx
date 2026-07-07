@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { TopButtons } from '../../components/TopButtons';
 import { ReworkCard } from './Cards/ReworkCard';
 import { useReworkStore } from '../../store/storeRework';
 
@@ -24,17 +24,10 @@ export function ReworkView({ title, onAdd }: ReworkViewProps) {
 
     return (
         <div className="card-list-container">
-            <div className="list-header" style={{ flexWrap: 'wrap', gap: '16px' }}>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <h2 style={{ margin: 0 }}>{title}</h2>
-                </div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <button className="add-button" onClick={onAdd}>
-                        <Plus size={18} />
-                        <span>Add New</span>
-                    </button>
-                </div>
-            </div>
+            <TopButtons
+                title={title}
+                onAdd={onAdd}
+            />
             
             {selectedBoards && selectedBoards.length > 0 && (
                 <div style={{ marginBottom: '24px', padding: '12px', backgroundColor: 'rgba(99, 102, 241, 0.1)', border: '1px solid var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { TopButtons } from '../../components/TopButtons';
 import { OwnerCard } from './Cards/OwnerCard';
 import { useOwnerStore } from '../../store/storeOwner';
 
@@ -20,17 +20,10 @@ export function UserView({ title, onAdd, onEdit }: UserViewProps) {
 
     return (
         <div className="card-list-container">
-            <div className="list-header" style={{ flexWrap: 'wrap', gap: '16px' }}>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <h2 style={{ margin: 0 }}>{title}</h2>
-                </div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <button className="add-button" onClick={onAdd}>
-                        <Plus size={18} />
-                        <span>Add New</span>
-                    </button>
-                </div>
-            </div>
+            <TopButtons
+                title={title}
+                onAdd={onAdd}
+            />
 
             <div className="cards-grid single-column">
                 {owners.length === 0 ? (

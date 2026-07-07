@@ -1,0 +1,228 @@
+/* TopButtons.css */
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.header-left {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.header-title {
+  margin: 0;
+  font-family: var(--heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-h, #ffffff);
+}
+
+.header-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Search Bar (Desktop) */
+.search-container-desktop {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon-desktop {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.search-input-desktop {
+  padding: 8px 12px 8px 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-size: 0.85rem;
+  width: 100%;
+  max-width: 220px;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-input-desktop:focus {
+  border-color: var(--accent);
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  max-width: 260px; /* Expands slightly when focused */
+}
+
+.search-container-desktop:focus-within .search-icon-desktop {
+  color: var(--accent);
+}
+
+/* Buttons */
+.add-button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin: 4px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-button:hover {
+  opacity: 0.95;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.add-button:active {
+  transform: translateY(0);
+}
+
+.secondary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-color);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 4px;
+}
+
+.secondary-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1.5px);
+}
+
+.secondary-button:active {
+  transform: translateY(0);
+}
+
+.secondary-button.active {
+  background-color: rgba(99, 102, 241, 0.15);
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+/* Mobile Layout Layout Overrides */
+@media (max-width: 768px) {
+  .list-header {
+    margin-bottom: 16px;
+  }
+  
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .header-right {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .secondary-button, .add-button {
+    flex: 1 1 auto;
+    margin: 2px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile Search Input Row */
+.mobile-search-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  animation: slideDown 0.2s ease-out;
+}
+
+.mobile-search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.mobile-search-input {
+  padding: 10px 16px 10px 42px;
+  border-radius: 10px;
+  border: 1px solid var(--accent);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 0.9rem;
+  width: 100%;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  box-sizing: border-box;
+}
+
+/* Mobile Clear Filters Row */
+.mobile-clear-filters-row {
+  display: flex;
+  width: 100%;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  animation: slideDown 0.2s ease-out;
+}
+
+.mobile-clear-filters-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.mobile-clear-filters-btn:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
