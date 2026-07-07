@@ -4,7 +4,6 @@ import { TagFilter } from '../../components/Filter/TagFilter';
 
 import { useTagStore } from '../../store/storeTag';
 import { useStore } from '../../store/useStore';
-import { TopButtons } from '../../components/TopButtons';
 
 interface TabViewProps {
     title: string;
@@ -14,21 +13,19 @@ interface TabViewProps {
 
 export function TabView({ title, onAdd, onEdit }: TabViewProps) {
     const { tags, loading: tagsLoading, fetchTags, selectedTagTypes, selectedTagOwners, resetFilters } = useTagStore();
-    const { isolatedView } = useStore();
+    const { isolatedView, searchQuery, showFilters, setShowFilters } = useStore();
 
     useEffect(() => {
         fetchTags();
     }, [fetchTags]);
 
     const activeTagFilterCount = selectedTagTypes.length + selectedTagOwners.length;
-    const [showFilters, setShowFilters] = useState<boolean>(activeTagFilterCount > 0 && !isolatedView);
-    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         if (activeTagFilterCount > 0 && !isolatedView) {
             setShowFilters(true);
         }
-    }, [activeTagFilterCount, isolatedView]);
+    }, [activeTagFilterCount, isolatedView, setShowFilters]);
 
     let items = tags;
 
@@ -47,18 +44,6 @@ export function TabView({ title, onAdd, onEdit }: TabViewProps) {
 
     return (
         <div className="card-list-container">
-            <TopButtons
-                title={title}
-                onAdd={onAdd}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                searchPlaceholder="Search Tags..."
-                activeFilterCount={activeTagFilterCount}
-                onClearFilters={resetFilters}
-                showFilters={showFilters}
-                setShowFilters={setShowFilters}
-            />
-            
             {showFilters && <TagFilter />}
 
             <div className="cards-grid single-column">

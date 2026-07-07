@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { TopButtons } from '../../components/TopButtons';
 import { OwnerCard } from './Cards/OwnerCard';
 import { useOwnerStore } from '../../store/storeOwner';
 
@@ -20,11 +19,6 @@ export function UserView({ title, onAdd, onEdit }: UserViewProps) {
 
     return (
         <div className="card-list-container">
-            <TopButtons
-                title={title}
-                onAdd={onAdd}
-            />
-
             <div className="cards-grid single-column">
                 {owners.length === 0 ? (
                     <div className="empty-state">No owners found.</div>

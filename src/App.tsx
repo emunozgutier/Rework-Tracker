@@ -4,6 +4,7 @@ import './index.css'
 import './App.css'
 import { NetworkQRCode } from './Pages/ViewPages/Cards/NetworkQRCode'
 import { TabBar } from './components/TabBar'
+import { TopButtons } from './components/TopButtons'
 import { ProjectView } from './Pages/ViewPages/ProjectView'
 import { PcbView } from './Pages/ViewPages/PcbView'
 import { ReworkView } from './Pages/ViewPages/ReworkView'
@@ -103,6 +104,7 @@ function App() {
       </header>
       
       <TabBar />
+      {['projects', 'pcbs', 'reworks', 'owners', 'tags'].includes(page) && <TopButtons />}
       
       <main className="app-main">
         {renderContent()}

@@ -25,6 +25,11 @@ interface NavigationState {
     mistypedUrl: string | null;
     correctedUrl: string | null;
     
+    // Search and filter states for top header buttons
+    searchQuery: string;
+    showFilters: boolean;
+    showMobileSearch: boolean;
+    
     // Actions
     setPage: (page: Page) => void;
     setActiveTab: (tab: string) => void;
@@ -39,6 +44,9 @@ interface NavigationState {
     setQrModalBoard: (board: string | null) => void;
     setMistypedUrl: (url: string | null) => void;
     setCorrectedUrl: (url: string | null) => void;
+    setSearchQuery: (query: string) => void;
+    setShowFilters: (show: boolean) => void;
+    setShowMobileSearch: (show: boolean) => void;
 }
 
 export const useStore = create<NavigationState>((set) => ({
@@ -53,6 +61,9 @@ export const useStore = create<NavigationState>((set) => ({
     qrModalBoard: null,
     mistypedUrl: null,
     correctedUrl: null,
+    searchQuery: '',
+    showFilters: false,
+    showMobileSearch: false,
 
     setPage: (page) => set({ page }),
     setIsolatedView: (isolatedView) => set({ isolatedView }),
@@ -72,6 +83,9 @@ export const useStore = create<NavigationState>((set) => ({
     setQrModalBoard: (name) => set({ qrModalBoard: name }),
     setMistypedUrl: (url) => set({ mistypedUrl: url }),
     setCorrectedUrl: (url) => set({ correctedUrl: url }),
+    setSearchQuery: (searchQuery) => set({ searchQuery }),
+    setShowFilters: (showFilters) => set({ showFilters }),
+    setShowMobileSearch: (showMobileSearch) => set({ showMobileSearch }),
 
     setActiveTab: (tab) => {
         usePcbStore.getState().resetFilters();
@@ -84,7 +98,10 @@ export const useStore = create<NavigationState>((set) => ({
             selectedId: null,
             expandedProject: null,
             expandedPcb: null,
-            expandedRework: null
+            expandedRework: null,
+            searchQuery: '',
+            showFilters: false,
+            showMobileSearch: false
         });
     },
 

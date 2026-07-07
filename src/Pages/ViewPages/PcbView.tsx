@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PcbCard } from './Cards/PcbCard';
 import { PcbFilter } from '../../components/Filter/PcbFilter';
-import { TopButtons } from '../../components/TopButtons';
 
 import { useProjectStore } from '../../store/storeProject';
 import { usePcbStore } from '../../store/storePcb';
@@ -19,7 +18,7 @@ export function PcbView({ title, onAdd }: PcbViewProps) {
     const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, setSelectedBoardNumbers, resetFilters } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
-    const { expandedPcb, isolatedView } = useStore();
+    const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters } = useStore();
 
     useEffect(() => {
         fetchPcbs();
@@ -30,9 +29,7 @@ export function PcbView({ title, onAdd }: PcbViewProps) {
 
     const activePcbFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length + selectedBoardNumbers.length;
     
-    const [showFilters, setShowFilters] = useState<boolean>(activePcbFilterCount > 0 && !isolatedView);
     const [hasAutoFiltered, setHasAutoFiltered] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         if (expandedPcb && !expandedPcb.startsWith('SHORT:') && isolatedView && !hasAutoFiltered) {
@@ -47,7 +44,7 @@ export function PcbView({ title, onAdd }: PcbViewProps) {
         if (activePcbFilterCount > 0 && !isolatedView) {
             setShowFilters(true);
         }
-    }, [activePcbFilterCount, isolatedView]);
+    }, [activePcbFilterCount, isolatedView, setShowFilters]);
 
     let items = [...pcbs];
     const loading = pcbsLoading || projectsLoading;
@@ -90,18 +87,6 @@ export function PcbView({ title, onAdd }: PcbViewProps) {
 
     return (
         <div className="card-list-container">
-            <TopButtons
-                title={title}
-                onAdd={onAdd}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                searchPlaceholder="Search PCBs..."
-                activeFilterCount={activePcbFilterCount}
-                onClearFilters={resetFilters}
-                showFilters={showFilters}
-                setShowFilters={setShowFilters}
-            />
-            
             {showFilters && <PcbFilter />}
             
             <div className="cards-grid single-column">

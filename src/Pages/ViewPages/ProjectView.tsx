@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { TopButtons } from '../../components/TopButtons';
 import { ProjectCard } from './Cards/ProjectCard';
 import { useProjectStore } from '../../store/storeProject';
 import { usePcbStore } from '../../store/storePcb';
@@ -22,11 +21,6 @@ export function ProjectView({ title, onAdd }: ProjectViewProps) {
 
     return (
         <div className="card-list-container">
-            <TopButtons
-                title={title}
-                onAdd={onAdd}
-            />
-
             <div className="cards-grid single-column">
                 {projects.length === 0 ? (
                     <div className="empty-state">No projects found.</div>
