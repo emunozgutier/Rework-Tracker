@@ -28,8 +28,8 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const [tagToRemove, setTagToRemove] = useState<any>(null);
     const [isRemovePcbOpen, setIsRemovePcbOpen] = useState(false);
     const [activeTabIndex, setActiveTabIndex] = useState(0);
-    const tabsList = ['Rework', 'Public Tags', 'Personal Tags'];
-    const mobileTabsList = ['Rework', 'Public #', 'Personal #'];
+    const tabsList = ['Rework', 'Tags'];
+    const mobileTabsList = ['Rework', 'Tags'];
     const activeTabName = tabsList[activeTabIndex];
     
     const [expandedReworkId, setExpandedReworkId] = useState<number | string | null>(null);
@@ -160,13 +160,30 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                         </div>
                         {pcbReworks.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {pcbReworks.slice(0, 5).map((rework: any, index: number) => (
-                                    <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.03)', minWidth: 0, width: '100%', boxSizing: 'border-box' }}>
-                                        <ReworkCardHeader 
-                                            rework={rework} 
-                                            isExpanded={expandedReworkId === rework.id}
-                                            onToggle={() => handleReworkClick(rework.id)}
-                                        />
+                                {pcbReworks.slice(0, 5).map((rework) => (
+                                    <div 
+                                        key={rework.id} 
+                                        style={{ 
+                                            background: 'rgba(255,255,255,0.02)', 
+                                            border: '1px solid var(--border)', 
+                                            borderRadius: '8px',
+                                            overflow: 'hidden'
+                                        }}
+                                    >
+                                        <div 
+                                            onClick={() => handleReworkClick(rework.id)}
+                                            style={{ 
+                                                padding: '10px 12px', 
+                                                display: 'flex', 
+                                                justifyContent: 'space-between', 
+                                                alignItems: 'center',
+                                                cursor: 'pointer',
+                                                fontWeight: expandedReworkId === rework.id ? 600 : 500
+                                            }}
+                                        >
+                                            <span style={{ fontSize: '0.85rem' }}>{rework.rework_name}</span>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{rework.date}</span>
+                                        </div>
                                         {expandedReworkId === rework.id && (
                                             <div style={{ padding: '0 12px 12px 12px' }}>
                                                 <ReworkCardBody rework={rework} />
@@ -186,19 +203,18 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     </>
                 )}
 
-                {(activeTabName === 'Public Tags' || activeTabName === 'Personal Tags') && (
+                {activeTabName === 'Tags' && (
                     <>
                         {(() => {
-                            const isPersonal = activeTabName === 'Personal Tags';
-                            const filteredAttached = attachedTags.filter(t => isPersonal ? t.type === 'personal' : t.type !== 'personal');
-                            const filteredAvailable = tags.filter(t => (isPersonal ? t.type === 'personal' : t.type !== 'personal') && !attachedTags.some(at => at.id === t.id));
+                            const filteredAttached = attachedTags.filter(t => t.type !== 'personal');
+                            const filteredAvailable = tags.filter(t => t.type !== 'personal' && !attachedTags.some(at => at.id === t.id));
 
                             return (
                                 <div>
                                     {isAssigningTag ? (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '16px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Select {isPersonal ? 'Personal' : 'Public'} Tag to Attach:</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Select Tag to Attach:</span>
                                                 <button onClick={(e) => { e.stopPropagation(); setIsAssigningTag(false); }} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
                                             </div>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
@@ -225,13 +241,13 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                                 ))}
                                             </div>
                                             {filteredAvailable.length === 0 && (
-                                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>All available {isPersonal ? 'personal' : 'public'} tags are already attached.</p>
+                                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>All available tags are already attached.</p>
                                             )}
                                         </div>
                                     ) : (
                                         <AddButton 
                                             onClick={(e) => { e.stopPropagation(); setIsAssigningTag(true); }}
-                                            label={`Add ${isPersonal ? 'Personal' : 'Public'} Tag`}
+                                            label="Add Tag"
                                             style={{ width: '100%', marginBottom: '16px' }}
                                         />
                                     )}
@@ -242,26 +258,24 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                                 <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}40`, padding: '4px 10px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
                                                     <TagIcon size={12} />
                                                     {formatTagName(tag)}
-                                                    {!isPersonal && (
-                                                        <button 
-                                                            onClick={(e) => { e.stopPropagation(); handleRemoveTagDirect(tag); }}
-                                                            style={{
-                                                                background: 'none', border: 'none', cursor: 'pointer',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                color: tag.color, padding: 0, marginLeft: '4px', opacity: 0.7
-                                                            }}
-                                                            onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
-                                                            onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
-                                                        >
-                                                            <X size={14} />
-                                                        </button>
-                                                    )}
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); handleRemoveTagDirect(tag); }}
+                                                        style={{
+                                                            background: 'none', border: 'none', cursor: 'pointer',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            color: tag.color, padding: 0, marginLeft: '4px', opacity: 0.7
+                                                        }}
+                                                        onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                                                        onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
                                         <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem', margin: 0 }}>
-                                            No {isPersonal ? 'personal' : 'public'} tags attached.
+                                            No tags attached.
                                         </p>
                                     )}
                                 </div>

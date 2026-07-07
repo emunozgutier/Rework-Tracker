@@ -3,7 +3,6 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { useTagStore } from '../../store/storeTag';
-import { useOwnerStore } from '../../store/storeOwner';
 import { COLORS } from '../../store/storeStyles';
 
 interface EditTabProps {
@@ -15,16 +14,9 @@ interface EditTabProps {
 export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
-    const [ownerId, setOwnerId] = useState<string>('');
-    const [type, setType] = useState<'public' | 'personal'>('public');
     const [loading, setLoading] = useState(true);
     const { updateTag, deleteTag } = useTagStore();
-    const { owners, fetchOwners } = useOwnerStore();
     const [saving, setSaving] = useState(false);
-
-    useEffect(() => {
-        if (owners.length === 0) fetchOwners();
-    }, [owners.length, fetchOwners]);
 
     useEffect(() => {
         apiFetch(`${API_BASE}/tags/${id}`)
@@ -33,8 +25,6 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                 if (data) {
                     setName(data.name);
                     setColor(data.color || '#818cf8');
-                    setOwnerId(data.owner_id ? data.owner_id.toString() : '');
-                    setType(data.type || 'public');
                 }
                 setLoading(false);
             })
@@ -47,7 +37,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const success = await updateTag(id, { name, color, owner_id: ownerId, type });
+        const success = await updateTag(id, { name, color, type: 'public' });
         if (success) onSuccess();
         setSaving(false);
     };
@@ -78,48 +68,16 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
 
             <form onSubmit={handleUpdate} className="add-form">
                 <div className="form-group">
-                    <label htmlFor="type">Tag Type</label>
-                    <select 
-                        id="type"
-                        value={type} 
-                        onChange={(e) => {
-                            setType(e.target.value as 'public' | 'personal');
-                            if (e.target.value === 'public') setOwnerId('');
-                        }} 
-                        required
-                    >
-                        <option value="public">Public (Shared across all projects)</option>
-                        <option value="personal">Personal (Private to you)</option>
-                    </select>
-                </div>
-                {type === 'personal' && (
-                    <div className="form-group">
-                        <label htmlFor="owner">Tag Owner *</label>
-                        <select 
-                            id="owner"
-                            value={ownerId} 
-                            onChange={(e) => setOwnerId(e.target.value)} 
-                            required
-                        >
-                            <option value="">Select an Owner...</option>
-                            {owners.map(o => (
-                                <option key={o.id} value={o.id}>@{o.username}</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-                <div className="form-group">
                     <label htmlFor="name">Tag Name</label>
                     <input 
                         id="name"
                         type="text" 
                         value={name} 
                         onChange={(e) => {
-                            let val = e.target.value.toLowerCase().replace(/\s+/g, '-');
-                            if (type === 'public') val = val.replace(/\//g, '');
+                            const val = e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '');
                             setName(val);
                         }} 
-                        placeholder={type === 'public' ? "e.g. tag-name" : "e.g. username/tag-name"}
+                        placeholder="e.g. tag-name"
                         required 
                     />
                 </div>

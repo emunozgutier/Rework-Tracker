@@ -262,7 +262,7 @@ export function PcbFilter() {
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <PcbFilterElement 
-                            title="Public Tags" 
+                            title="Tags" 
                             value={(() => {
                                 const activePublicIds = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public');
                                 if (activePublicIds.length === 0) return [];
@@ -296,20 +296,6 @@ export function PcbFilter() {
                                     return <option key={name} value={valueStr}>{name} ({count})</option>;
                                 });
                             })()}
-                        </PcbFilterElement>
-
-                        <PcbFilterElement 
-                            title="Personal Tags" 
-                            value={selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'personal')} 
-                            onChange={(newPersonal) => {
-                                setSelectedTags(newPersonal.length > 0 ? [newPersonal[newPersonal.length - 1]] : []);
-                            }}
-                        >
-                            {tags.filter(t => t.type === 'personal').map(tag => {
-                                const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.includes(tag.id) && matchPcb(pcb, 'tag')).length;
-                                if (count === 0 && hasAnyOtherFilter('tag')) return null;
-                                return <option key={tag.id} value={tag.id.toString()}>{formatTagName(tag)} ({count})</option>;
-                            })}
                         </PcbFilterElement>
 
                         <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners}>
@@ -448,7 +434,7 @@ export function PcbFilter() {
             {/* Tags & Owner Group */}
             <PcbFilterGroup title="Organization" color="#0ea5e9">
                 <PcbFilterElement 
-                    title="Public Tags" 
+                    title="Tags" 
                     value={(() => {
                         const activePublicIds = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public');
                         if (activePublicIds.length === 0) return [];
@@ -483,20 +469,6 @@ export function PcbFilter() {
                             return <option key={name} value={valueStr}>{name} ({count})</option>;
                         });
                     })()}
-                </PcbFilterElement>
-
-                <PcbFilterElement 
-                    title="Personal Tags" 
-                    value={selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'personal')} 
-                    onChange={(newPersonal) => {
-                        setSelectedTags(newPersonal.length > 0 ? [newPersonal[newPersonal.length - 1]] : []);
-                    }}
-                >
-                    {tags.filter(t => t.type === 'personal').map(tag => {
-                        const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.includes(tag.id) && matchPcb(pcb, 'tag')).length;
-                        if (count === 0 && hasAnyOtherFilter('tag')) return null;
-                        return <option key={tag.id} value={tag.id.toString()}>{formatTagName(tag)} ({count})</option>;
-                    })}
                 </PcbFilterElement>
 
                 <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners}>

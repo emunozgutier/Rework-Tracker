@@ -1,7 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { usePcbStore } from '../store/storePcb';
-import { useTagStore } from '../store/storeTag';
 import './TopButtons.css';
 
 export function TopButtons() {
@@ -21,7 +20,7 @@ export function TopButtons() {
     const hasSearch = activeTab === 'pcbs' || activeTab === 'tags';
     const searchPlaceholder = activeTab === 'pcbs' ? 'Search PCBs...' : 'Search tags...';
 
-    const hasFilters = activeTab === 'pcbs' || activeTab === 'tags';
+    const hasFilters = activeTab === 'pcbs';
 
     // Only display Add New button if not on sandbox
     const showAddButton = activeTab !== 'sandbox';
@@ -39,13 +38,6 @@ export function TopButtons() {
         resetFilters: resetPcbFilters
     } = usePcbStore();
 
-    // Retrieve Tag filters state
-    const {
-        selectedTagTypes,
-        selectedTagOwners,
-        resetFilters: resetTagFilters
-    } = useTagStore();
-
     const activeFilterCount = activeTab === 'pcbs'
         ? selectedProjects.length +
         selectedRevisions.length +
@@ -55,15 +47,9 @@ export function TopButtons() {
         selectedTags.length +
         selectedOwners.length +
         selectedBoardNumbers.length
-        : activeTab === 'tags'
-            ? selectedTagTypes.length + selectedTagOwners.length
-            : 0;
+        : 0;
 
-    const onClearFilters = activeTab === 'pcbs'
-        ? resetPcbFilters
-        : activeTab === 'tags'
-            ? resetTagFilters
-            : undefined;
+    const onClearFilters = activeTab === 'pcbs' ? resetPcbFilters : undefined;
 
     const onAdd = () => {
         addItem((activeTab + '_add') as any);
