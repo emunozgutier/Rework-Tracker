@@ -10,6 +10,10 @@
   --text: #f8fafc;
   --text-muted: #94a3b8;
   --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --bg-panel: #0b0f19;
+  --bg-element: rgba(30, 41, 59, 0.5);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-h: #ffffff;
 }
 
 body {
@@ -185,6 +189,7 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
+  margin-bottom: 24px;
 }
 
 .add-button {
@@ -198,6 +203,41 @@ body {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  margin: 4px;
+  transition: all 0.2s ease;
+}
+
+.add-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-color);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin: 4px;
+}
+
+.secondary-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.secondary-button.active {
+  background-color: rgba(99, 102, 241, 0.15);
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
 }
 
 .cards-grid {

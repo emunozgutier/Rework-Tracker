@@ -133,60 +133,24 @@ export function PcbView({ title, onAdd }: PcbViewProps) {
                         <button 
                             className="secondary-button" 
                             onClick={resetFilters}
-                            style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '8px', 
-                                padding: '8px 16px', 
-                                borderRadius: '8px', 
-                                backgroundColor: 'transparent', 
-                                border: '1px solid var(--border-color)', 
-                                color: 'var(--text-muted)', 
-                                cursor: 'pointer',
-                                fontWeight: 500
-                            }}
+                            style={{ color: 'var(--text-muted)' }}
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             <span>Clear All ({activePcbFilterCount})</span>
                         </button>
                     )}
                     <button 
-                        className="secondary-button" 
+                        className={`secondary-button ${activePcbFilterCount > 0 ? 'active' : ''}`}
                         onClick={() => setShowFilters(!showFilters)}
-                        style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            gap: '8px', 
-                            padding: '8px 16px', 
-                            borderRadius: '8px', 
-                            backgroundColor: activePcbFilterCount > 0 ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-element)', 
-                            border: `1px solid ${activePcbFilterCount > 0 ? 'var(--accent)' : 'var(--border-color)'}`, 
-                            color: activePcbFilterCount > 0 ? 'var(--accent)' : 'var(--text)', 
-                            cursor: 'pointer',
-                            fontWeight: 500,
-                            width: '145px'
-                        }}
+                        style={{ width: '145px' }}
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                         <span>{showFilters ? 'Hide Filters' : 'Show Filters'}</span>
                     </button>
                     {isMobile && (
                         <button 
-                            className="secondary-button" 
+                            className={`secondary-button ${showMobileSearch ? 'active' : ''}`}
                             onClick={() => setShowMobileSearch(!showMobileSearch)}
-                            style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '8px', 
-                                padding: '8px 16px', 
-                                borderRadius: '8px', 
-                                backgroundColor: showMobileSearch ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-element)', 
-                                border: `1px solid ${showMobileSearch ? 'var(--accent)' : 'var(--border-color)'}`, 
-                                color: showMobileSearch ? 'var(--accent)' : 'var(--text)', 
-                                cursor: 'pointer',
-                                fontWeight: 500
-                            }}
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                             <span>Search</span>

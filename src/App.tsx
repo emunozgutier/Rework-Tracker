@@ -125,3 +125,5 @@ if (typeof document !== 'undefined') {
     )
   }
 }
+
+// Force Vite reload comment
