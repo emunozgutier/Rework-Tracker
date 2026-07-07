@@ -98,7 +98,7 @@ export function TopButtons() {
                             <span>{showFilters ? 'Hide Filters' : 'Show Filters'}</span>
                         </button>
                     )}
-                    {isMobile && hasSearch && (
+                    {hasSearch && (
                         <button
                             className={`secondary-button ${showMobileSearch ? 'active' : ''}`}
                             onClick={() => setShowMobileSearch(!showMobileSearch)}
@@ -134,7 +134,7 @@ export function TopButtons() {
                 </div>
             )}
 
-            {isMobile && hasSearch && showMobileSearch && (
+            {hasSearch && showMobileSearch && (
                 <div className="mobile-search-row">
                     <svg className="mobile-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
