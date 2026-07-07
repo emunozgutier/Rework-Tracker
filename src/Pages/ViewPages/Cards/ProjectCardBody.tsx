@@ -130,7 +130,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
         <div className="card-expanded-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <ProjectCardSummary project={project} />
 
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
                 <EditButton 
                     onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
                     label={isMobile ? "Edit" : "Edit Project"}
@@ -143,7 +143,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         setPage('pcbs');
                     }}
                     className="view-pcbs-btn"
-                    label={isMobile ? "View PCBs" : "View PCBs Info"}
+                    label={isMobile ? "View" : "View PCBs Info"}
                 />
                 <DeleteButton 
                     onClick={(e) => {
