@@ -71,7 +71,7 @@ export function TopButtons() {
 
     return (
         <>
-            <div className="list-header">
+            <div className="top-buttons">
                 <div className="header-left">
                     {!isMobile && hasSearch && (
                         <div className="search-container-desktop">

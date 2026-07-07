@@ -60,70 +60,12 @@ body {
   margin: 0;
 }
 
-/* Tab Bar Styling */
-.tab-bar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  background: #1e293b;
-  padding: 8px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  margin-bottom: 40px;
-  position: sticky;
-  top: 24px;
-  z-index: 100;
-  box-shadow: var(--shadow);
-}
 
-.tab-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.tab-item:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.tab-item.active {
-  color: #fff;
-  background: var(--accent);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
-
-.tab-label {
-  display: inline;
-}
 
 @media (max-width: 768px) {
   .app-container { padding: 12px; }
-  .tab-label { display: none; }
-  .tab-item { padding: 8px; flex: 1 1 auto; justify-content: center; }
   .item-card { padding: 12px; width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden; }
   .card-header-main { padding: 10px 12px !important; }
-  .tab-bar { 
-    position: sticky; 
-    top: 10px; 
-    bottom: auto; 
-    width: 100%; 
-    left: 0; 
-    margin-bottom: 16px;
-    border-radius: 12px;
-    gap: 8px; /* Reduced gap */
-    padding: 6px; /* Reduced padding */
-  }
 }
 
 /* Responsive Font System using Zustand State */
@@ -183,62 +125,6 @@ body {
   gap: 16px;
 }
 
-.list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.add-button {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  margin: 4px;
-  transition: all 0.2s ease;
-}
-
-.add-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.secondary-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 10px;
-  background-color: var(--bg-element);
-  border: 1px solid var(--border-color);
-  color: var(--text);
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  margin: 4px;
-}
-
-.secondary-button:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-.secondary-button.active {
-  background-color: rgba(99, 102, 241, 0.15);
-  border-color: var(--accent) !important;
-  color: var(--accent) !important;
-}
 
 .cards-grid {
   display: grid;

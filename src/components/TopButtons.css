@@ -1,6 +1,4 @@
-/* TopButtons.css */
-
-.list-header {
+.top-buttons {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -131,7 +129,7 @@
 
 /* Mobile Layout Layout Overrides */
 @media (max-width: 768px) {
-  .list-header {
+  .top-buttons {
     margin-bottom: 16px;
   }
   

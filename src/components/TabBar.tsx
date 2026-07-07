@@ -1,5 +1,6 @@
 import { CircuitBoard, ClipboardList, PenTool, Hash, Users, ShieldCheck } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import './topTab.css';
 
 export function TabBar() {
     const { activeTab, setActiveTab } = useStore();
