@@ -129,39 +129,39 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
                 </div>
             )}
 
-            <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: requirementsMet ? 'var(--text)' : 'var(--text-muted)' }}>
-                    Please type <strong style={{ color: requirementsMet ? 'var(--text)' : 'var(--text-muted)' }}>{expectedText}</strong> to confirm:
-                </label>
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    disabled={!requirementsMet}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && isValid && requirementsMet) {
-                            handleConfirm();
-                        }
-                    }}
-                    placeholder={requirementsMet ? expectedText : "Deletion disabled"}
-                    style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: borderStyle,
-                        boxShadow: boxShadowStyle,
-                        background: requirementsMet ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.01)',
-                        color: requirementsMet ? 'var(--text)' : 'var(--text-muted)',
-                        fontSize: '1rem',
-                        outline: 'none',
-                        cursor: requirementsMet ? 'text' : 'not-allowed',
-                        transition: 'border-color 0.2s, box-shadow 0.2s'
-                    }}
-                />
-            </div>
+            {requirementsMet && (
+                <div style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text)' }}>
+                        Please type <strong style={{ color: 'var(--text)' }}>{expectedText}</strong> to confirm:
+                    </label>
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && isValid) {
+                                handleConfirm();
+                            }
+                        }}
+                        placeholder={expectedText}
+                        style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: borderStyle,
+                            boxShadow: boxShadowStyle,
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            color: 'var(--text)',
+                            fontSize: '1rem',
+                            outline: 'none',
+                            transition: 'border-color 0.2s, box-shadow 0.2s'
+                        }}
+                    />
+                </div>
+            )}
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                 <button
@@ -176,24 +176,26 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
                         fontWeight: 600
                     }}
                 >
-                    Cancel
+                    {requirementsMet ? 'Cancel' : 'Close'}
                 </button>
-                <button
-                    onClick={handleConfirm}
-                    disabled={!isValid || !requirementsMet}
-                    style={{
-                        padding: '10px 20px',
-                        background: (isValid && requirementsMet) ? '#ef4444' : 'rgba(239, 68, 68, 0.15)',
-                        border: 'none',
-                        color: (isValid && requirementsMet) ? '#fff' : 'rgba(255, 255, 255, 0.3)',
-                        borderRadius: '8px',
-                        cursor: (isValid && requirementsMet) ? 'pointer' : 'not-allowed',
-                        fontWeight: 600,
-                        transition: 'all 0.2s'
-                    }}
-                >
-                    Remove Project
-                </button>
+                {requirementsMet && (
+                    <button
+                        onClick={handleConfirm}
+                        disabled={!isValid}
+                        style={{
+                            padding: '10px 20px',
+                            background: isValid ? '#ef4444' : 'rgba(239, 68, 68, 0.15)',
+                            border: 'none',
+                            color: isValid ? '#fff' : 'rgba(255, 255, 255, 0.3)',
+                            borderRadius: '8px',
+                            cursor: isValid ? 'pointer' : 'not-allowed',
+                            fontWeight: 600,
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        Remove Project
+                    </button>
+                )}
             </div>
         </Popup>
     );
