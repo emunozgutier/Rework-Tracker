@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { API_BASE } from '../store/database/apiBridge';
 import { apiFetch } from '../store/database/apiBridge';
+import { useStore } from './useStore';
 
 export interface PcbFlavor {
     name: string;
@@ -99,10 +100,17 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     deleteProject: async (id) => {
         set({ loading: true, error: null });
         try {
+            const projectToDelete = get().projects.find(p => p.id.toString() === id.toString());
+            const projectName = projectToDelete?.name;
+
             const res = await apiFetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
             if (!res.ok) {
                 set({ error: 'Failed to delete project', loading: false });
                 return false;
+            }
+
+            if (projectName && useStore.getState().expandedProject === projectName) {
+                useStore.getState().setExpandedProject(null);
             }
 
             // Update state locally or re-fetch

@@ -47,11 +47,16 @@ function deduplicate(req, res, next) {
     if (req.method === 'GET') {
         return next();
     }
+    
+    // Prevent double execution if registered both globally and locally
+    if (req._deduplicated) {
+        return next();
+    }
+    req._deduplicated = true;
 
     const fileSignature = (req.files || []).map(f => `${f.originalname}-${f.size}`).join(',');
     const bodyKey = JSON.stringify(req.body || {});
     const key = `${req.method}:${req.originalUrl}:${bodyKey}:${fileSignature}`;
-    console.log("[DEDUPLICATE KEY]", key);
 
     if (inFlightRequests.has(key)) {
         console.log(`[Server Deduplicate] Duplicate request detected for key: ${key}.`);
@@ -131,6 +136,12 @@ function serializeWrites(req, res, next) {
     if (req.method === 'GET') {
         return next();
     }
+    
+    // Prevent double execution if registered both globally and locally
+    if (req._serialized) {
+        return next();
+    }
+    req._serialized = true;
 
     writeQueue = writeQueue.then(() => {
         return new Promise((resolve) => {
