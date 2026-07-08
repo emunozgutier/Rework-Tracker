@@ -27,7 +27,6 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile } = useStore();
     
     const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
-    const cannotDelete = project.pcb_count > 0;
 
     const confirmRemoveProject = async () => {
         await deleteProject(project.id);

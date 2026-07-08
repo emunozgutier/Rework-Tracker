@@ -7,7 +7,7 @@ interface ReworkViewProps {
     onAdd: () => void;
 }
 
-export function ReworkView({ title, onAdd }: ReworkViewProps) {
+export function ReworkView({ title }: ReworkViewProps) {
     const { reworks, loading: reworksLoading, fetchReworks, selectedBoards, setSelectedBoards } = useReworkStore();
 
     useEffect(() => {

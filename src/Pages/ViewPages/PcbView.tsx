@@ -13,9 +13,9 @@ interface PcbViewProps {
     onAdd: () => void;
 }
 
-export function PcbView({ title, onAdd }: PcbViewProps) {
+export function PcbView({ title }: PcbViewProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
-    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, setSelectedBoardNumbers, resetFilters } = usePcbStore();
+    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, setSelectedBoardNumbers } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
     const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters } = useStore();

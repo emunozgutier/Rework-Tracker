@@ -10,7 +10,7 @@ interface TabViewProps {
     onEdit: (id: string | number) => void;
 }
 
-export function TabView({ title, onAdd, onEdit }: TabViewProps) {
+export function TabView({ title, onEdit }: TabViewProps) {
     const { tags, loading: tagsLoading, fetchTags } = useTagStore();
     const { searchQuery } = useStore();
 

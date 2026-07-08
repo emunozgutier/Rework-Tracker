@@ -8,7 +8,7 @@ interface ProjectViewProps {
     onAdd: () => void;
 }
 
-export function ProjectView({ title, onAdd }: ProjectViewProps) {
+export function ProjectView({ title }: ProjectViewProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
     const { fetchPcbs } = usePcbStore();
 

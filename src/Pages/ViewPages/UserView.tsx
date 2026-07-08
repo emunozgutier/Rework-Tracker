@@ -8,7 +8,7 @@ interface UserViewProps {
     onEdit: (id: string | number) => void;
 }
 
-export function UserView({ title, onAdd, onEdit }: UserViewProps) {
+export function UserView({ title, onEdit }: UserViewProps) {
     const { owners, loading: ownersLoading, fetchOwners } = useOwnerStore();
 
     useEffect(() => {

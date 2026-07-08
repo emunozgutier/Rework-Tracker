@@ -10,7 +10,6 @@ import { Tag as TagIcon, X } from 'lucide-react';
 import { formatTagName } from '../../../store/storeTag';
 import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { RemovePcb } from '../../RemovePage/RemovePcb';
-import { ReworkCardHeader } from './ReworkCardHeader';
 import { ReworkCardBody } from './ReworkCardBody';
 
 interface PcbCardBodyProps {
@@ -92,20 +91,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const pcbReworks = reworks.filter((r: any) => r.pcb_id === pcb.id);
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-    const hasReworks = pcbReworks.length > 0;
-    let daysSinceCreation = 999;
-    if (pcb.created_at) {
-        const createdAt = new Date(pcb.created_at.includes('T') ? pcb.created_at : pcb.created_at.replace(' ', 'T') + 'Z');
-        if (!isNaN(createdAt.getTime())) {
-            daysSinceCreation = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
-        }
-    }
-    const cannotDelete = hasReworks || daysSinceCreation > 3;
-    const deleteTooltip = (hasReworks && daysSinceCreation > 3)
-        ? "Cannot delete PCB: it is older than 3 days and has reworks (delete them first)"
-        : hasReworks 
-            ? "Cannot delete PCB: it has reworks (delete them first)" 
-            : (daysSinceCreation > 3 ? "Cannot delete PCB: it is older than 3 days" : "");
+
 
     return (
         <div className="card-expanded-content">
@@ -181,8 +167,10 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                                 fontWeight: expandedReworkId === rework.id ? 600 : 500
                                             }}
                                         >
-                                            <span style={{ fontSize: '0.85rem' }}>{rework.rework_name}</span>
-                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{rework.date}</span>
+                                            <span style={{ fontSize: '0.85rem' }}>{rework.title || (rework.rework_number ? `Rework #${rework.rework_number}` : `Rework ${rework.id}`)}</span>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                {new Date(rework.timestamp).toLocaleDateString()}
+                                            </span>
                                         </div>
                                         {expandedReworkId === rework.id && (
                                             <div style={{ padding: '0 12px 12px 12px' }}>
