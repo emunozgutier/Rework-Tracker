@@ -83,7 +83,7 @@ export function PcbView({ title }: PcbViewProps) {
         );
     }
 
-    if (loading) return <div className="loading">Loading {title}...</div>;
+    if (loading && pcbs.length === 0) return <div className="loading">Loading {title}...</div>;
 
     return (
         <div className="card-list-container">

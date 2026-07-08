@@ -25,7 +25,7 @@ export function TabView({ title, onEdit }: TabViewProps) {
         items = items.filter(tag => tag.name.toLowerCase().includes(sq));
     }
 
-    if (tagsLoading) return <div className="loading">Loading {title}...</div>;
+    if (tagsLoading && tags.length === 0) return <div className="loading">Loading {title}...</div>;
 
     return (
         <div className="card-list-container">

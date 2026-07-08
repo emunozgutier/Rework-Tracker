@@ -19,7 +19,7 @@ export function ReworkView({ title }: ReworkViewProps) {
         items = items.filter(rw => selectedBoards.includes(rw.pcb_id.toString()));
     }
 
-    if (reworksLoading) return <div className="loading">Loading {title}...</div>;
+    if (reworksLoading && reworks.length === 0) return <div className="loading">Loading {title}...</div>;
 
     return (
         <div className="card-list-container">

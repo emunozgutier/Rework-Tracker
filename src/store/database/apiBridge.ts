@@ -196,9 +196,21 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             return createResponse(pcbsWithTags);
         }
         if (method === 'POST') {
+            const parts = localPath.split('/');
+            if (parts.length === 4 && parts[3] === 'tags') {
+                const pcbId = parseInt(parts[2]);
+                const tagId = parseInt(body.tag_id);
+                if (!internalPcbTags[pcbId]) {
+                    internalPcbTags[pcbId] = [];
+                }
+                if (!internalPcbTags[pcbId].includes(tagId)) {
+                    internalPcbTags[pcbId].push(tagId);
+                }
+                return createResponse({ message: 'Tag attached' }, 201);
+            }
+            
             const proj = internalProjects.find(p => p.id === parseInt(body.project_id));
             const ownerObj = internalOwners.find(o => o.id === parseInt(body.owner_id));
-            
             const newPcb = { 
                 id: Date.now(), 
                 ...body,
@@ -225,6 +237,15 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             return createResponse({ message: 'PCB updated' });
         }
         if (method === 'DELETE') {
+            const parts = localPath.split('/');
+            if (parts.length === 5 && parts[3] === 'tags') {
+                const pcbId = parseInt(parts[2]);
+                const tagId = parseInt(parts[4]);
+                if (internalPcbTags[pcbId]) {
+                    internalPcbTags[pcbId] = internalPcbTags[pcbId].filter((id: number) => id !== tagId);
+                }
+                return createResponse({ message: 'Tag detached' });
+            }
             const id = parseInt(localPath.split('/').pop() || '0');
             internalPcbs = internalPcbs.filter(p => p.id !== id);
             return createResponse({ message: 'PCB deleted' });

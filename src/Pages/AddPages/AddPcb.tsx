@@ -211,7 +211,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         crcForUI = generateCRC(finalBoardNameForUI);
         finalBoardWithCrcForUI = `${finalBoardNameForUI}${crcForUI}`;
     }
-    const isDuplicate = pcbs.some(p => p.board_number.toUpperCase() === finalBoardWithCrcForUI.toUpperCase());
+    const isDuplicate = pcbs.some(p => p.board_number && p.board_number.toUpperCase() === finalBoardWithCrcForUI.toUpperCase());
 
     return (
         <div className="add-page-container">

@@ -14,7 +14,7 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
     const [taggedPcbs, setTaggedPcbs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const { setActiveTab } = useStore();
-    const { pcbs, fetchPcbs, setSelectedTags, resetFilters } = usePcbStore();
+    const { pcbs, fetchPcbs, setSelectedTags } = usePcbStore();
 
     useEffect(() => {
         if (pcbs.length === 0) {

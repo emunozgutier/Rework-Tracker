@@ -17,7 +17,7 @@ export function ProjectView({ title }: ProjectViewProps) {
         fetchPcbs();
     }, [fetchProjects, fetchPcbs]);
 
-    if (projectsLoading) return <div className="loading">Loading {title}...</div>;
+    if (projectsLoading && projects.length === 0) return <div className="loading">Loading {title}...</div>;
 
     return (
         <div className="card-list-container">

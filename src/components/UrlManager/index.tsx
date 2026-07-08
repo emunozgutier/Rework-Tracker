@@ -146,16 +146,17 @@ export function UrlManager() {
         // Don't push state if we are inside a form view
         if (page !== activeTab && page.includes('_')) return;
 
-        let targetUrl = `${base}/${activeTab}`;
+        const search = window.location.search;
+        let targetUrl = `${base}/${activeTab}${search}`;
         
         if (page === 'sandbox') {
-            targetUrl = `${base}/crc`;
+            targetUrl = `${base}/crc${search}`;
         } else if (activeTab === 'projects' && expandedProject) {
-            targetUrl = `${base}/projects/${encodeURIComponent(expandedProject)}`;
+            targetUrl = `${base}/projects/${encodeURIComponent(expandedProject)}${search}`;
         } else if (activeTab === 'pcbs' && expandedPcb) {
-            targetUrl = `${base}/pcbs/${encodeURIComponent(expandedPcb)}${isolatedView ? '/view' : ''}`;
+            targetUrl = `${base}/pcbs/${encodeURIComponent(expandedPcb)}${isolatedView ? '/view' : ''}${search}`;
         } else if (activeTab === 'reworks' && expandedRework) {
-            targetUrl = `${base}/reworks/${encodeURIComponent(expandedRework)}`;
+            targetUrl = `${base}/reworks/${encodeURIComponent(expandedRework)}${search}`;
         }
 
         // Only push if the resulting URL is different from the current to avoid infinite loops

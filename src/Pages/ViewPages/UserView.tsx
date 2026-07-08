@@ -15,7 +15,7 @@ export function UserView({ title, onEdit }: UserViewProps) {
         fetchOwners();
     }, [fetchOwners]);
 
-    if (ownersLoading) return <div className="loading">Loading {title}...</div>;
+    if (ownersLoading && owners.length === 0) return <div className="loading">Loading {title}...</div>;
 
     return (
         <div className="card-list-container">
