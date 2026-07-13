@@ -5,6 +5,7 @@ import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { useReworkStore } from '../../store/useReworkStore';
 import { useOwnerStore } from '../../store/useOwnerStore';
 import { FormGroup } from '../../components/forms/FormGroup';
+import { useDeleteEditRequirements } from '../../store/useDeleteEditRequirements';
 
 interface EditReworkProps {
     id: string | number;
@@ -27,6 +28,8 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const { updateRework, deleteRework } = useReworkStore();
     const { owners, fetchOwners } = useOwnerStore();
     const [saving, setSaving] = useState(false);
+    const [isEditable, setIsEditable] = useState(true);
+    const [reworkAgeDays, setReworkAgeDays] = useState(0);
 
     useEffect(() => {
         fetchOwners();
@@ -43,6 +46,11 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                 setDescription(rework.description);
                 setOwnerId(rework.owner_id ? rework.owner_id.toString() : '-1');
                 setReworkType(rework.rework_type || 'Minor');
+                
+                // Validate if rework is older than 2 weeks (14 days)
+                const { requirementsMet, daysOld } = useDeleteEditRequirements.getState().checkReworkEditRequirements(rework);
+                setIsEditable(requirementsMet);
+                setReworkAgeDays(daysOld);
             }
             setLoading(false);
         }).catch(err => {
@@ -120,7 +128,31 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                 </button>
             </header>
 
+            {!isEditable && (
+                <div style={{ 
+                    color: '#f97316', 
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)', 
+                    border: '1px solid rgba(249, 115, 22, 0.2)', 
+                    borderRadius: '8px', 
+                    padding: '12px 16px', 
+                    fontSize: '0.95rem', 
+                    marginBottom: '20px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    lineHeight: '1.4' 
+                }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>This rework log is older than 2 weeks (Age: {reworkAgeDays.toFixed(1)} days) and cannot be edited.</span>
+                </div>
+            )}
+
             <form onSubmit={handleUpdate} className="add-form">
+                <fieldset disabled={!isEditable} style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div className="form-group">
                     <label htmlFor="pcb">Select PCB Board</label>
                     <select 
@@ -217,7 +249,8 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                         </div>
                     </FormGroup>
                 )}
-                <button type="submit" className="submit-button" disabled={saving}>
+                </fieldset>
+                <button type="submit" className="submit-button" disabled={saving || !isEditable} style={{ opacity: isEditable ? 1 : 0.5, cursor: isEditable ? 'pointer' : 'not-allowed' }}>
                     <Save size={18} />
                     <span>{saving ? 'Saving...' : 'Update Rework'}</span>
                 </button>

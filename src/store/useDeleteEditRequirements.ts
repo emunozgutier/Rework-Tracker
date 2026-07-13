@@ -24,7 +24,11 @@ interface DeleteEditRequirementsState {
         requirementsMet: boolean;
     };
     checkPcbEditRequirements: () => { requirementsMet: boolean };
-    checkReworkEditRequirements: () => { requirementsMet: boolean };
+    checkReworkEditRequirements: (rework: any) => {
+        daysOld: number;
+        isAgeValid: boolean;
+        requirementsMet: boolean;
+    };
     checkProjectEditRequirements: () => { requirementsMet: boolean };
 }
 
@@ -96,8 +100,15 @@ export const useDeleteEditRequirements = create<DeleteEditRequirementsState>((_,
         return { requirementsMet: true };
     },
 
-    checkReworkEditRequirements: () => {
-        return { requirementsMet: true };
+    checkReworkEditRequirements: (rework: any) => {
+        const daysOld = get().getReworkAgeDays(rework);
+        const isAgeValid = daysOld <= 14;
+        const requirementsMet = isAgeValid;
+        return {
+            daysOld,
+            isAgeValid,
+            requirementsMet
+        };
     },
 
     checkProjectEditRequirements: () => {

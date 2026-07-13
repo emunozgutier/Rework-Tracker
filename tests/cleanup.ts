@@ -114,7 +114,8 @@ export function updateReworkTimestamp(reworkId: number, daysAgo: number): Promis
         const ss = String(targetDate.getUTCSeconds()).padStart(2, '0');
         const dateStr = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
         
-        db.run("UPDATE reworks SET timestamp = ? WHERE id = ?", [dateStr, reworkId], (err) => {
+        db.run("UPDATE reworks SET timestamp = ? WHERE id = ?", [dateStr, reworkId], function(err) {
+            console.log(`[updateReworkTimestamp Debug] id=${reworkId} dateStr=${dateStr} changes=${this.changes}`);
             db.close((closeErr) => {
                 if (err || closeErr) reject(err || closeErr);
                 else resolve();

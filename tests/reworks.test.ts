@@ -164,6 +164,70 @@ describe('Reworks API - Silicon Swap', () => {
         expect(delRw1OkRes.status).toBe(200);
     });
 
+    it('should verify rework edit constraints', async () => {
+        // 1. Create a fresh PCB
+        const resPcb = await fetch(`${API_URL}/pcbs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                project_id: projectId,
+                board_number: '7777_test_edit',
+                board_flavor: 'Flavor1',
+                silicon_rev: 'A0'
+            })
+        });
+        const pcbData = await resPcb.json();
+        const testPcbId = pcbData.id;
+
+        // 2. Add a rework log
+        const fd = new FormData();
+        fd.append('pcb_id', testPcbId);
+        fd.append('title', 'Original Title');
+        fd.append('description', 'Original Description');
+        fd.append('rework_type', 'Minor');
+        const resRw = await fetch(`${API_URL}/reworks`, { method: 'POST', body: fd });
+        const rwData = await resRw.json();
+        const rwId = rwData.id;
+
+        // 3. Edit should succeed normally
+        const updateResOk = await fetch(`${API_URL}/reworks/${rwId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                pcb_id: testPcbId,
+                title: 'Updated Title',
+                description: 'Updated Description',
+                rework_type: 'Minor'
+            })
+        });
+        console.log("rwId is:", rwId);
+        expect(updateResOk.status).toBe(200);
+
+        // 4. Update its timestamp to 15 days ago (older than 2 weeks)
+        await updateReworkTimestamp(rwId, 15);
+
+        // 5. Try to edit it. Should fail with 400.
+        const updateResFail = await fetch(`${API_URL}/reworks/${rwId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                pcb_id: testPcbId,
+                title: 'Failed Update Title',
+                description: 'Failed Update Description',
+                rework_type: 'Minor'
+            })
+        });
+        const data = await updateResFail.json();
+        console.log("updateResFail status:", updateResFail.status, "data:", data);
+        expect(updateResFail.status).toBe(400);
+        expect(data.error).toContain('2 weeks');
+
+        // 6. Clean up: reset timestamp and delete
+        await updateReworkTimestamp(rwId, 0);
+        const delRes = await fetch(`${API_URL}/reworks/${rwId}`, { method: 'DELETE' });
+        expect(delRes.status).toBe(200);
+    });
+
     afterAll(async () => {
         try {
             await cleanupTestData();

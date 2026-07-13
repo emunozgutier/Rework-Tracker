@@ -6,6 +6,7 @@ import { usePcbStore } from '../../../store/usePcbStore';
 import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { COLORS } from '../../../store/useStyles';
 import { RemoveRework } from '../../RemovePage/RemoveRework';
+import { useDeleteEditRequirements } from '../../../store/useDeleteEditRequirements';
 
 interface ReworkCardBodyProps {
     rework: any;
@@ -17,6 +18,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     const [isRemoveOpen, setIsRemoveOpen] = useState(false);
     const { deleteRework } = useReworkStore();
     const { editItem, isMobile } = useStore();
+    const { checkReworkEditRequirements } = useDeleteEditRequirements();
 
     const confirmRemoveRework = async () => {
         const success = await deleteRework(rework.id);
@@ -42,7 +44,15 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
         <div className="card-expanded-content" style={{ marginTop: '6px', paddingTop: '6px' }}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
                 <EditButton 
-                    onClick={(e) => { e.stopPropagation(); editItem('reworks_edit', rework.id); }}
+                    onClick={(e) => { 
+                        e.stopPropagation(); 
+                        const { requirementsMet, daysOld } = checkReworkEditRequirements(rework);
+                        if (!requirementsMet) {
+                            alert(`This rework log is older than 2 weeks (Age: ${daysOld.toFixed(1)} days) and cannot be edited.`);
+                            return;
+                        }
+                        editItem('reworks_edit', rework.id); 
+                    }}
                     label={isMobile ? "Edit" : "Edit Rework"}
                 />
                 <DeleteButton 

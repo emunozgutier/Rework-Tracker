@@ -340,7 +340,34 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
         }
         if (method === 'PUT') {
             const id = parseInt(localPath.split('/').pop() || '0');
+            const rework = internalReworks.find(p => p.id === id);
+            if (!rework) {
+                return createResponse({ error: 'Rework not found' }, 404);
+            }
+
+            let daysDiff = 999;
+            if (rework.timestamp) {
+                const dateStr = rework.timestamp.includes('T') ? rework.timestamp : rework.timestamp.replace(' ', 'T') + 'Z';
+                const timestampDate = new Date(dateStr);
+                if (!isNaN(timestampDate.getTime())) {
+                    daysDiff = (Date.now() - timestampDate.getTime()) / (1000 * 60 * 60 * 24);
+                }
+            }
+            if (daysDiff > 14) {
+                return createResponse({ error: 'Rework log is older than 2 weeks and cannot be edited.' }, 400);
+            }
+
             internalReworks = internalReworks.map(p => p.id === id ? { ...p, ...body } : p);
+
+            // Handle Silicon Swap product update in demo mode if applicable
+            if (body.rework_type === 'Silicon Swap' && body.new_product && body.pcb_id) {
+                const pcbObj = internalPcbs.find(pcb => pcb.id === parseInt(body.pcb_id));
+                if (pcbObj) {
+                    pcbObj.product = body.new_product;
+                    pcbObj.product_name_and_rev = body.new_product;
+                }
+            }
+
             return createResponse({ message: 'Rework updated' });
         }
         if (method === 'DELETE') {

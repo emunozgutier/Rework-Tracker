@@ -941,19 +941,34 @@ app.get('/api/reworks/:id', (req, res) => {
 });
 
 app.put('/api/reworks/:id', (req, res) => {
+    const reworkId = parseInt(req.params.id, 10);
     const { pcb_id, title, description, owner_id, rework_type, new_product } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
-    db.run("UPDATE reworks SET pcb_id = ?, title = ?, description = ?, owner_id = ?, rework_type = ? WHERE id = ?", [pcb_id, title || null, description, finalOwnerId, rework_type || 'Minor', req.params.id], function(err) {
+
+    db.get("SELECT * FROM reworks WHERE id = ?", [reworkId], (err, rework) => {
         if (err) return res.status(500).json({ error: err.message });
-        
-        let changes = this.changes;
-        if (rework_type === 'Silicon Swap' && new_product) {
-            db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(updateErr) {
-                return res.json({ updated: changes });
-            });
-        } else {
-            res.json({ updated: changes });
+        if (!rework) return res.status(404).json({ error: "Rework log not found." });
+
+        const timestamp = rework.timestamp;
+        const timestampDate = new Date(timestamp ? (timestamp.includes('T') ? timestamp : timestamp.replace(' ', 'T') + 'Z') : Date.now());
+        const daysDiff = (Date.now() - timestampDate.getTime()) / (1000 * 60 * 60 * 24);
+        console.log(`[Rework Edit DB Check] id=${reworkId} timestamp=${rework.timestamp} parsed=${timestampDate.toISOString()} daysDiff=${daysDiff}`);
+        if (daysDiff > 14) {
+            return res.status(400).json({ error: "Rework log is older than 2 weeks and cannot be edited." });
         }
+
+        db.run("UPDATE reworks SET pcb_id = ?, title = ?, description = ?, owner_id = ?, rework_type = ? WHERE id = ?", [pcb_id, title || null, description, finalOwnerId, rework_type || 'Minor', reworkId], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            let changes = this.changes;
+            if (rework_type === 'Silicon Swap' && new_product) {
+                db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(updateErr) {
+                    return res.json({ updated: changes });
+                });
+            } else {
+                res.json({ updated: changes });
+            }
+        });
     });
 });
 
