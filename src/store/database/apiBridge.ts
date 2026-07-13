@@ -345,6 +345,28 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
         }
         if (method === 'DELETE') {
             const id = parseInt(localPath.split('/').pop() || '0');
+            const rework = internalReworks.find(p => p.id === id);
+            if (!rework) {
+                return createResponse({ error: 'Rework not found' }, 404);
+            }
+            
+            const hasNewerRework = internalReworks.some(r => r.pcb_id === rework.pcb_id && r.id > id);
+            if (hasNewerRework) {
+                return createResponse({ error: 'Cannot delete rework because there are newer rework logs after it on this board.' }, 400);
+            }
+
+            let daysDiff = 999;
+            if (rework.timestamp) {
+                const dateStr = rework.timestamp.includes('T') ? rework.timestamp : rework.timestamp.replace(' ', 'T') + 'Z';
+                const timestampDate = new Date(dateStr);
+                if (!isNaN(timestampDate.getTime())) {
+                    daysDiff = (Date.now() - timestampDate.getTime()) / (1000 * 60 * 60 * 24);
+                }
+            }
+            if (daysDiff > 3) {
+                return createResponse({ error: 'Cannot delete rework because it was created more than 3 days ago.' }, 400);
+            }
+
             internalReworks = internalReworks.filter(p => p.id !== id);
             return createResponse({ message: 'Rework deleted' });
         }

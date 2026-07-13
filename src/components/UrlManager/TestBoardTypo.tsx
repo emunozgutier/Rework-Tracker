@@ -11,15 +11,6 @@ export function TestBoardTypo() {
 
     return (
         <div style={{ maxWidth: '600px', margin: '40px auto', padding: '0 16px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: '0 0 12px 0', color: 'var(--text)', letterSpacing: '-0.5px' }}>
-                    CRC Checksum Tool
-                </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: 0, lineHeight: 1.5 }}>
-                    Calculate the visually unambiguous checksum character appended to board names.
-                </p>
-            </div>
-
             <div style={{ 
                 padding: '32px', 
                 backgroundColor: 'var(--bg-panel)', 

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { BoardName } from '../../components/BoardName';
 import { Popup } from '../../components/Popup';
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
+import { useDeleteEditRequirements } from '../../hooks/useDeleteEditRequirements';
 
 interface RemovePcbProps {
     isOpen: boolean;
@@ -16,6 +17,8 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
     const [reworkCount, setReworkCount] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
+    
+    const { checkPcbDeleteRequirements } = useDeleteEditRequirements();
     
     useEffect(() => {
         if (isOpen) {
@@ -52,20 +55,9 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
     const cleanInput = inputValue.trim().toLowerCase();
     const isValid = cleanInput === expectedText.trim().toLowerCase();
 
-    // 1. Requirement: 0 reworks
-    const isReworksValid = reworkCount === 0;
-
-    // 2. Requirement: age <= 3 days
-    const getCreationDays = () => {
-        if (!pcb.created_at) return 0;
-        const createdAt = new Date(pcb.created_at.includes('T') ? pcb.created_at : pcb.created_at.replace(' ', 'T') + 'Z');
-        if (isNaN(createdAt.getTime())) return 0;
-        return (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    };
-    const daysOld = getCreationDays();
-    const isAgeValid = daysOld <= 3;
-
-    const requirementsMet = isReworksValid && isAgeValid && !loading;
+    // Safety requirements checks from hook
+    const { isAgeValid, isReworksValid, daysOld, requirementsMet: baseRequirementsMet } = checkPcbDeleteRequirements(pcb, reworkCount || 0);
+    const requirementsMet = baseRequirementsMet && !loading;
 
     const handleConfirm = () => {
         if (isValid && requirementsMet) {

@@ -1,21 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { Popup } from '../../components/Popup';
+import { usePcbStore } from '../../store/storePcb';
 import { useDeleteEditRequirements } from '../../hooks/useDeleteEditRequirements';
 
-interface RemoveProjectProps {
+interface RemoveReworkProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
-    project: any;
+    rework: any;
 }
 
-export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemoveProjectProps) {
+export function RemoveRework({ isOpen, onClose, onConfirm, rework }: RemoveReworkProps) {
     const [inputValue, setInputValue] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const [isFocused, setIsFocused] = useState(false);
     
-    const { checkProjectDeleteRequirements } = useDeleteEditRequirements();
-    
+    const { pcbs } = usePcbStore();
+    const { checkReworkDeleteRequirements } = useDeleteEditRequirements();
+
     useEffect(() => {
         if (isOpen) {
             setInputValue('');
@@ -26,14 +28,17 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
         }
     }, [isOpen]);
 
-    if (!isOpen || !project) return null;
+    if (!isOpen || !rework) return null;
 
-    const expectedText = project.name;
+    const parentPcb = pcbs.find(p => p.id === rework.pcb_id);
+    const resolvedBoardName = parentPcb ? parentPcb.board_number : (rework.board_number || rework.pcb_board_number || 'UNKNOWN');
+    const reworkSuffix = `R${String(rework.rework_number || rework.id).padStart(3, '0')}`;
+    const expectedText = `${resolvedBoardName}-${reworkSuffix}`;
+
     const cleanInput = inputValue.trim().toLowerCase();
     const isValid = cleanInput === expectedText.trim().toLowerCase();
 
-    // Safety requirements checks from hook
-    const { isPcbCountValid, pcbCount, requirementsMet } = checkProjectDeleteRequirements(project);
+    const { isAgeValid, isLatest, daysOld, requirementsMet } = checkReworkDeleteRequirements(rework);
 
     const handleConfirm = () => {
         if (isValid && requirementsMet) {
@@ -49,7 +54,7 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
                 <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                 <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
             </svg>
-            Remove Project
+            Remove Rework Log
         </h2>
     );
 
@@ -85,7 +90,7 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
     return (
         <Popup isOpen={isOpen} onClose={onClose} title={titleElement} maxWidth="500px">
             <p style={{ color: 'var(--text-muted)', marginBottom: '20px', lineHeight: '1.6' }}>
-                You are about to permanently remove Project <strong style={{ color: 'var(--text)' }}>{project.name}</strong>. This action cannot be undone.
+                You are about to permanently remove rework log <span style={{ fontWeight: 700, color: 'var(--text)' }}>{expectedText}</span>. This action cannot be undone.
             </p>
 
             {/* Requirements Display */}
@@ -98,10 +103,16 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
             }}>
                 <h4 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600 }}>Deletion Safety Requirements:</h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <li style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: isPcbCountValid ? '#10b981' : '#ef4444' }}>
-                        {isPcbCountValid ? checkIcon : crossIcon}
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: isLatest ? '#10b981' : '#ef4444' }}>
+                        {isLatest ? checkIcon : crossIcon}
                         <span>
-                            No active PCBs assigned ({pcbCount} found)
+                            No newer rework logs exist after this one on this board
+                        </span>
+                    </li>
+                    <li style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', color: isAgeValid ? '#10b981' : '#ef4444' }}>
+                        {isAgeValid ? checkIcon : crossIcon}
+                        <span>
+                            Rework logged within last 3 days (Age: {daysOld.toFixed(1)} days)
                         </span>
                     </li>
                 </ul>
@@ -126,14 +137,14 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
                         <line x1="12" y1="8" x2="12" y2="12"></line>
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
-                    <span>This project cannot be deleted because it does not meet all safety requirements.</span>
+                    <span>This rework log cannot be deleted because it does not meet all safety requirements.</span>
                 </div>
             )}
 
             {requirementsMet && (
                 <div style={{ marginBottom: '24px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text)' }}>
-                        Please type <strong style={{ color: 'var(--text)' }}>{expectedText}</strong> to confirm:
+                        Please type <span style={{ fontWeight: 700, color: 'var(--text)' }}>{expectedText}</span> to confirm:
                     </label>
                     <input
                         ref={inputRef}
@@ -158,6 +169,7 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
                             color: 'var(--text)',
                             fontSize: '1rem',
                             outline: 'none',
+                            fontFamily: 'monospace',
                             transition: 'border-color 0.2s, box-shadow 0.2s'
                         }}
                     />
@@ -194,7 +206,7 @@ export function RemoveProject({ isOpen, onClose, onConfirm, project }: RemovePro
                             transition: 'all 0.2s'
                         }}
                     >
-                        Remove Project
+                        Remove Rework
                     </button>
                 )}
             </div>

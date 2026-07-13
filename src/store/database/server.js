@@ -44,7 +44,7 @@ app.use(apiLoggerMiddleware);
 const inFlightRequests = new Map();
 
 function deduplicate(req, res, next) {
-    if (req.method === 'GET') {
+    if (req.method === 'GET' || req.method === 'DELETE') {
         return next();
     }
     
