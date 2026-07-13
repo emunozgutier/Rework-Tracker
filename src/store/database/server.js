@@ -952,7 +952,6 @@ app.put('/api/reworks/:id', (req, res) => {
         const timestamp = rework.timestamp;
         const timestampDate = new Date(timestamp ? (timestamp.includes('T') ? timestamp : timestamp.replace(' ', 'T') + 'Z') : Date.now());
         const daysDiff = (Date.now() - timestampDate.getTime()) / (1000 * 60 * 60 * 24);
-        console.log(`[Rework Edit DB Check] id=${reworkId} timestamp=${rework.timestamp} parsed=${timestampDate.toISOString()} daysDiff=${daysDiff}`);
         if (daysDiff > 14) {
             return res.status(400).json({ error: "Rework log is older than 2 weeks and cannot be edited." });
         }

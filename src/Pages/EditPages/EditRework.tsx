@@ -31,6 +31,23 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const [isEditable, setIsEditable] = useState(true);
     const [reworkAgeDays, setReworkAgeDays] = useState(0);
 
+    const getPcbDetails = (pcbIdStr: string) => {
+        if (!pcbIdStr) return { baseName: '', crc: '', hasCrc: false };
+        const pcb = pcbs.find(p => p.id.toString() === pcbIdStr);
+        if (!pcb) return { baseName: '', crc: '', hasCrc: false };
+        
+        const project = projects.find(p => p.id === pcb.project_id);
+        const hasCrc = project ? project.number_format !== 'hex' : true;
+        
+        let baseName = pcb.board_number || '';
+        let crc = '';
+        if (hasCrc && baseName.length > 1) {
+            crc = baseName.slice(-1);
+            baseName = baseName.slice(0, -1);
+        }
+        return { baseName, crc, hasCrc };
+    };
+
     useEffect(() => {
         fetchOwners();
         Promise.all([
@@ -153,17 +170,41 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
 
             <form onSubmit={handleUpdate} className="add-form">
                 <fieldset disabled={!isEditable} style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div className="form-group">
-                    <label htmlFor="pcb">Select PCB Board</label>
-                    <select 
-                        id="pcb" 
-                        value={selectedPcb} 
-                        onChange={(e) => setSelectedPcb(e.target.value)}
-                        required
-                    >
-                        {pcbs.map(p => <option key={p.id} value={p.id}>{p.board_number}</option>)}
-                    </select>
-                </div>
+                <FormGroup title="PCB Board & Checksum">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label htmlFor="pcb">PCB Board</label>
+                            <select 
+                                id="pcb" 
+                                value={selectedPcb} 
+                                disabled
+                                required
+                                style={{ cursor: 'not-allowed', opacity: 0.7 }}
+                            >
+                                {pcbs.map(p => {
+                                    const details = getPcbDetails(p.id.toString());
+                                    return (
+                                        <option key={p.id} value={p.id}>
+                                            {details.baseName}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                        </div>
+                        {getPcbDetails(selectedPcb).hasCrc && (
+                            <div className="form-group flex-1">
+                                <label htmlFor="crc">CRC Checksum</label>
+                                <input 
+                                    type="text"
+                                    id="crc"
+                                    value={getPcbDetails(selectedPcb).crc}
+                                    disabled
+                                    style={{ cursor: 'not-allowed', opacity: 0.7 }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </FormGroup>
                 <div className="form-group">
                     <label htmlFor="title">Rework Title</label>
                     <input 

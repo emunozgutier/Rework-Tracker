@@ -78,8 +78,35 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const [siliconVersion, setSiliconVersion] = useState('');
     const [noPartYet, setNoPartYet] = useState(false);
     const [images, setImages] = useState<File[]>([]);
-    const { addRework, loading } = useReworkStore();
     const { owners, fetchOwners } = useOwnerStore();
+    const { addRework, loading } = useReworkStore();
+    const [typedCrc, setTypedCrc] = useState('');
+
+    const getPcbDetails = (pcbIdStr: string) => {
+        if (!pcbIdStr) return { baseName: '', crc: '', hasCrc: false };
+        const pcb = pcbs.find(p => p.id.toString() === pcbIdStr);
+        if (!pcb) return { baseName: '', crc: '', hasCrc: false };
+        
+        const project = projects.find(p => p.id === pcb.project_id);
+        const hasCrc = project ? project.number_format !== 'hex' : true;
+        
+        let baseName = pcb.board_number || '';
+        let crc = '';
+        if (hasCrc && baseName.length > 1) {
+            crc = baseName.slice(-1);
+            baseName = baseName.slice(0, -1);
+        }
+        return { baseName, crc, hasCrc };
+    };
+
+    const handlePcbChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedPcb(e.target.value);
+        setTypedCrc('');
+    };
+
+    const selectedPcbDetails = getPcbDetails(selectedPcb);
+    const isCrcCorrect = !selectedPcbDetails.hasCrc || selectedId || typedCrc === selectedPcbDetails.crc;
+    const showCrcError = selectedPcbDetails.hasCrc && !selectedId && typedCrc !== '' && typedCrc !== selectedPcbDetails.crc;
 
     useEffect(() => {
         fetchOwners();
@@ -92,6 +119,14 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
             setProjects(projData);
             if (selectedId) {
                 setSelectedPcb(selectedId.toString());
+                const pcb = pcbData.find((p: any) => p.id.toString() === selectedId.toString());
+                if (pcb) {
+                    const project = projData.find((p: any) => p.id === pcb.project_id);
+                    const hasCrc = project ? project.number_format !== 'hex' : true;
+                    if (hasCrc && pcb.board_number && pcb.board_number.length > 1) {
+                        setTypedCrc(pcb.board_number.slice(-1));
+                    }
+                }
             } else if (pcbData.length > 0) {
                 setSelectedPcb(pcbData[0].id.toString());
             }
@@ -128,6 +163,11 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!isCrcCorrect) {
+            alert("Please verify the board by entering the correct CRC checksum character.");
+            return;
+        }
         
         const formData = new FormData();
         formData.append('pcb_id', selectedPcb || '');
@@ -184,17 +224,52 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
             </header>
 
             <form onSubmit={handleSubmit} className="add-form">
-                <div className="form-group">
-                    <label htmlFor="pcb">Select PCB Board</label>
-                    <select 
-                        id="pcb" 
-                        value={selectedPcb} 
-                        onChange={(e) => setSelectedPcb(e.target.value)}
-                        required
-                    >
-                        {pcbs.map(p => <option key={p.id} value={p.id}>{p.board_number}</option>)}
-                    </select>
-                </div>
+                <FormGroup title="PCB Board & Checksum">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label htmlFor="pcb">PCB Board *</label>
+                            <select 
+                                id="pcb" 
+                                value={selectedPcb} 
+                                onChange={handlePcbChange}
+                                required
+                                disabled={!!selectedId}
+                            >
+                                {pcbs.map(p => {
+                                    const details = getPcbDetails(p.id.toString());
+                                    return (
+                                        <option key={p.id} value={p.id}>
+                                            {details.baseName}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                        </div>
+                        {selectedPcbDetails.hasCrc && (
+                            <div className="form-group flex-1">
+                                <label htmlFor="crc">
+                                    {selectedId ? "CRC Checksum" : "Enter CRC Checksum Character *"}
+                                </label>
+                                <input 
+                                    type="text"
+                                    id="crc"
+                                    value={selectedId ? selectedPcbDetails.crc : typedCrc}
+                                    onChange={(e) => setTypedCrc(e.target.value.trim().toUpperCase().slice(0, 1))}
+                                    placeholder={selectedId ? "" : "E.g. G"}
+                                    disabled={!!selectedId}
+                                    required
+                                    maxLength={1}
+                                    style={selectedId ? { cursor: 'not-allowed', opacity: 0.7 } : {}}
+                                />
+                                {showCrcError && (
+                                    <span style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '6px', display: 'block' }}>
+                                        Incorrect CRC checksum character.
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </FormGroup>
                 <div className="form-group">
                     <label htmlFor="rework_type">Rework Type</label>
                     <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
@@ -362,7 +437,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         style={{ display: 'none' }}
                     />
                 </div>
-                <button type="submit" className="submit-button" disabled={loading}>
+                <button type="submit" className="submit-button" disabled={loading || !isCrcCorrect} style={{ opacity: isCrcCorrect ? 1 : 0.5, cursor: isCrcCorrect ? 'pointer' : 'not-allowed' }}>
                     <Save size={18} />
                     <span>{loading ? 'Saving...' : 'Save Rework'}</span>
                 </button>

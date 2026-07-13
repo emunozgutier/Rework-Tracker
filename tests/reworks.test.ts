@@ -200,7 +200,6 @@ describe('Reworks API - Silicon Swap', () => {
                 rework_type: 'Minor'
             })
         });
-        console.log("rwId is:", rwId);
         expect(updateResOk.status).toBe(200);
 
         // 4. Update its timestamp to 15 days ago (older than 2 weeks)
@@ -218,7 +217,6 @@ describe('Reworks API - Silicon Swap', () => {
             })
         });
         const data = await updateResFail.json();
-        console.log("updateResFail status:", updateResFail.status, "data:", data);
         expect(updateResFail.status).toBe(400);
         expect(data.error).toContain('2 weeks');
 
