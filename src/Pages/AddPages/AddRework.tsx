@@ -108,6 +108,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const selectedPcbDetails = getPcbDetails(selectedPcb);
     const isCrcCorrect = !selectedPcbDetails.hasCrc || selectedId || typedCrc === selectedPcbDetails.crc;
     const showCrcError = selectedPcbDetails.hasCrc && !selectedId && typedCrc !== '' && typedCrc !== selectedPcbDetails.crc;
+    const isCrcValid = selectedPcbDetails.hasCrc && !selectedId && typedCrc === selectedPcbDetails.crc;
 
     useEffect(() => {
         fetchOwners();
@@ -259,8 +260,8 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                             <div className="form-group flex-1">
                                 <label htmlFor="rework_type">Rework Type</label>
                                 <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
-                                    <option value="Minor">Minor - e.g., burned 3.3v reg but fixed it</option>
-                                    <option value="Major">Major - e.g., broke a pad, can no longer use SMA J99</option>
+                                    <option value="Minor">Minor - still works</option>
+                                    <option value="Major">Major - something wrong</option>
                                     <option value="Resistor Swap">Resistor Swap</option>
                                     <option value="Silicon Swap">Silicon Swap</option>
                                 </select>
@@ -351,6 +352,11 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                                             placeholder="E.g. G"
                                             required
                                             maxLength={1}
+                                            style={{
+                                                color: showCrcError ? '#ef4444' : (isCrcValid ? '#10b981' : 'inherit'),
+                                                borderColor: showCrcError ? 'rgba(239, 68, 68, 0.4)' : (isCrcValid ? 'rgba(16, 185, 129, 0.4)' : 'var(--border)'),
+                                                boxShadow: showCrcError ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : (isCrcValid ? '0 0 0 2px rgba(16, 185, 129, 0.15)' : 'none')
+                                            }}
                                         />
                                         {showCrcError && (
                                             <span style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '6px', display: 'block' }}>
@@ -364,8 +370,8 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         <div className="form-group">
                             <label htmlFor="rework_type">Rework Type</label>
                             <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
-                                <option value="Minor">Minor - e.g., burned 3.3v reg but fixed it</option>
-                                <option value="Major">Major - e.g., broke a pad, can no longer use SMA J99</option>
+                                <option value="Minor">Minor - still works</option>
+                                <option value="Major">Major - something wrong</option>
                                 <option value="Resistor Swap">Resistor Swap</option>
                                 <option value="Silicon Swap">Silicon Swap</option>
                             </select>

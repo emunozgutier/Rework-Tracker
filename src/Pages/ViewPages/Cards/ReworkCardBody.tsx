@@ -3,7 +3,7 @@ import { PictureCard } from './PictureCard';
 import { useStore } from '../../../store/useStore';
 import { useReworkStore } from '../../../store/useReworkStore';
 import { usePcbStore } from '../../../store/usePcbStore';
-import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
+import { EditButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { COLORS } from '../../../store/useStyles';
 import { RemoveRework } from '../../RemovePage/RemoveRework';
 import { useDeleteEditRequirements } from '../../../store/useDeleteEditRequirements';
@@ -59,27 +59,21 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                     onClick={(e) => { e.stopPropagation(); setIsRemoveOpen(true); }}
                     label={isMobile ? "Delete" : "Delete Rework"}
                 />
-                {imagePaths.length > 0 && (
-                    <ViewButton 
-                        onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}
-                        label={`View ${imagePaths.length} Photo${imagePaths.length > 1 ? 's' : ''}`}
-                        icon={
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                        }
-                    />
-                )}
             </div>
 
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0, width: '100%' }}>
                     
                     <div className="rework-body-row">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0, minWidth: 0 }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '100px', justifyContent: 'center' }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: isMobile ? '8px' : '16px',
+                            width: '100%',
+                            justifyContent: 'space-between',
+                            minWidth: 0
+                        }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center', width: isMobile ? '100%' : '115px', flex: '1 1 0', minWidth: 0 }}>
                                 <span style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600 }}>
                                     {new Date(rework.timestamp).toLocaleDateString()}
                                 </span>
@@ -90,7 +84,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
 
                             <div className="rework-body-divider"></div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center', minWidth: 0 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center', width: isMobile ? '100%' : '115px', flex: '1 1 0', minWidth: 0 }}>
                                 <div style={{ 
                                     display: 'inline-flex', 
                                     alignItems: 'center', 
@@ -113,7 +107,8 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                       : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeDark
                                       : 'rgba(59, 130, 246, 0.2)'
                                     }`,
-                                    whiteSpace: 'nowrap'
+                                    whiteSpace: 'nowrap',
+                                    alignSelf: 'flex-start'
                                 }}>
                                     {rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'R swap' : (rework.rework_type || 'Minor')}
                                 </div>
@@ -131,11 +126,50 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                         whiteSpace: 'nowrap',
                                         textOverflow: 'ellipsis',
                                         overflow: 'hidden',
-                                        maxWidth: '120px'
+                                        width: '100%',
+                                        boxSizing: 'border-box'
                                     }}>
                                         @{rework.owner_username || rework.owner_name || rework.owner || 'System'}
                                     </span>
                                 </div>
+                            </div>
+
+                            <div className="rework-body-divider"></div>
+
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: isMobile ? '100%' : '115px', flex: '1 1 0', minWidth: 0, flexShrink: 0 }}>
+                                {imagePaths.length > 0 ? (
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            background: 'rgba(99, 102, 241, 0.08)',
+                                            border: '1px solid rgba(99, 102, 241, 0.25)',
+                                            color: '#818cf8',
+                                            padding: '8px 12px',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            width: '100%',
+                                            boxSizing: 'border-box'
+                                        }}
+                                        className="action-btn-hover"
+                                        title="Click to view photos"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        </svg>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                                            {imagePaths.length} Photo{imagePaths.length !== 1 ? 's' : ''}
+                                        </span>
+                                    </button>
+                                ) : (
+                                    <div style={{ width: '100%' }} />
+                                )}
                             </div>
                         </div>
 
