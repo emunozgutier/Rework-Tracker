@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useOwnerStore } from '../../store/storeOwner';
+import { useOwnerStore } from '../../store/useOwnerStore';
 
 interface EditUserProps {
     id: string | number;

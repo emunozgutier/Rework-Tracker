@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { COLORS } from '../../../store/storeStyles';
+import { COLORS } from '../../../store/useStyles';
 import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
-import { usePcbStore } from '../../../store/storePcb';
-import { useProjectStore } from '../../../store/storeProject';
+import { usePcbStore } from '../../../store/usePcbStore';
+import { useProjectStore } from '../../../store/useProjectStore';
 import { useStore } from '../../../store/useStore';
 import { PcbCardHeader } from './PcbCardHeader';
 import { ProjectCardSummary } from './ProjectCardSummary';

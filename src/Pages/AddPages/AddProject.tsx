@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Save, HelpCircle } from 'lucide-react';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
-import { useProjectStore } from '../../store/storeProject';
+import { useProjectStore } from '../../store/useProjectStore';
 
 interface AddProjectProps {
     onBack: () => void;

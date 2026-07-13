@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { cleanupTestData } from './cleanup';
-import { useProjectStore } from '../src/store/storeProject';
-import { usePcbStore } from '../src/store/storePcb';
-import { useOwnerStore } from '../src/store/storeOwner';
-import { useTagStore } from '../src/store/storeTag';
-import { useReworkStore } from '../src/store/storeRework';
+import { useProjectStore } from '../src/store/useProjectStore';
+import { usePcbStore } from '../src/store/usePcbStore';
+import { useOwnerStore } from '../src/store/useOwnerStore';
+import { useTagStore } from '../src/store/useTagStore';
+import { useReworkStore } from '../src/store/useReworkStore';
 
 describe('Store and Database Integration Tests', () => {
     let projectId: number;
@@ -98,8 +98,8 @@ describe('Store and Database Integration Tests', () => {
     });
 
     it('should add a PCB with the same board_number to a DIFFERENT project', async () => {
-        const storeProject = useProjectStore.getState();
-        await storeProject.addProject({
+        const projectStore = useProjectStore.getState();
+        await projectStore.addProject({
             name: 'VitestProjectTwo',
             description: 'Second project',
             revisions: 'A1',

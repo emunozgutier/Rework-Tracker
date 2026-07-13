@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { usePcbStore } from './storePcb';
-import { useReworkStore } from './storeRework';
-import { useTagStore } from './storeTag';
+import { usePcbStore } from './usePcbStore';
+import { useReworkStore } from './useReworkStore';
+import { useTagStore } from './useTagStore';
 
 type Page = 
     | 'projects' | 'projects_add' | 'projects_edit'

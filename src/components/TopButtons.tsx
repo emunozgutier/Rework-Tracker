@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { usePcbStore } from '../store/storePcb';
+import { usePcbStore } from '../store/usePcbStore';
 import './TopButtons.css';
 
 export function TopButtons() {

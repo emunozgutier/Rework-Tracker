@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { API_BASE, apiFetch } from '../../../store/database/apiBridge';
 import { useStore } from '../../../store/useStore';
-import { usePcbStore } from '../../../store/storePcb';
+import { usePcbStore } from '../../../store/usePcbStore';
 import { ViewButton } from '../../../components/forms/ActionButtons';
-import { useTagStore, formatTagName } from '../../../store/storeTag';
+import { useTagStore, formatTagName } from '../../../store/useTagStore';
 import { BoardName } from '../../../components/BoardName';
 
 interface TagCardBodyProps {

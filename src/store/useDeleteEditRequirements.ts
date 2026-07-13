@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useReworkStore } from './storeRework';
+import { useReworkStore } from './useReworkStore';
 
 interface DeleteEditRequirementsState {
     pcbDeleteLimitDays: number;

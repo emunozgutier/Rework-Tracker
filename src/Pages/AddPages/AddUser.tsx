@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { useOwnerStore } from '../../store/storeOwner';
+import { useOwnerStore } from '../../store/useOwnerStore';
 
 interface AddUserProps {
     onBack: () => void;

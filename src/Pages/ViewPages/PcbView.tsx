@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { PcbCard } from './Cards/PcbCard';
 import { PcbFilter } from '../../components/Filter/PcbFilter';
 
-import { useProjectStore } from '../../store/storeProject';
-import { usePcbStore } from '../../store/storePcb';
-import { useOwnerStore } from '../../store/storeOwner';
-import { useTagStore } from '../../store/storeTag';
+import { useProjectStore } from '../../store/useProjectStore';
+import { usePcbStore } from '../../store/usePcbStore';
+import { useOwnerStore } from '../../store/useOwnerStore';
+import { useTagStore } from '../../store/useTagStore';
 import { useStore } from '../../store/useStore';
 
 interface PcbViewProps {

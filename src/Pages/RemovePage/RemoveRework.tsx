@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Popup } from '../../components/Popup';
-import { usePcbStore } from '../../store/storePcb';
+import { usePcbStore } from '../../store/usePcbStore';
 import { useDeleteEditRequirements } from '../../store/useDeleteEditRequirements';
 
 interface RemoveReworkProps {

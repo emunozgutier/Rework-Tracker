@@ -1,4 +1,4 @@
-import { COLORS } from '../store/storeStyles';
+import { COLORS } from '../store/useStyles';
 import './BoardName.css';
 
 export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: string; isHex?: boolean; crcColor?: string }) {

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useStore } from '../../store/useStore';
-import { usePcbStore } from '../../store/storePcb';
-import { useProjectStore } from '../../store/storeProject';
-import { COLORS } from '../../store/storeStyles';
-import { useTagStore, formatTagName } from '../../store/storeTag';
-import { useOwnerStore } from '../../store/storeOwner';
+import { usePcbStore } from '../../store/usePcbStore';
+import { useProjectStore } from '../../store/useProjectStore';
+import { COLORS } from '../../store/useStyles';
+import { useTagStore, formatTagName } from '../../store/useTagStore';
+import { useOwnerStore } from '../../store/useOwnerStore';
 import { PcbFilterElement } from './PcbFilterElement';
 import { PcbFilterGroup } from './PcbFilterGroup';
 

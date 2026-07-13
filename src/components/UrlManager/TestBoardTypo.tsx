@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { generateCRC } from './crc';
-import { COLORS } from '../../store/storeStyles';
+import { COLORS } from '../../store/useStyles';
 
 export function TestBoardTypo() {
     const [genInput, setGenInput] = useState('MAP-0001');

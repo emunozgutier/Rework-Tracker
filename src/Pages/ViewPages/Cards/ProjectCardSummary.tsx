@@ -1,4 +1,4 @@
-import { COLORS } from '../../../store/storeStyles';
+import { COLORS } from '../../../store/useStyles';
 
 interface ProjectCardSummaryProps {
     project: {

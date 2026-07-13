@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
-import { COLORS } from '../../store/storeStyles';
+import { COLORS } from '../../store/useStyles';
 
-import { useTagStore } from '../../store/storeTag';
+import { useTagStore } from '../../store/useTagStore';
 
 interface AddTabProps {
     onBack: () => void;

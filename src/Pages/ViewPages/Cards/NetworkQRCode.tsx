@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { COLORS } from '../../../store/storeStyles';
+import { COLORS } from '../../../store/useStyles';
 import { useStore } from '../../../store/useStore';
 import { Popup } from '../../../components/Popup';
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '../../store/useStore';
-import { usePcbStore } from '../../store/storePcb';
-import { useReworkStore } from '../../store/storeRework';
+import { usePcbStore } from '../../store/usePcbStore';
+import { useReworkStore } from '../../store/useReworkStore';
 
 const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';

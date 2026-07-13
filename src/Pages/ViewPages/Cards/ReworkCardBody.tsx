@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { PictureCard } from './PictureCard';
 import { useStore } from '../../../store/useStore';
-import { useReworkStore } from '../../../store/storeRework';
-import { usePcbStore } from '../../../store/storePcb';
+import { useReworkStore } from '../../../store/useReworkStore';
+import { usePcbStore } from '../../../store/usePcbStore';
 import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
-import { COLORS } from '../../../store/storeStyles';
+import { COLORS } from '../../../store/useStyles';
 import { RemoveRework } from '../../RemovePage/RemoveRework';
 
 interface ReworkCardBodyProps {

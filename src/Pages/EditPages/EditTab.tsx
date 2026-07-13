@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useTagStore } from '../../store/storeTag';
-import { COLORS } from '../../store/storeStyles';
+import { useTagStore } from '../../store/useTagStore';
+import { COLORS } from '../../store/useStyles';
 
 interface EditTabProps {
     id: string | number;

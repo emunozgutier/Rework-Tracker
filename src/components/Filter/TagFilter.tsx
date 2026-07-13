@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/useStore';
-import { useTagStore } from '../../store/storeTag';
-import { useOwnerStore } from '../../store/storeOwner';
-import { COLORS } from '../../store/storeStyles';
+import { useTagStore } from '../../store/useTagStore';
+import { useOwnerStore } from '../../store/useOwnerStore';
+import { COLORS } from '../../store/useStyles';
 import { PcbFilterElement } from './PcbFilterElement';
 import { PcbFilterGroup } from './PcbFilterGroup';
 

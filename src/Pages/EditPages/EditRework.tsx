@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useReworkStore } from '../../store/storeRework';
-import { useOwnerStore } from '../../store/storeOwner';
+import { useReworkStore } from '../../store/useReworkStore';
+import { useOwnerStore } from '../../store/useOwnerStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 
 interface EditReworkProps {
