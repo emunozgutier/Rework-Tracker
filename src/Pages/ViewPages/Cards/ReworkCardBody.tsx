@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { PictureCard } from './PictureCard';
 import { useStore } from '../../../store/useStore';
-import { EditButton, ViewButton } from '../../../components/forms/ActionButtons';
+import { useReworkStore } from '../../../store/storeRework';
+import { usePcbStore } from '../../../store/storePcb';
+import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { COLORS } from '../../../store/storeStyles';
 
 interface ReworkCardBodyProps {
@@ -11,7 +13,20 @@ interface ReworkCardBodyProps {
 export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     const [showGallery, setShowGallery] = useState(false);
     const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+    const { reworks, deleteRework } = useReworkStore();
     const { editItem } = useStore();
+
+    // 1. Check if rework is no older than 3 days
+    const timestampDate = new Date(rework.timestamp ? (rework.timestamp.includes('T') ? rework.timestamp : rework.timestamp.replace(' ', 'T') + 'Z') : Date.now());
+    const daysDiff = (Date.now() - timestampDate.getTime()) / (1000 * 60 * 60 * 24);
+    const isOlderThan3Days = daysDiff > 3;
+
+    // 2. Check if there is any newer rework log after it on the same board
+    const hasNewerRework = reworks.some((r: any) => 
+        r.pcb_id === rework.pcb_id && r.id > rework.id
+    );
+
+    const isDeletable = !isOlderThan3Days && !hasNewerRework;
 
     let imagePaths: string[] = [];
     if (rework.image_path) {
@@ -28,6 +43,34 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                 <EditButton 
                     onClick={(e) => { e.stopPropagation(); editItem('reworks_edit', rework.id); }}
                     label="Edit Rework"
+                />
+                <DeleteButton 
+                    onClick={async (e) => { 
+                        e.stopPropagation(); 
+                        if (!isDeletable) return;
+                        if (window.confirm("Are you sure you want to delete this rework log?")) {
+                            const success = await deleteRework(rework.id);
+                            if (success) {
+                                usePcbStore.getState().fetchPcbs();
+                            } else {
+                                const currentError = useReworkStore.getState().error;
+                                alert(currentError || "Failed to delete rework log.");
+                            }
+                        }
+                    }}
+                    label="Delete Rework"
+                    disabled={!isDeletable}
+                    style={{
+                        opacity: isDeletable ? 1 : 0.4,
+                        cursor: isDeletable ? 'pointer' : 'not-allowed',
+                    }}
+                    title={
+                        isOlderThan3Days 
+                            ? "Cannot delete: Rework log was created more than 3 days ago."
+                            : hasNewerRework 
+                                ? "Cannot delete: Newer rework logs exist after this one on this board."
+                                : "Delete this rework log"
+                    }
                 />
                 {imagePaths.length > 0 && (
                     <ViewButton 

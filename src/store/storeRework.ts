@@ -103,7 +103,8 @@ export const useReworkStore = create<ReworkState>((set, get) => ({
         try {
             const res = await apiFetch(`${API_BASE}/reworks/${id}`, { method: 'DELETE' });
             if (!res.ok) {
-                set({ error: 'Failed to delete rework', loading: false });
+                const result = await res.json().catch(() => ({}));
+                set({ error: result.error || 'Failed to delete rework', loading: false });
                 return false;
             }
 

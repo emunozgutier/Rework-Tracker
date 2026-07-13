@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 import { describe, it, expect, afterAll } from 'vitest';
-import { cleanupTestData, updateCreatedAt } from './cleanup';
+import { cleanupTestData, updateCreatedAt, updateReworkTimestamp } from './cleanup';
 
 const API_URL = 'http://localhost:5002/api';
 
@@ -100,6 +100,68 @@ describe('Reworks API - Silicon Swap', () => {
         expect(deleteRes.status).toBe(400);
         const data = await deleteRes.json();
         expect(data.error).toContain('3 days');
+    });
+
+    it('should verify rework deletion constraints', async () => {
+        // 1. Create a fresh PCB
+        const resPcb = await fetch(`${API_URL}/pcbs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                project_id: projectId,
+                board_number: '5555_test_del',
+                board_flavor: 'Flavor1',
+                silicon_rev: 'A0'
+            })
+        });
+        const pcbData = await resPcb.json();
+        const testPcbId = pcbData.id;
+
+        // 2. Add first rework log
+        const fd1 = new FormData();
+        fd1.append('pcb_id', testPcbId);
+        fd1.append('title', 'Rework 1');
+        fd1.append('description', 'First rework log');
+        fd1.append('rework_type', 'Minor');
+        const resRw1 = await fetch(`${API_URL}/reworks`, { method: 'POST', body: fd1 });
+        const rw1Data = await resRw1.json();
+        const rw1Id = rw1Data.id;
+
+        // 3. Add second rework log (now rw1 is NOT the latest)
+        const fd2 = new FormData();
+        fd2.append('pcb_id', testPcbId);
+        fd2.append('title', 'Rework 2');
+        fd2.append('description', 'Second rework log');
+        fd2.append('rework_type', 'Minor');
+        const resRw2 = await fetch(`${API_URL}/reworks`, { method: 'POST', body: fd2 });
+        const rw2Data = await resRw2.json();
+        const rw2Id = rw2Data.id;
+
+        // 4. Try to delete the first rework (rw1). Should fail because rw2 is after it.
+        const delRw1Res = await fetch(`${API_URL}/reworks/${rw1Id}`, { method: 'DELETE' });
+        expect(delRw1Res.status).toBe(400);
+        const delRw1Data = await delRw1Res.json();
+        expect(delRw1Data.error).toContain('newer rework logs');
+
+        // 5. Update rw2 timestamp to 4 days ago
+        await updateReworkTimestamp(rw2Id, 4);
+
+        // 6. Try to delete the second rework (rw2). Should fail because it is older than 3 days.
+        const delRw2OldRes = await fetch(`${API_URL}/reworks/${rw2Id}`, { method: 'DELETE' });
+        expect(delRw2OldRes.status).toBe(400);
+        const delRw2OldData = await delRw2OldRes.json();
+        expect(delRw2OldData.error).toContain('3 days');
+
+        // 7. Reset timestamp of rw2 to now (0 days ago) so it is deletable
+        await updateReworkTimestamp(rw2Id, 0);
+
+        // 8. Try to delete rw2 again. Should succeed.
+        const delRw2OkRes = await fetch(`${API_URL}/reworks/${rw2Id}`, { method: 'DELETE' });
+        expect(delRw2OkRes.status).toBe(200);
+
+        // 9. Now rw1 is the latest again! Let's delete rw1. Should succeed.
+        const delRw1OkRes = await fetch(`${API_URL}/reworks/${rw1Id}`, { method: 'DELETE' });
+        expect(delRw1OkRes.status).toBe(200);
     });
 
     afterAll(async () => {

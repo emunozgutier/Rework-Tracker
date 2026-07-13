@@ -958,9 +958,36 @@ app.put('/api/reworks/:id', (req, res) => {
 });
 
 app.delete('/api/reworks/:id', (req, res) => {
-    db.run("DELETE FROM reworks WHERE id = ?", [req.params.id], function(err) {
+    const reworkId = parseInt(req.params.id, 10);
+    
+    db.get("SELECT * FROM reworks WHERE id = ?", [reworkId], (err, rework) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ deleted: this.changes });
+        if (!rework) return res.status(404).json({ error: "Rework not found" });
+
+        db.get("SELECT COUNT(*) as newer_count FROM reworks WHERE pcb_id = ? AND id > ?", [rework.pcb_id, reworkId], (err, row) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (row && row.newer_count > 0) {
+                return res.status(400).json({ error: "Cannot delete rework because there are newer rework logs after it on this board." });
+            }
+
+            let daysDiff = 999;
+            if (rework.timestamp) {
+                const dateStr = rework.timestamp.includes('T') ? rework.timestamp : rework.timestamp.replace(' ', 'T') + 'Z';
+                const timestampDate = new Date(dateStr);
+                if (!isNaN(timestampDate.getTime())) {
+                    daysDiff = (Date.now() - timestampDate.getTime()) / (1000 * 60 * 60 * 24);
+                }
+            }
+
+            if (daysDiff > 3) {
+                return res.status(400).json({ error: "Cannot delete rework because it was created more than 3 days ago." });
+            }
+
+            db.run("DELETE FROM reworks WHERE id = ?", [reworkId], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({ deleted: this.changes });
+            });
+        });
     });
 });
 

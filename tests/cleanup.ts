@@ -99,3 +99,26 @@ export function updateCreatedAt(pcbId: number, daysAgo: number): Promise<void> {
         });
     });
 }
+
+export function updateReworkTimestamp(reworkId: number, daysAgo: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        const dbPath = path.resolve(__dirname, '../src/store/database/pcb_tracker.db');
+        const db = new sqlite3.Database(dbPath);
+        
+        const targetDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+        const yyyy = targetDate.getUTCFullYear();
+        const mm = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
+        const dd = String(targetDate.getUTCDate()).padStart(2, '0');
+        const hh = String(targetDate.getUTCHours()).padStart(2, '0');
+        const min = String(targetDate.getUTCMinutes()).padStart(2, '0');
+        const ss = String(targetDate.getUTCSeconds()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+        
+        db.run("UPDATE reworks SET timestamp = ? WHERE id = ?", [dateStr, reworkId], (err) => {
+            db.close((closeErr) => {
+                if (err || closeErr) reject(err || closeErr);
+                else resolve();
+            });
+        });
+    });
+}
