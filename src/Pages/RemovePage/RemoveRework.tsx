@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Popup } from '../../components/Popup';
 import { usePcbStore } from '../../store/storePcb';
-import { useDeleteEditRequirements } from '../../hooks/useDeleteEditRequirements';
+import { useDeleteEditRequirements } from '../../store/useDeleteEditRequirements';
 
 interface RemoveReworkProps {
     isOpen: boolean;

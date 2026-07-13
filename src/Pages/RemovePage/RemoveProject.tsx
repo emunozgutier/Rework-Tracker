@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Popup } from '../../components/Popup';
-import { useDeleteEditRequirements } from '../../hooks/useDeleteEditRequirements';
+import { useDeleteEditRequirements } from '../../store/useDeleteEditRequirements';
 
 interface RemoveProjectProps {
     isOpen: boolean;
