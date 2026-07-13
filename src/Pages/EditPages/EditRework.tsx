@@ -6,6 +6,7 @@ import { useReworkStore } from '../../store/useReworkStore';
 import { useOwnerStore } from '../../store/useOwnerStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { useDeleteEditRequirements } from '../../store/useDeleteEditRequirements';
+import { BoardName } from '../../components/BoardName';
 
 interface EditReworkProps {
     id: string | number;
@@ -31,22 +32,9 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const [isEditable, setIsEditable] = useState(true);
     const [reworkAgeDays, setReworkAgeDays] = useState(0);
 
-    const getPcbDetails = (pcbIdStr: string) => {
-        if (!pcbIdStr) return { baseName: '', crc: '', hasCrc: false };
-        const pcb = pcbs.find(p => p.id.toString() === pcbIdStr);
-        if (!pcb) return { baseName: '', crc: '', hasCrc: false };
-        
-        const project = projects.find(p => p.id === pcb.project_id);
-        const hasCrc = project ? project.number_format !== 'hex' : true;
-        
-        let baseName = pcb.board_number || '';
-        let crc = '';
-        if (hasCrc && baseName.length > 1) {
-            crc = baseName.slice(-1);
-            baseName = baseName.slice(0, -1);
-        }
-        return { baseName, crc, hasCrc };
-    };
+
+    const activePcb = pcbs.find(p => p.id.toString() === selectedPcb);
+    const selectedProjData = projects.find(p => p.id === activePcb?.project_id);
 
     useEffect(() => {
         fetchOwners();
@@ -76,8 +64,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
         });
     }, [id, fetchOwners]);
 
-    const activePcb = pcbs.find(p => p.id.toString() === selectedPcb);
-    const selectedProjData = projects.find(p => p.id === activePcb?.project_id);
+
     const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
     const availableSiliconRevisions = selectedProjData?.revisions || [];
 
@@ -170,41 +157,33 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
 
             <form onSubmit={handleUpdate} className="add-form">
                 <fieldset disabled={!isEditable} style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <FormGroup title="PCB Board & Checksum">
-                    <div className="form-row">
-                        <div className="form-group flex-1">
-                            <label htmlFor="pcb">PCB Board</label>
-                            <select 
-                                id="pcb" 
-                                value={selectedPcb} 
-                                disabled
-                                required
-                                style={{ cursor: 'not-allowed', opacity: 0.7 }}
-                            >
-                                {pcbs.map(p => {
-                                    const details = getPcbDetails(p.id.toString());
-                                    return (
-                                        <option key={p.id} value={p.id}>
-                                            {details.baseName}
-                                        </option>
-                                    );
-                                })}
-                            </select>
-                        </div>
-                        {getPcbDetails(selectedPcb).hasCrc && (
-                            <div className="form-group flex-1">
-                                <label htmlFor="crc">CRC Checksum</label>
-                                <input 
-                                    type="text"
-                                    id="crc"
-                                    value={getPcbDetails(selectedPcb).crc}
-                                    disabled
-                                    style={{ cursor: 'not-allowed', opacity: 0.7 }}
-                                />
-                            </div>
+                <div className="form-group" style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>PCB</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </label>
+                    <div style={{ 
+                        padding: '12px 16px', 
+                        backgroundColor: 'rgba(0, 0, 0, 0.2)', 
+                        borderRadius: '10px', 
+                        border: '1px solid var(--border)', 
+                        fontSize: '1.05rem', 
+                        color: 'var(--text)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        fontWeight: 500,
+                        minWidth: '200px'
+                    }}>
+                        {activePcb ? (
+                            <BoardName name={activePcb.board_number} isHex={selectedProjData?.number_format === 'hex'} />
+                        ) : (
+                            'Unknown'
                         )}
                     </div>
-                </FormGroup>
+                </div>
                 <div className="form-group">
                     <label htmlFor="title">Rework Title</label>
                     <input 
