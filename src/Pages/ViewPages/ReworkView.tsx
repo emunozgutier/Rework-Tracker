@@ -14,7 +14,12 @@ export function ReworkView({ title }: ReworkViewProps) {
         fetchReworks();
     }, [fetchReworks]);
 
-    let items = reworks;
+    let items = [...reworks].sort((a, b) => {
+        if (a.timestamp && b.timestamp) {
+            return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        }
+        return b.id - a.id;
+    });
     if (selectedBoards && selectedBoards.length > 0) {
         items = items.filter(rw => selectedBoards.includes(rw.pcb_id.toString()));
     }

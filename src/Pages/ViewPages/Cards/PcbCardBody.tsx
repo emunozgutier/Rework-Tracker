@@ -88,7 +88,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
         }
     };
 
-    const pcbReworks = reworks.filter((r: any) => r.pcb_id === pcb.id);
+    const pcbReworks = reworks
+        .filter((r: any) => r.pcb_id === pcb.id)
+        .sort((a: any, b: any) => {
+            if (a.timestamp && b.timestamp) {
+                return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+            }
+            return b.id - a.id;
+        });
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 

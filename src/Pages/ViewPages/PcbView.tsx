@@ -46,7 +46,12 @@ export function PcbView({ title }: PcbViewProps) {
         }
     }, [activePcbFilterCount, isolatedView, setShowFilters]);
 
-    let items = [...pcbs];
+    let items = [...pcbs].sort((a, b) => {
+        if (a.created_at && b.created_at) {
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
+        return b.id - a.id;
+    });
     const loading = pcbsLoading || projectsLoading;
 
     if (selectedProjects.length > 0) {

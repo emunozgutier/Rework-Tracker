@@ -32,8 +32,15 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
         await deleteProject(project.id);
     };
     
-    // Get actual PCB objects for this project
-    const projectPcbs = allPcbs.filter(p => p.project === project.name);
+    // Get actual PCB objects for this project, sorted by youngest first
+    const projectPcbs = allPcbs
+        .filter(p => p.project === project.name)
+        .sort((a, b) => {
+            if (a.created_at && b.created_at) {
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            }
+            return b.id - a.id;
+        });
 
     const LongPressPcbCard = ({ pcb }: { pcb: any }) => {
         const [progress, setProgress] = useState(0);
