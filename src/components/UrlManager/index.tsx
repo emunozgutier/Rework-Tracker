@@ -8,7 +8,7 @@ const getNormalizedPath = () => {
     let path = window.location.pathname;
     
     // Explicitly handle GitHub pages repository name masking, even in DEV mode (case-insensitive)
-    const baseMatch = path.match(/^\/pcbreworktracker(\/|$)/i);
+    const baseMatch = path.match(/^\/rework-tracker(\/|$)/i);
     if (baseMatch) {
         path = path.slice(baseMatch[0].length);
         if (!path.startsWith('/')) path = '/' + path;
