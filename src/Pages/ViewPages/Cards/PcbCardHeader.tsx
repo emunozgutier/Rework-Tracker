@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { BoardName } from '../../../components/BoardName';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 
 interface PcbCardHeaderProps {
     pcb: any;
@@ -10,7 +10,7 @@ interface PcbCardHeaderProps {
 }
 
 export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCardHeaderProps) {
-    const { isMobile } = useStore();
+    const { isMobile } = useAppState();
     return (
         <div 
             className="card-header-main" 

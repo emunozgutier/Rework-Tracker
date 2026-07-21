@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useReworkStore } from '../../../store/useReworkStore';
 import { useTagStore } from '../../../store/useTagStore';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 import { usePcbStore } from '../../../store/usePcbStore';
 import { API_BASE, apiFetch } from '../../../store/database/apiBridge';
 import { FormTabs } from '../../../components/forms/FormTabs';
@@ -20,7 +20,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
-    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile } = useStore();
+    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile } = useAppState();
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
     const [isAssigningTag, setIsAssigningTag] = useState(false);

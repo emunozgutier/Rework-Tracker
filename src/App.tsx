@@ -10,6 +10,7 @@ import { PcbView } from './Pages/ViewPages/PcbView'
 import { ReworkView } from './Pages/ViewPages/ReworkView'
 import { UserView } from './Pages/ViewPages/UserView'
 import { TabView } from './Pages/ViewPages/TabView'
+import { SettingsView } from './Pages/ViewPages/SettingsView'
 import { AddProject } from './Pages/AddPages/AddProject'
 import { AddPCB } from './Pages/AddPages/AddPcb'
 import { AddUser } from './Pages/AddPages/AddUser'
@@ -25,10 +26,10 @@ import { TestBoardTypo } from './components/UrlManager/TestBoardTypo'
 import { WrongUrl } from './Pages/WrongPage/WrongUrl'
 import { FixedUrl } from './Pages/WrongPage/FixedUrl'
 
-import { useStore } from './store/useStore'
+import { useAppState } from './store/useAppState'
 
 function App() {
-  const { page, selectedId, editItem, addItem, goBack, isMobile } = useStore();
+  const { page, selectedId, editItem, addItem, goBack, isMobile } = useAppState();
 
   const handleSuccess = () => {
     // Refresh data and go back
@@ -63,6 +64,8 @@ function App() {
         return <UserView title="Owners" onAdd={() => addItem('owners_add')} onEdit={(id) => editItem('owners_edit', id)} />;
       case 'tags':
         return <TabView title="Tags" onAdd={() => addItem('tags_add')} onEdit={(id) => editItem('tags_edit', id)} />;
+      case 'settings':
+        return <SettingsView />;
       default:
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
     }
@@ -104,7 +107,7 @@ function App() {
       </header>
       
       <TabBar />
-      {['projects', 'pcbs', 'reworks', 'owners', 'tags'].includes(page) && <TopButtons />}
+      {['projects', 'pcbs', 'reworks', 'owners', 'tags', 'settings'].includes(page) && <TopButtons />}
       
       <main className="app-main">
         {renderContent()}

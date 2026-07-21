@@ -6,7 +6,7 @@ import { useProjectStore } from '../../store/useProjectStore';
 import { usePcbStore } from '../../store/usePcbStore';
 import { useOwnerStore } from '../../store/useOwnerStore';
 import { useTagStore } from '../../store/useTagStore';
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 
 interface PcbViewProps {
     title: string;
@@ -18,7 +18,7 @@ export function PcbView({ title }: PcbViewProps) {
     const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, setSelectedBoardNumbers } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
-    const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters } = useStore();
+    const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters } = useAppState();
 
     useEffect(() => {
         fetchPcbs();

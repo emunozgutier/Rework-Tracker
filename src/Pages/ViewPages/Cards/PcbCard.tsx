@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { PcbCardHeader } from './PcbCardHeader';
 import { PcbCardBody } from './PcbCardBody';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 
 interface PcbCardProps {
     pcb: any;
 }
 
 export function PcbCard({ pcb }: PcbCardProps) {
-    const { expandedPcb, setExpandedPcb } = useStore();
+    const { expandedPcb, setExpandedPcb } = useAppState();
     const isExpanded = expandedPcb === pcb.board_number;
     const cardRef = useRef<HTMLDivElement>(null);
 

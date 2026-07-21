@@ -3,7 +3,7 @@ import { COLORS } from '../../../store/useStyles';
 import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { usePcbStore } from '../../../store/usePcbStore';
 import { useProjectStore } from '../../../store/useProjectStore';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 import { PcbCardHeader } from './PcbCardHeader';
 import { ProjectCardSummary } from './ProjectCardSummary';
 import { RemoveProject } from '../../RemovePage/RemoveProject';
@@ -24,7 +24,7 @@ interface ProjectCardBodyProps {
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
     const { deleteProject } = useProjectStore();
-    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile } = useStore();
+    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile } = useAppState();
     
     const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
 

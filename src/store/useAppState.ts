@@ -10,7 +10,7 @@ type Page =
     | 'owners' | 'owners_add' | 'owners_edit'
     | 'tags' | 'tags_add' | 'tags_edit'
     | 'wrong_url' | 'fixed_url'
-    | 'sandbox';
+    | 'sandbox' | 'settings';
 
 interface NavigationState {
     page: Page;
@@ -49,7 +49,7 @@ interface NavigationState {
     setShowMobileSearch: (show: boolean) => void;
 }
 
-export const useStore = create<NavigationState>((set) => ({
+export const useAppState = create<NavigationState>((set) => ({
     page: 'projects',
     activeTab: 'projects',
     selectedId: null,
@@ -112,7 +112,7 @@ export const useStore = create<NavigationState>((set) => ({
 
     addItem: (page, prefillId) => {
         const baseTab = page.split('_')[0];
-        if (typeof window !== 'undefined' && useStore.getState().activeTab !== baseTab) {
+        if (typeof window !== 'undefined' && useAppState.getState().activeTab !== baseTab) {
             set({ 
                 activeTab: baseTab,
                 page, 
@@ -138,8 +138,8 @@ export const useStore = create<NavigationState>((set) => ({
 if (typeof window !== 'undefined') {
     window.addEventListener('resize', () => {
         const mobile = window.innerWidth <= 768;
-        if (useStore.getState().isMobile !== mobile) {
-            useStore.getState().setIsMobile(mobile);
+        if (useAppState.getState().isMobile !== mobile) {
+            useAppState.getState().setIsMobile(mobile);
         }
     });
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 import { usePcbStore } from '../../store/usePcbStore';
 import { useProjectStore } from '../../store/useProjectStore';
 import { COLORS } from '../../store/useStyles';
@@ -62,7 +62,7 @@ function MobileFilterGroup({ title, activeCount, isExpanded, onToggle, children 
 }
 
 export function PcbFilter() {
-    const isMobile = useStore(state => state.isMobile);
+    const isMobile = useAppState(state => state.isMobile);
     const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
     const { 

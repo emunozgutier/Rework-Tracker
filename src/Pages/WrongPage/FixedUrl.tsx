@@ -1,9 +1,9 @@
 import React from 'react';
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 import { BoardName } from '../../components/BoardName';
 
 export function FixedUrl() {
-    const { mistypedUrl, correctedUrl, setExpandedPcb, setActiveTab } = useStore();
+    const { mistypedUrl, correctedUrl, setExpandedPcb, setActiveTab } = useAppState();
 
     const proceed = React.useCallback(() => {
         if (correctedUrl) {

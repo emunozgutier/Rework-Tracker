@@ -1,13 +1,13 @@
 import { ReworkCardHeader } from './ReworkCardHeader';
 import { ReworkCardBody } from './ReworkCardBody';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 
 interface ReworkCardProps {
     rework: any;
 }
 
 export function ReworkCard({ rework }: ReworkCardProps) {
-    const { expandedRework, setExpandedRework } = useStore();
+    const { expandedRework, setExpandedRework } = useAppState();
     const isExpanded = expandedRework === rework.id.toString();
 
     const handleToggle = () => {

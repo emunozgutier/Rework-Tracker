@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 import { useTagStore } from '../../store/useTagStore';
 import { useOwnerStore } from '../../store/useOwnerStore';
 import { COLORS } from '../../store/useStyles';
@@ -60,7 +60,7 @@ function MobileFilterGroup({ title, activeCount, isExpanded, onToggle, children 
 }
 
 export function TagFilter() {
-    const isMobile = useStore(state => state.isMobile);
+    const isMobile = useAppState(state => state.isMobile);
     const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
     const { tags, selectedTagTypes, setSelectedTagTypes, selectedTagOwners, setSelectedTagOwners } = useTagStore();

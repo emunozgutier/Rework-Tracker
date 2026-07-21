@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { API_BASE } from '../store/database/apiBridge';
 import { apiFetch } from '../store/database/apiBridge';
-import { useStore } from './useStore';
+import { useAppState } from './useAppState';
 
 export interface Pcb {
     id: number;
@@ -159,8 +159,8 @@ export const usePcbStore = create<PcbState>((set, get) => ({
                 return false;
             }
 
-            if (boardNumber && useStore.getState().expandedPcb === boardNumber) {
-                useStore.getState().setExpandedPcb(null);
+            if (boardNumber && useAppState.getState().expandedPcb === boardNumber) {
+                useAppState.getState().setExpandedPcb(null);
             }
 
             const newPcbs = get().pcbs.filter(p => p.id.toString() !== id.toString());

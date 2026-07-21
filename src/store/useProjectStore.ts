@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { API_BASE } from '../store/database/apiBridge';
 import { apiFetch } from '../store/database/apiBridge';
-import { useStore } from './useStore';
+import { useAppState } from './useAppState';
 
 export interface PcbFlavor {
     name: string;
@@ -109,8 +109,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 return false;
             }
 
-            if (projectName && useStore.getState().expandedProject === projectName) {
-                useStore.getState().setExpandedProject(null);
+            if (projectName && useAppState.getState().expandedProject === projectName) {
+                useAppState.getState().setExpandedProject(null);
             }
 
             // Update state locally or re-fetch

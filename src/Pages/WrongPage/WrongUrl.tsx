@@ -1,7 +1,7 @@
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 
 export function WrongUrl() {
-    const { setActiveTab } = useStore();
+    const { setActiveTab } = useAppState();
 
     return (
         <div style={{ padding: '4rem 2rem', textAlign: 'center', color: 'var(--text)' }}>

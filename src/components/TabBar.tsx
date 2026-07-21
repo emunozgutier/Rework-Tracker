@@ -1,9 +1,9 @@
-import { CircuitBoard, ClipboardList, PenTool, Hash, Users, ShieldCheck } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { CircuitBoard, ClipboardList, PenTool, Hash, Users, ShieldCheck, Settings } from 'lucide-react';
+import { useAppState } from '../store/useAppState';
 import './topTab.css';
 
 export function TabBar() {
-    const { activeTab, setActiveTab } = useStore();
+    const { activeTab, setActiveTab } = useAppState();
     
     const tabs = [
         { id: 'projects', label: 'Projects', icon: ClipboardList },
@@ -11,7 +11,8 @@ export function TabBar() {
         { id: 'reworks', label: 'Reworks', icon: PenTool },
         { id: 'owners', label: 'Owners', icon: Users },
         { id: 'tags', label: 'Tags', icon: Hash },
-        { id: 'sandbox', label: 'CRC', icon: ShieldCheck }
+        { id: 'sandbox', label: 'CRC', icon: ShieldCheck },
+        { id: 'settings', label: 'Settings', icon: Settings }
     ];
 
     return (

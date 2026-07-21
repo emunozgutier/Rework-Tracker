@@ -1,14 +1,17 @@
 import { COLORS } from '../store/useStyles';
+import { useGlobalSettings } from '../store/useGlobalSettings';
+import { formatCrc } from './UrlManager/crc';
 import './BoardName.css';
 
 export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: string; isHex?: boolean; crcColor?: string }) {
+    const { crcFormat } = useGlobalSettings();
+
     if (!name) return null;
     
     // If it's a hex number, there is no CRC, so just return the raw string
     if (isHex) return <span>{name}</span>;
     
-    // Check if it follows our strict format: 3 letters, hyphen, 4 numbers, 1 letter (CRC)
-    // E.g. MAP-0001K
+    // Check if it follows our strict format: e.g. MAP-0001K
     if (name.length > 5 && name.includes('-')) {
         const parts = name.split('-');
         if (parts.length >= 2) {
@@ -22,7 +25,7 @@ export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: str
                     <span>
                         {base}
                         <span style={{ color: crcColor, fontWeight: 'bold' }}>
-                            {crc}
+                            {formatCrc(crc, crcFormat)}
                         </span>
                     </span>
                 );
@@ -30,6 +33,6 @@ export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: str
         }
     }
     
-    // Fallback if it doesn't match the new CRC format
+    // Fallback if it doesn't match the CRC format
     return <span>{name}</span>;
 }

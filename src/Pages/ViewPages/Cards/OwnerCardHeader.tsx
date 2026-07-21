@@ -1,5 +1,5 @@
 import { Edit2, ChevronDown, ChevronUp } from 'lucide-react';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 
 interface OwnerCardHeaderProps {
     owner: any;
@@ -9,7 +9,7 @@ interface OwnerCardHeaderProps {
 }
 
 export function OwnerCardHeader({ owner, isExpanded, onToggle, onEdit }: OwnerCardHeaderProps) {
-    const isMobile = useStore(state => state.isMobile);
+    const isMobile = useAppState(state => state.isMobile);
 
     return (
         <div 

@@ -1,0 +1,120 @@
+.settings-page-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 16px 0 32px 0;
+}
+
+.settings-main-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+    text-align: left;
+}
+
+.settings-card-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-h);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.setting-choice-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+}
+
+.setting-choice-card:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
+    background: rgba(30, 41, 59, 0.4);
+}
+
+.setting-choice-card.selected {
+    border-color: var(--accent);
+    background: rgba(99, 102, 241, 0.12);
+    box-shadow: 0 8px 24px -6px rgba(99, 102, 241, 0.25);
+}
+
+.choice-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.choice-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-h);
+}
+
+.choice-radio {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.setting-choice-card.selected .choice-radio {
+    border-color: var(--accent);
+    background: var(--accent);
+}
+
+.choice-example-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+.example-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.example-code {
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.example-code span {
+    color: var(--accent);
+    font-weight: 800;
+}
+
+@media (max-width: 640px) {
+    .settings-page-wrapper {
+        padding: 8px 0;
+    }
+}

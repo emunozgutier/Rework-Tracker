@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 import { usePcbStore } from '../../store/usePcbStore';
 import { useReworkStore } from '../../store/useReworkStore';
 
@@ -37,7 +37,7 @@ export function UrlManager() {
         setExpandedPcb,
         setExpandedRework,
         setIsolatedView
-    } = useStore();
+    } = useAppState();
 
     const pcbs = usePcbStore(state => state.pcbs);
     const loading = usePcbStore(state => state.loading);
@@ -90,8 +90,8 @@ export function UrlManager() {
             const path = pathSegments[0] || 'projects';
             
             if (path === 'crc') {
-                useStore.getState().setActiveTab('sandbox');
-                useStore.getState().setPage('sandbox');
+                useAppState.getState().setActiveTab('sandbox');
+                useAppState.getState().setPage('sandbox');
                 return;
             }
             
@@ -115,9 +115,9 @@ export function UrlManager() {
             }
 
             if (path.length === 3 && /^[A-Za-z0-9]{3}$/.test(path)) {
-                useStore.getState().setActiveTab('pcbs');
-                useStore.getState().setExpandedPcb(`SHORT:${path}`);
-                useStore.getState().setIsolatedView(true);
+                useAppState.getState().setActiveTab('pcbs');
+                useAppState.getState().setExpandedPcb(`SHORT:${path}`);
+                useAppState.getState().setIsolatedView(true);
                 return;
             }
         };
@@ -174,20 +174,20 @@ export function UrlManager() {
                  const code = expandedPcb.slice(6).toUpperCase();
                  const pcb = pcbs.find(p => p.short_code && p.short_code.toUpperCase() === code);
                  if (pcb) {
-                     useStore.getState().setPage('pcbs');
-                     useStore.getState().setExpandedPcb(pcb.board_number);
-                     useStore.getState().setIsolatedView(true);
+                     useAppState.getState().setPage('pcbs');
+                     useAppState.getState().setExpandedPcb(pcb.board_number);
+                     useAppState.getState().setIsolatedView(true);
                  } else {
-                     useStore.getState().setPage('wrong_url');
+                     useAppState.getState().setPage('wrong_url');
                  }
                  return;
              }
              
              const exists = pcbs.some(p => p.board_number === expandedPcb);
              if (!exists) {
-                 useStore.getState().setPage('wrong_url');
+                 useAppState.getState().setPage('wrong_url');
              } else {
-                 useStore.getState().setPage('pcbs');
+                 useAppState.getState().setPage('pcbs');
              }
         }
     }, [activeTab, expandedPcb, pcbs, loading, hasFetched]);

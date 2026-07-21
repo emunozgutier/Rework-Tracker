@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { TagCard } from './Cards/TagCard';
 
 import { useTagStore } from '../../store/useTagStore';
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 
 interface TabViewProps {
     title: string;
@@ -12,7 +12,7 @@ interface TabViewProps {
 
 export function TabView({ title, onEdit }: TabViewProps) {
     const { tags, loading: tagsLoading, fetchTags } = useTagStore();
-    const { searchQuery } = useStore();
+    const { searchQuery } = useAppState();
 
     useEffect(() => {
         fetchTags();

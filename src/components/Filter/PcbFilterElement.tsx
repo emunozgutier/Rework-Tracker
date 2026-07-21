@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 
 interface PcbFilterElementProps {
     title: string;
@@ -11,7 +11,7 @@ interface PcbFilterElementProps {
 }
 
 export function PcbFilterElement({ title, value, onChange, width = 'auto', children }: PcbFilterElementProps) {
-    const isMobile = useStore(state => state.isMobile);
+    const isMobile = useAppState(state => state.isMobile);
     const [isElementExpanded, setIsElementExpanded] = React.useState(false);
 
     if (isMobile) {

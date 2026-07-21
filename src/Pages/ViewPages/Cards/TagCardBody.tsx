@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { API_BASE, apiFetch } from '../../../store/database/apiBridge';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 import { usePcbStore } from '../../../store/usePcbStore';
 import { ViewButton } from '../../../components/forms/ActionButtons';
 import { useTagStore, formatTagName } from '../../../store/useTagStore';
@@ -13,7 +13,7 @@ interface TagCardBodyProps {
 export function TagCardBody({ tag }: TagCardBodyProps) {
     const [taggedPcbs, setTaggedPcbs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const { setActiveTab } = useStore();
+    const { setActiveTab } = useAppState();
     const { pcbs, fetchPcbs, setSelectedTags } = usePcbStore();
 
     useEffect(() => {

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { ProjectCardHeader } from './ProjectCardHeader';
 import { ProjectCardBody } from './ProjectCardBody';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 
 interface ProjectCardProps {
     project: {
@@ -16,7 +16,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-    const { expandedProject, setExpandedProject } = useStore();
+    const { expandedProject, setExpandedProject } = useAppState();
     const isExpanded = expandedProject === project.name;
     const cardRef = useRef<HTMLDivElement>(null);
 

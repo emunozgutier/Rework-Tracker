@@ -3,7 +3,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { useReworkStore } from '../../store/useReworkStore';
-import { useStore } from '../../store/useStore';
+import { useAppState } from '../../store/useAppState';
 import { useOwnerStore } from '../../store/useOwnerStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { BoardName } from '../../components/BoardName';
@@ -67,7 +67,7 @@ const compressImage = async (file: File, maxSizeMB: number = 10, maxDimension: n
 };
 
 export function AddRework({ onBack, onSuccess }: AddReworkProps) {
-    const { selectedId } = useStore();
+    const { selectedId } = useAppState();
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');

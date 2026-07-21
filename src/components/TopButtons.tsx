@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useAppState } from '../store/useAppState';
 import { usePcbStore } from '../store/usePcbStore';
 import './TopButtons.css';
 
@@ -14,7 +14,7 @@ export function TopButtons() {
         setShowFilters,
         showMobileSearch,
         setShowMobileSearch
-    } = useStore();
+    } = useAppState();
 
     // PCBs and Tags (tags) have search and filters
     const hasSearch = activeTab === 'pcbs' || activeTab === 'tags';
@@ -22,8 +22,8 @@ export function TopButtons() {
 
     const hasFilters = activeTab === 'pcbs';
 
-    // Only display Add New button if not on sandbox
-    const showAddButton = activeTab !== 'sandbox';
+    // Only display Add New button if not on sandbox or settings
+    const showAddButton = activeTab !== 'sandbox' && activeTab !== 'settings';
 
     // Retrieve PCB filters state
     const {

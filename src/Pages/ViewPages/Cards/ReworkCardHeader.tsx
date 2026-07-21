@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 import { usePcbStore } from '../../../store/usePcbStore';
 import { COLORS } from '../../../store/useStyles';
 
@@ -13,7 +13,7 @@ interface ReworkCardHeaderProps {
 }
 
 export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle = false }: ReworkCardHeaderProps) {
-    const { isMobile } = useStore();
+    const { isMobile } = useAppState();
     const { pcbs } = usePcbStore();
 
     const parentPcb = pcbs.find(p => p.id === rework.pcb_id);

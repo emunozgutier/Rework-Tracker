@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { COLORS } from '../../../store/useStyles';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 import { Popup } from '../../../components/Popup';
 
 export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
     const [qrInfo, setQrInfo] = useState<{ version: number, size: number } | null>(null);
-    const { qrModalBoard, setQrModalBoard } = useStore();
+    const { qrModalBoard, setQrModalBoard } = useAppState();
     
     let url = '';
     let displayDomain = '';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PictureCard } from './PictureCard';
-import { useStore } from '../../../store/useStore';
+import { useAppState } from '../../../store/useAppState';
 import { useReworkStore } from '../../../store/useReworkStore';
 import { usePcbStore } from '../../../store/usePcbStore';
 import { EditButton, DeleteButton } from '../../../components/forms/ActionButtons';
@@ -17,7 +17,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     const [showDescriptionModal, setShowDescriptionModal] = useState(false);
     const [isRemoveOpen, setIsRemoveOpen] = useState(false);
     const { deleteRework } = useReworkStore();
-    const { editItem, isMobile } = useStore();
+    const { editItem, isMobile } = useAppState();
     const { checkReworkEditRequirements } = useDeleteEditRequirements();
 
     const confirmRemoveRework = async () => {
