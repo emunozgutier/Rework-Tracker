@@ -1406,6 +1406,7 @@
             "id": 1,
             "name": "Alice Smith",
             "username": "asmith",
+            "superuser": 1,
             "pcb_count": 12,
             "rework_count": 11,
             "tag_count": 2
@@ -1414,6 +1415,7 @@
             "id": 2,
             "name": "Bob Jones",
             "username": "bjones",
+            "superuser": 0,
             "pcb_count": 10,
             "rework_count": 8,
             "tag_count": 2
@@ -1422,6 +1424,7 @@
             "id": 3,
             "name": "Charlie Brown",
             "username": "cbrown",
+            "superuser": 0,
             "pcb_count": 6,
             "rework_count": 12,
             "tag_count": 0
@@ -1430,6 +1433,7 @@
             "id": 4,
             "name": "Elena Miller",
             "username": "emiller",
+            "superuser": 0,
             "pcb_count": 4,
             "rework_count": 8,
             "tag_count": 0
@@ -1438,6 +1442,7 @@
             "id": 5,
             "name": "Ethan Hunt",
             "username": "ehunt",
+            "superuser": 0,
             "pcb_count": 18,
             "rework_count": 9,
             "tag_count": 0
@@ -1446,6 +1451,7 @@
             "id": 6,
             "name": "Fiona Gallagher",
             "username": "fgallagher",
+            "superuser": 0,
             "pcb_count": 8,
             "rework_count": 17,
             "tag_count": 0
@@ -1454,6 +1460,7 @@
             "id": 7,
             "name": "George Costanza",
             "username": "gcostanza",
+            "superuser": 0,
             "pcb_count": 10,
             "rework_count": 10,
             "tag_count": 0

@@ -570,16 +570,24 @@ app.get('/api/owners', (req, res) => {
 });
 
 app.post('/api/owners', (req, res) => {
-    const { name, username, email } = req.body;
+    const { name, username, email, superuser } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("INSERT INTO owners (name, username, email) VALUES (?, ?, ?)", [name, cleanUsername, email || null], function(err) {
-        if (err) {
-            if (err.message.includes('UNIQUE constraint failed')) {
-                return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
+    
+    db.get("SELECT COUNT(*) as count FROM owners", [], (errCount, row) => {
+        if (errCount) return res.status(500).json({ error: errCount.message });
+        
+        const isFirst = (row && row.count === 0);
+        const superuserVal = isFirst ? 1 : (superuser ? 1 : 0);
+        
+        db.run("INSERT INTO owners (name, username, email, superuser) VALUES (?, ?, ?, ?)", [name, cleanUsername, email || null, superuserVal], function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
+                }
+                return res.status(500).json({ error: err.message });
             }
-            return res.status(500).json({ error: err.message });
-        }
-        res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null });
+            res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null, superuser: superuserVal });
+        });
     });
 });
 
@@ -866,9 +874,10 @@ app.get('/api/owners/:id', (req, res) => {
 });
 
 app.put('/api/owners/:id', (req, res) => {
-    const { name, username, email } = req.body;
+    const { name, username, email, superuser } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("UPDATE owners SET name = ?, username = ?, email = ? WHERE id = ?", [name, cleanUsername, email || null, req.params.id], function(err) {
+    const superuserVal = superuser ? 1 : 0;
+    db.run("UPDATE owners SET name = ?, username = ?, email = ?, superuser = ? WHERE id = ?", [name, cleanUsername, email || null, superuserVal, req.params.id], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already in use.` });

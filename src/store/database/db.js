@@ -42,7 +42,8 @@ const initDb = () => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             username TEXT UNIQUE,
-            email TEXT
+            email TEXT,
+            superuser INTEGER DEFAULT 0
         )`);
         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
 
@@ -120,6 +121,16 @@ const initDb = () => {
         
         // Migration: Add email column to owners if it doesn't exist
         db.run(`ALTER TABLE owners ADD COLUMN email TEXT`, () => {});
+        
+        // Migration: Add superuser column to owners if it doesn't exist
+        db.run(`ALTER TABLE owners ADD COLUMN superuser INTEGER DEFAULT 0`, () => {
+            // Check if there's any superuser in the table. If not, make the first user (lowest id) a superuser.
+            db.get("SELECT COUNT(*) as count FROM owners WHERE superuser = 1", [], (errCount, row) => {
+                if (!errCount && row && row.count === 0) {
+                    db.run("UPDATE owners SET superuser = 1 WHERE id = (SELECT MIN(id) FROM owners)");
+                }
+            });
+        });
         
         db.run(`ALTER TABLE pcbs ADD COLUMN created_at DATETIME`, (err) => {
             if (err) {
