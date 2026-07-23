@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
 import { formatTagName } from '../../../store/useTagStore';
+import { useGlobalSettings } from '../../../store/useGlobalSettings';
 
 interface TagCardHeaderProps {
     tag: any;
@@ -9,6 +10,8 @@ interface TagCardHeaderProps {
 }
 
 export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHeaderProps) {
+    const { hasPermission } = useGlobalSettings();
+
     return (
         <div 
             className="card-header-main" 
@@ -16,14 +19,16 @@ export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHead
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', width: '100%', cursor: 'pointer' }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button 
-                    className="edit-button" 
-                    onClick={(e) => { e.stopPropagation(); onEdit(tag.id); }}
-                    style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
-                    title="Edit Tag"
-                >
-                    <Edit2 size={16} />
-                </button>
+                {hasPermission('tags', 'edit') && (
+                    <button 
+                        className="edit-button" 
+                        onClick={(e) => { e.stopPropagation(); onEdit(tag.id); }}
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
+                        title="Edit Tag"
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                )}
                 <div 
                     style={{ 
                         width: 14, height: 14, borderRadius: '4px', 

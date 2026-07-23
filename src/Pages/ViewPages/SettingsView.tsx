@@ -1,5 +1,6 @@
 import { Check, Radio, Shield, Key, Eye, Plus, Edit2, Trash2 } from 'lucide-react';
-import { useGlobalSettings, UserRole, PageName, PagePermissions } from '../../store/useGlobalSettings';
+import { useGlobalSettings } from '../../store/useGlobalSettings';
+import type { UserRole, PageName, PagePermissions } from '../../store/useGlobalSettings';
 import { getNatoWord } from '../../components/UrlManager/crc';
 import './SettingsView.css';
 import { useState } from 'react';
