@@ -7,6 +7,7 @@ export interface Owner {
     name: string;
     username: string;
     email?: string;
+    superuser?: number;
     pcb_count?: number;
     rework_count?: number;
     tag_count?: number;
@@ -17,8 +18,8 @@ interface OwnerState {
     loading: boolean;
     error: string | null;
     fetchOwners: () => Promise<void>;
-    addOwner: (data: { name: string; username: string; email?: string }) => Promise<boolean>;
-    updateOwner: (id: number | string, data: { name: string; username: string; email?: string }) => Promise<boolean>;
+    addOwner: (data: { name: string; username: string; email?: string; superuser?: number }) => Promise<boolean>;
+    updateOwner: (id: number | string, data: { name: string; username: string; email?: string; superuser?: number }) => Promise<boolean>;
     deleteOwner: (id: number | string) => Promise<boolean>;
 }
 

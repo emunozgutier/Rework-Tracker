@@ -12,11 +12,12 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
+    const [superuser, setSuperuser] = useState(0);
     const { addOwner, loading, error } = useOwnerStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await addOwner({ name, username, email });
+        const success = await addOwner({ name, username, email, superuser });
         if (success) {
             onSuccess();
         }
@@ -71,6 +72,16 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                         onChange={(e) => setEmail(e.target.value)} 
                         placeholder="e.g. jsmith@example.com"
                     />
+                </div>
+                <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                    <input 
+                        id="superuser"
+                        type="checkbox" 
+                        checked={superuser === 1} 
+                        onChange={(e) => setSuperuser(e.target.checked ? 1 : 0)}
+                        style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                    />
+                    <label htmlFor="superuser" style={{ cursor: 'pointer', userSelect: 'none', margin: 0 }}>Is Superuser</label>
                 </div>
                 <button type="submit" className="submit-button" disabled={loading}>
                     <Save size={18} />

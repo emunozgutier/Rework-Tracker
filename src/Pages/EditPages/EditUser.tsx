@@ -14,6 +14,7 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
+    const [superuser, setSuperuser] = useState(0);
     const [loading, setLoading] = useState(true);
     const { updateOwner, deleteOwner, error } = useOwnerStore();
     const [saving, setSaving] = useState(false);
@@ -26,6 +27,7 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
                     setName(data.name);
                     setUsername(data.username || '');
                     setEmail(data.email || '');
+                    setSuperuser(data.superuser || 0);
                 }
                 setLoading(false);
             })
@@ -38,7 +40,7 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const success = await updateOwner(id, { name, username, email });
+        const success = await updateOwner(id, { name, username, email, superuser });
         if (success) onSuccess();
         setSaving(false);
     };
@@ -103,6 +105,16 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
                         onChange={(e) => setEmail(e.target.value)} 
                         placeholder="e.g. jsmith@example.com"
                     />
+                </div>
+                <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                    <input 
+                        id="superuser"
+                        type="checkbox" 
+                        checked={superuser === 1} 
+                        onChange={(e) => setSuperuser(e.target.checked ? 1 : 0)}
+                        style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                    />
+                    <label htmlFor="superuser" style={{ cursor: 'pointer', userSelect: 'none', margin: 0 }}>Is Superuser</label>
                 </div>
                 <button type="submit" className="submit-button" disabled={saving}>
                     <Save size={18} />

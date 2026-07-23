@@ -263,13 +263,16 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             return createResponse(internalOwners);
         }
         if (method === 'POST') {
-            const newOwner = { id: Date.now(), ...body, pcb_count: 0, rework_count: 0, tag_count: 0 };
+            const isFirst = internalOwners.length === 0;
+            const superuserVal = isFirst ? 1 : (body.superuser ? 1 : 0);
+            const newOwner = { id: Date.now(), ...body, superuser: superuserVal, pcb_count: 0, rework_count: 0, tag_count: 0 };
             internalOwners.push(newOwner);
             return createResponse(newOwner, 201);
         }
         if (method === 'PUT') {
             const id = parseInt(localPath.split('/').pop() || '0');
-            internalOwners = internalOwners.map(p => p.id === id ? { ...p, ...body } : p);
+            const superuserVal = body.superuser ? 1 : 0;
+            internalOwners = internalOwners.map(p => p.id === id ? { ...p, ...body, superuser: superuserVal } : p);
             return createResponse({ message: 'Owner updated' });
         }
         if (method === 'DELETE') {

@@ -65,6 +65,41 @@ describe('Store and Database Integration Tests', () => {
         expect(success).toBe(false);
     });
 
+    it('should properly handle superuser flag in owners', async () => {
+        const store = useOwnerStore.getState();
+        const normalOwnerName = 'Vitest Normal Owner';
+        const superuserOwnerName = 'Vitest Superuser Owner';
+        
+        let success = await store.addOwner({ name: normalOwnerName, username: 'vitnorm' });
+        expect(success).toBe(true);
+        
+        await store.fetchOwners();
+        const normalOwner = store.owners.find(o => o.name === normalOwnerName);
+        expect(normalOwner).toBeDefined();
+        expect(normalOwner?.superuser).toBe(0);
+        
+        success = await store.addOwner({ name: superuserOwnerName, username: 'vitsuper', superuser: 1 });
+        expect(success).toBe(true);
+        
+        await store.fetchOwners();
+        const superuserOwner = store.owners.find(o => o.name === superuserOwnerName);
+        expect(superuserOwner).toBeDefined();
+        expect(superuserOwner?.superuser).toBe(1);
+        
+        if (superuserOwner) {
+            success = await store.updateOwner(superuserOwner.id, { 
+                name: superuserOwnerName, 
+                username: 'vitsuper', 
+                superuser: 0 
+            });
+            expect(success).toBe(true);
+            
+            await store.fetchOwners();
+            const updatedOwner = store.owners.find(o => o.name === superuserOwnerName);
+            expect(updatedOwner?.superuser).toBe(0);
+        }
+    });
+
     it('should add a PCB', async () => {
         const store = usePcbStore.getState();
         const success = await store.addPcb({
