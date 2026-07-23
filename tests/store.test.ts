@@ -197,7 +197,7 @@ describe('Store and Database Integration Tests', () => {
 
     afterAll(async () => {
         try {
-            await cleanupTestData();
+            // Temporarily disabled for diagnosis: await cleanupTestData();
         } catch (e) {
             console.error('Failed to run database cleanup:', e);
         }
