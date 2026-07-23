@@ -106,6 +106,8 @@ function App() {
       case 'settings':
         if (!hasPermission('settings', 'view')) return <PermissionDenied pageLabel="Settings" />;
         return <SettingsView />;
+      case 'login':
+        return <LoginView />;
       default:
         if (!hasPermission('projects', 'view')) return <PermissionDenied pageLabel="Projects" />;
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
@@ -118,17 +120,6 @@ function App() {
         <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 1s linear infinite' }}></div>
         <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>Restoring session...</span>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
-  }
-
-  if (!token) {
-    return (
-      <div className={`app-container ${isMobile ? 'mobile-state' : ''}`}>
-        <header className="app-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', alignItems: 'center', padding: '0 20px', textAlign: 'center' }}>
-          <h1 style={{ margin: 0 }}>{isMobile ? 'Rework Tracker' : 'PCB Rework Tracker'}</h1>
-        </header>
-        <LoginView />
       </div>
     );
   }
@@ -166,37 +157,67 @@ function App() {
                 {owner.name} <span style={{ opacity: 0.6, fontSize: '0.75rem', fontWeight: 400 }}>({activeRole.charAt(0).toUpperCase() + activeRole.slice(1)})</span>
               </>
             ) : (
-              'Guest'
+              `Guest (${activeRole.charAt(0).toUpperCase() + activeRole.slice(1)})`
             )}
           </span>
         </div>
-        <button
-          onClick={logout}
-          title="Log Out"
-          style={{
-            background: 'var(--bg-panel)',
-            border: '1px solid rgba(239, 68, 68, 0.4)',
-            color: '#f87171',
-            cursor: 'pointer',
-            padding: '8px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.05)',
-            transition: 'all 0.2s'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'var(--bg-panel)';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          <LogOut size={14} />
-        </button>
+        {owner ? (
+          <button
+            onClick={logout}
+            title="Log Out"
+            style={{
+              background: 'var(--bg-panel)',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              color: '#f87171',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.05)',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'var(--bg-panel)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <LogOut size={14} />
+          </button>
+        ) : (
+          <button
+            onClick={() => useAppState.getState().setPage('login')}
+            title="Log In"
+            style={{
+              background: 'var(--bg-panel)',
+              border: '1px solid var(--accent)',
+              color: 'var(--accent)',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px var(--accent-glow)',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'var(--accent-glow)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'var(--bg-panel)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <LogIn size={14} />
+          </button>
+        )}
       </div>
 
       <header className="app-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', alignItems: 'center', padding: '0 20px', textAlign: 'center' }}>

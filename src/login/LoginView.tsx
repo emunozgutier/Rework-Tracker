@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from './client';
 import { useAppState } from '../store/useAppState';
+import { useOwnerStore } from '../store/useOwnerStore';
 import { Mail, ShieldCheck, ArrowLeft, RefreshCw, Key } from 'lucide-react';
 import './LoginView.css';
 
@@ -14,9 +15,11 @@ export function LoginView() {
         clearError, 
         setOtpSent 
     } = useAuthStore();
+    const { owners, fetchOwners } = useOwnerStore();
 
     const [email, setEmail] = useState('');
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+    const [attempts, setAttempts] = useState(0);
     const digitRefs = [
         useRef<HTMLInputElement>(null),
         useRef<HTMLInputElement>(null),
@@ -26,16 +29,19 @@ export function LoginView() {
         useRef<HTMLInputElement>(null),
     ];
 
-    // Clear error on mount
+    // Clear error on mount and fetch owners
     useEffect(() => {
         clearError();
-    }, [clearError]);
+        fetchOwners();
+        setAttempts(0);
+    }, [clearError, fetchOwners]);
 
     // Handle email request
     const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email.trim() || !email.includes('@')) return;
         await requestOtp(email.trim());
+        setAttempts(0); // Reset attempts when code is freshly requested
     };
 
     // Auto-verify once 6 digits are fully entered
@@ -45,12 +51,26 @@ export function LoginView() {
                 const code = otpDigits.join('');
                 const success = await verifyOtp(email, code);
                 if (success) {
+                    setAttempts(0);
                     useAppState.getState().setPage('projects');
+                } else {
+                    const nextAttempts = attempts + 1;
+                    if (nextAttempts >= 3) {
+                        setAttempts(0);
+                        setOtpDigits(['', '', '', '', '', '']);
+                        setOtpSent(false);
+                        useAuthStore.setState({ error: 'Too many failed attempts. Please request a new passcode.' });
+                    } else {
+                        setAttempts(nextAttempts);
+                        setOtpDigits(['', '', '', '', '', '']);
+                        digitRefs[0].current?.focus();
+                        useAuthStore.setState({ error: `Invalid passcode. ${3 - nextAttempts} attempts remaining.` });
+                    }
                 }
             }
         };
         verifyAndRedirect();
-    }, [otpDigits, otpSent, email, verifyOtp]);
+    }, [otpDigits, otpSent, email, verifyOtp, attempts, digitRefs, setOtpSent]);
 
     // Handle digit typing
     const handleDigitChange = (index: number, value: string) => {
@@ -117,16 +137,45 @@ export function LoginView() {
                             <label htmlFor="email">Work Email</label>
                             <div className="input-with-icon">
                                 <Mail className="input-icon" size={18} />
-                                <input
-                                    type="email"
-                                    id="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="your.name@company.com"
-                                    required
-                                    disabled={loading}
-                                    autoFocus
-                                />
+                                {owners && owners.filter(o => o.email).length > 0 ? (
+                                    <select
+                                        id="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        disabled={loading}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px 12px 12px 40px',
+                                            border: '1px solid var(--border)',
+                                            background: 'var(--bg-app)',
+                                            color: 'var(--text-main)',
+                                            borderRadius: '8px',
+                                            fontSize: '0.95rem',
+                                            outline: 'none',
+                                            cursor: 'pointer',
+                                            appearance: 'auto'
+                                        }}
+                                    >
+                                        <option value="">-- Select Owner --</option>
+                                        {owners.filter(o => o.email).map(o => (
+                                            <option key={o.id} value={o.email} style={{ background: 'var(--bg-panel)', color: 'var(--text-main)' }}>
+                                                {o.name} ({o.email})
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="your.name@company.com"
+                                        required
+                                        disabled={loading}
+                                        autoFocus
+                                    />
+                                )}
                             </div>
                         </div>
 

@@ -9,7 +9,7 @@ type Page =
     | 'reworks' | 'reworks_add' | 'reworks_edit'
     | 'owners' | 'owners_add' | 'owners_edit'
     | 'tags' | 'tags_add' | 'tags_edit'
-    | 'wrong_url' | 'fixed_url'
+    | 'wrong_url' | 'fixed_url' | 'login'
     | 'sandbox' | 'settings';
 
 interface NavigationState {

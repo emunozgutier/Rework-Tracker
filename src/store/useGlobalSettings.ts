@@ -39,7 +39,7 @@ const initialPagePermissions = (view: boolean, create: boolean, edit: boolean, d
 
 export const DEFAULT_GLOBAL_SETTINGS: GlobalSettingsProperties = {
     crcFormat: 'letter',
-    activeRole: 'superuser',
+    activeRole: 'guest',
     permissions: {
         superuser: {
             projects: initialPagePermissions(true, true, true, true),
