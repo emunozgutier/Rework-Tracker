@@ -74,6 +74,7 @@ describe('Store and Database Integration Tests', () => {
         expect(success).toBe(true);
         
         await store.fetchOwners();
+        console.log("STORE ERROR:", store.error);
         const normalOwner = store.owners.find(o => o.name === normalOwnerName);
         expect(normalOwner).toBeDefined();
         expect(normalOwner?.superuser).toBe(0);
@@ -197,7 +198,7 @@ describe('Store and Database Integration Tests', () => {
 
     afterAll(async () => {
         try {
-            // Temporarily disabled for diagnosis: await cleanupTestData();
+            await cleanupTestData();
         } catch (e) {
             console.error('Failed to run database cleanup:', e);
         }

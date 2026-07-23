@@ -31,7 +31,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     fetchOwners: async () => {
         set({ loading: true, error: null });
         try {
-            const res = await apiFetch(`${API_BASE}/owners`);
+            const res = await apiFetch(`${API_BASE}/owners?t=${Date.now()}`);
             if (!res.ok) throw new Error('Failed to fetch owners');
             const data = await res.json();
             set({ owners: data, loading: false });
