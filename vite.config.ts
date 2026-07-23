@@ -7,7 +7,7 @@ export default defineConfig(({ command }) => {
   return {
     plugins: [
       react(),
-      babel({ presets: [reactCompilerPreset()] })
+      // babel({ presets: [reactCompilerPreset()] })
     ],
     // Automatically use repository name only in production builds (GitHub Pages)
     base: command === 'build' ? '/Rework-Tracker/' : '/',
