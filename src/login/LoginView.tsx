@@ -241,7 +241,7 @@ export function LoginView() {
                         )}
 
                         <p className="login-note">
-                            Please check your inbox (or terminal logs/email_sent.txt) to copy the code.
+                            Please check your inbox, terminal logs, or <code>src/login/email_sent.txt</code> to copy the code.
                         </p>
                     </div>
                 )}

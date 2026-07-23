@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Target file in workspace root for easy user inspection
-const emailLogPath = path.resolve(__dirname, '../../email_sent.txt');
+const emailLogPath = path.resolve(__dirname, './email_sent.txt');
 
 /**
  * Sends an email using SMTP if available (defaults to Mailhog/Mailpit at localhost:1025),
