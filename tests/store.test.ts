@@ -73,30 +73,29 @@ describe('Store and Database Integration Tests', () => {
         let success = await store.addOwner({ name: normalOwnerName, username: 'vitnorm' });
         expect(success).toBe(true);
         
-        await store.fetchOwners();
-        console.log("STORE ERROR:", store.error);
-        const normalOwner = store.owners.find(o => o.name === normalOwnerName);
+        await useOwnerStore.getState().fetchOwners();
+        const normalOwner = useOwnerStore.getState().owners.find(o => o.name === normalOwnerName);
         expect(normalOwner).toBeDefined();
         expect(normalOwner?.superuser).toBe(0);
         
-        success = await store.addOwner({ name: superuserOwnerName, username: 'vitsuper', superuser: 1 });
+        success = await useOwnerStore.getState().addOwner({ name: superuserOwnerName, username: 'vitsuper', superuser: 1 });
         expect(success).toBe(true);
         
-        await store.fetchOwners();
-        const superuserOwner = store.owners.find(o => o.name === superuserOwnerName);
+        await useOwnerStore.getState().fetchOwners();
+        const superuserOwner = useOwnerStore.getState().owners.find(o => o.name === superuserOwnerName);
         expect(superuserOwner).toBeDefined();
         expect(superuserOwner?.superuser).toBe(1);
         
         if (superuserOwner) {
-            success = await store.updateOwner(superuserOwner.id, { 
+            success = await useOwnerStore.getState().updateOwner(superuserOwner.id, { 
                 name: superuserOwnerName, 
                 username: 'vitsuper', 
                 superuser: 0 
             });
             expect(success).toBe(true);
             
-            await store.fetchOwners();
-            const updatedOwner = store.owners.find(o => o.name === superuserOwnerName);
+            await useOwnerStore.getState().fetchOwners();
+            const updatedOwner = useOwnerStore.getState().owners.find(o => o.name === superuserOwnerName);
             expect(updatedOwner?.superuser).toBe(0);
         }
     });

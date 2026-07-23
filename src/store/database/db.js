@@ -47,6 +47,20 @@ const initDb = () => {
         )`);
         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
 
+        // Login OTPs Table
+        db.run(`CREATE TABLE IF NOT EXISTS login_otps (
+            email TEXT PRIMARY KEY,
+            otp TEXT NOT NULL,
+            expires_at DATETIME NOT NULL
+        )`);
+
+        // User Sessions Table
+        db.run(`CREATE TABLE IF NOT EXISTS user_sessions (
+            token TEXT PRIMARY KEY,
+            email TEXT NOT NULL,
+            expires_at DATETIME NOT NULL
+        )`);
+
         // Tags Table
         db.run(`CREATE TABLE IF NOT EXISTS tags (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

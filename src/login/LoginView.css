@@ -1,0 +1,298 @@
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 20px;
+    background: radial-gradient(circle at 10% 20%, var(--bg-panel) 0%, var(--bg-app) 90%);
+}
+
+.login-glass-panel {
+    background: rgba(30, 41, 59, 0.45); /* var(--bg-panel) equivalent with glass opacity */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 40px 32px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    text-align: center;
+    animation: fadeInScale 0.35s ease forwards;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.login-brand {
+    margin-bottom: 30px;
+}
+
+.login-logo-circle {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+    color: white;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.logo-icon.glow-pulse {
+    animation: pulseGlow 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+    }
+    50% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+    }
+}
+
+.animate-bounce-slow {
+    animation: bounceSlow 3s infinite ease-in-out;
+}
+
+@keyframes bounceSlow {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+.login-brand h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+}
+
+.login-brand .subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.login-error-toast {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.input-with-icon input {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 1px solid var(--border);
+    background: var(--bg-app);
+    color: var(--text-main);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.input-with-icon input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px var(--accent-glow);
+    transition: all 0.2s ease;
+}
+
+.login-btn:hover:not(:disabled) {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.login-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.4;
+    margin: 8px 0 0 0;
+}
+
+.otp-email-sent-badge {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.change-email-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.change-email-btn:hover {
+    background: var(--accent-glow);
+}
+
+.otp-digit-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin: 10px 0;
+}
+
+.otp-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.otp-boxes {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.otp-boxes input {
+    width: 44px;
+    height: 48px;
+    border: 1px solid var(--border);
+    background: var(--bg-app);
+    color: var(--text-main);
+    text-align: center;
+    font-size: 1.4rem;
+    font-family: monospace;
+    font-weight: 700;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.otp-boxes input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+    background: var(--bg-panel);
+}
+
+.otp-verifying-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 10px;
+}

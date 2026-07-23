@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { db, initDb } from './db.js';
 import { apiLoggerMiddleware } from './logger.js';
+import { loginRouter } from '../../login/server.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -188,6 +189,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures')));
+app.use('/api/auth', loginRouter);
 
 // Initialize Database
 initDb().then(() => {

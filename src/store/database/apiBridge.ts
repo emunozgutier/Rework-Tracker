@@ -454,5 +454,75 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
         }
     }
 
+    if (localPath.startsWith('/auth')) {
+        if (localPath.endsWith('/request-otp')) {
+            const { email } = body;
+            const code = '123456';
+            console.log('\n==================================================');
+            console.log('DEMO MODE - OTP VERIFICATION EMAIL');
+            console.log(`To: ${email}`);
+            console.log(`Your 6-digit passcode is: ${code}`);
+            console.log('==================================================\n');
+            return createResponse({ message: "Passcode generated (please check console)." });
+        }
+        if (localPath.endsWith('/verify-otp')) {
+            const { email, otp } = body;
+            if (otp !== '123456') {
+                return createResponse({ error: "Invalid passcode. Please use 123456 in demo mode." }, 400);
+            }
+            
+            const cleanEmail = email.toLowerCase().trim();
+            let owner = internalOwners.find(o => o.email && o.email.toLowerCase() === cleanEmail);
+            if (!owner) {
+                const prefix = cleanEmail.split('@')[0];
+                const cleanName = prefix.split(/[._-]/).map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+                const username = prefix.substring(0, 6);
+                const isFirst = internalOwners.length === 0;
+                owner = {
+                    id: Date.now(),
+                    name: cleanName,
+                    username: username,
+                    email: cleanEmail,
+                    superuser: isFirst ? 1 : 0,
+                    pcb_count: 0,
+                    rework_count: 0,
+                    tag_count: 0
+                };
+                internalOwners.push(owner);
+            }
+            
+            return createResponse({
+                token: 'demo-session-token',
+                email: cleanEmail,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                owner
+            });
+        }
+        if (localPath.endsWith('/verify-session')) {
+            const { token } = body;
+            if (token === 'demo-session-token') {
+                const owner = internalOwners[0] || {
+                    id: 1,
+                    name: 'Demo Admin',
+                    username: 'demoadmin',
+                    email: 'admin@company.com',
+                    superuser: 1,
+                    pcb_count: 0,
+                    rework_count: 0,
+                    tag_count: 0
+                };
+                return createResponse({
+                    valid: true,
+                    email: owner.email,
+                    owner
+                });
+            }
+            return createResponse({ valid: false });
+        }
+        if (localPath.endsWith('/logout')) {
+            return createResponse({ message: "Successfully logged out." });
+        }
+    }
+
     return createResponse({ error: 'Not found in demo mode' }, 404);
 }
