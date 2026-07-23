@@ -118,3 +118,154 @@
         padding: 8px 0;
     }
 }
+
+/* RBAC Styles */
+.settings-role-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.role-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: rgba(15, 23, 42, 0.4);
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+}
+
+.role-tab-btn:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text);
+    background: rgba(30, 41, 59, 0.4);
+}
+
+.role-tab-btn.active {
+    border-color: var(--accent);
+    color: #ffffff;
+}
+
+.role-tab-btn.superuser.active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%);
+    border-color: #a855f7;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+}
+
+.role-tab-btn.user.active {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.role-tab-btn.guest.active {
+    background: rgba(100, 116, 139, 0.25);
+    border-color: #64748b;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2);
+}
+
+.role-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+}
+
+.role-tab-btn.superuser .role-dot {
+    background: #a855f7;
+}
+.role-tab-btn.user .role-dot {
+    background: #3b82f6;
+}
+.role-tab-btn.guest .role-dot {
+    background: #94a3b8;
+}
+
+.permissions-table-container {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.3);
+}
+
+.permissions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.permissions-table th {
+    background: rgba(2, 6, 23, 0.4);
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.permissions-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.permissions-table tr:last-child td {
+    border-bottom: none;
+}
+
+.permissions-table tr.crc-row {
+    background: rgba(16, 185, 129, 0.02);
+}
+
+.perm-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.perm-checkbox-label:not(.disabled):hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.perm-checkbox-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: #ffffff;
+}
+
+.perm-checkbox-label.checked .perm-checkbox-box {
+    border-color: var(--accent);
+    background: var(--accent);
+}
+
+.perm-checkbox-label.disabled .perm-checkbox-box {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+}
+
+.perm-checkbox-label.disabled {
+    cursor: not-allowed;
+}
+

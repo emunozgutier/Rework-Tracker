@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { useAppState } from '../store/useAppState';
 import { usePcbStore } from '../store/usePcbStore';
+import { useGlobalSettings } from '../store/useGlobalSettings';
 import './TopButtons.css';
 
 export function TopButtons() {
@@ -16,14 +17,16 @@ export function TopButtons() {
         setShowMobileSearch
     } = useAppState();
 
+    const { hasPermission } = useGlobalSettings();
+
     // PCBs and Tags (tags) have search and filters
     const hasSearch = activeTab === 'pcbs' || activeTab === 'tags';
     const searchPlaceholder = activeTab === 'pcbs' ? 'Search PCBs...' : 'Search tags...';
 
     const hasFilters = activeTab === 'pcbs';
 
-    // Only display Add New button if not on sandbox or settings
-    const showAddButton = activeTab !== 'sandbox' && activeTab !== 'settings';
+    // Only display Add New button if not on sandbox or settings, and user has create permission
+    const showAddButton = activeTab !== 'sandbox' && activeTab !== 'settings' && hasPermission(activeTab as any, 'create');
 
     // Retrieve PCB filters state
     const {

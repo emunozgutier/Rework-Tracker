@@ -4,6 +4,7 @@ import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/
 import { usePcbStore } from '../../../store/usePcbStore';
 import { useProjectStore } from '../../../store/useProjectStore';
 import { useAppState } from '../../../store/useAppState';
+import { useGlobalSettings } from '../../../store/useGlobalSettings';
 import { PcbCardHeader } from './PcbCardHeader';
 import { ProjectCardSummary } from './ProjectCardSummary';
 import { RemoveProject } from '../../RemovePage/RemoveProject';
@@ -25,6 +26,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
     const { deleteProject } = useProjectStore();
     const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile } = useAppState();
+    const { hasPermission } = useGlobalSettings();
     
     const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
 
@@ -137,10 +139,12 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
             <ProjectCardSummary project={project} />
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
-                <EditButton 
-                    onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
-                    label={isMobile ? "Edit" : "Edit Project"}
-                />
+                {hasPermission('projects', 'edit') && (
+                    <EditButton 
+                        onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
+                        label={isMobile ? "Edit" : "Edit Project"}
+                    />
+                )}
                 <ViewButton 
                     onClick={(e) => {
                         e.stopPropagation();
@@ -151,13 +155,15 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     className="view-pcbs-btn"
                     label={isMobile ? "View" : "View PCBs Info"}
                 />
-                <DeleteButton 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsRemoveProjectOpen(true);
-                    }}
-                    label={isMobile ? "Delete" : "Delete Project"}
-                />
+                {hasPermission('projects', 'delete') && (
+                    <DeleteButton 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsRemoveProjectOpen(true);
+                        }}
+                        label={isMobile ? "Delete" : "Delete Project"}
+                    />
+                )}
             </div>
 
             <RemoveProject 

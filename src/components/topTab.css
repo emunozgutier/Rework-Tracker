@@ -42,6 +42,15 @@
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+.tab-item.locked {
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.tab-item.locked:hover {
+  background: rgba(239, 68, 68, 0.03);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
 .tab-label {
   display: inline;
 }

@@ -3,6 +3,7 @@ import { useReworkStore } from '../../../store/useReworkStore';
 import { useTagStore } from '../../../store/useTagStore';
 import { useAppState } from '../../../store/useAppState';
 import { usePcbStore } from '../../../store/usePcbStore';
+import { useGlobalSettings } from '../../../store/useGlobalSettings';
 import { API_BASE, apiFetch } from '../../../store/database/apiBridge';
 import { FormTabs } from '../../../components/forms/FormTabs';
 import { RemoveTag } from '../../RemovePage/RemoveTag';
@@ -18,6 +19,7 @@ interface PcbCardBodyProps {
 
 export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
+    const { hasPermission } = useGlobalSettings();
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
     const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile } = useAppState();
@@ -103,17 +105,19 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     return (
         <div className="card-expanded-content">
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                <EditButton 
-                    onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
-                    label={isMobile ? "Edit" : "Edit PCB"}
-                />
+                {hasPermission('pcbs', 'edit') && (
+                    <EditButton 
+                        onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
+                        label={isMobile ? "Edit" : "Edit PCB"}
+                    />
+                )}
 
                 <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
                     label={isMobile ? "QR" : "QR Code"}
                 />
                 
-                {isLocalhost && (
+                {isLocalhost && hasPermission('pcbs', 'delete') && (
                     <DeleteButton 
                         onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
                         label={isMobile ? "Delete" : "Delete PCB"}
@@ -143,12 +147,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                     icon={null}
                                     style={{ flex: 'none' }}
                                 />
-                                <AddButton 
-                                    onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
-                                    label="Add Rework"
-                                    icon={null}
-                                    style={{ flex: 'none' }}
-                                />
+                                {hasPermission('reworks', 'create') && (
+                                    <AddButton 
+                                        onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
+                                        label="Add Rework"
+                                        icon={null}
+                                        style={{ flex: 'none' }}
+                                    />
+                                )}
                             </div>
                         </div>
                         {pcbReworks.length > 0 ? (
@@ -240,11 +246,13 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                             )}
                                         </div>
                                     ) : (
-                                        <AddButton 
-                                            onClick={(e) => { e.stopPropagation(); setIsAssigningTag(true); }}
-                                            label="Add Tag"
-                                            style={{ width: '100%', marginBottom: '16px' }}
-                                        />
+                                        hasPermission('pcbs', 'edit') && (
+                                            <AddButton 
+                                                onClick={(e) => { e.stopPropagation(); setIsAssigningTag(true); }}
+                                                label="Add Tag"
+                                                style={{ width: '100%', marginBottom: '16px' }}
+                                            />
+                                        )
                                     )}
 
                                     {filteredAttached.length > 0 ? (
@@ -253,18 +261,20 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                                 <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}40`, padding: '4px 10px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
                                                     <TagIcon size={12} />
                                                     {formatTagName(tag)}
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); handleRemoveTagDirect(tag); }}
-                                                        style={{
-                                                            background: 'none', border: 'none', cursor: 'pointer',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            color: tag.color, padding: 0, marginLeft: '4px', opacity: 0.7
-                                                        }}
-                                                        onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
-                                                        onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
-                                                    >
-                                                        <X size={14} />
-                                                    </button>
+                                                    {hasPermission('pcbs', 'edit') && (
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); handleRemoveTagDirect(tag); }}
+                                                            style={{
+                                                                background: 'none', border: 'none', cursor: 'pointer',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                color: tag.color, padding: 0, marginLeft: '4px', opacity: 0.7
+                                                            }}
+                                                            onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                                                            onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
