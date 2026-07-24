@@ -25,6 +25,8 @@ import { UrlManager } from './components/UrlManager'
 import { TestBoardTypo } from './components/UrlManager/TestBoardTypo'
 import { WrongUrl } from './Pages/WrongPage/WrongUrl'
 import { FixedUrl } from './Pages/WrongPage/FixedUrl'
+import { SetupResendEmail } from './Pages/SetupResendEmail'
+import { GlobalResendWarningModal, ResendTopBarBadge } from './components/GlobalResendWarningModal'
 
 import { useAppState } from './store/useAppState'
 import { useGlobalSettings } from './store/useGlobalSettings'
@@ -108,6 +110,8 @@ function App() {
         return <SettingsView />;
       case 'login':
         return <LoginView />;
+      case 'setup_resend':
+        return <SetupResendEmail />;
       default:
         if (!hasPermission('projects', 'view')) return <PermissionDenied pageLabel="Projects" />;
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
@@ -126,6 +130,7 @@ function App() {
 
   return (
     <div className={`app-container ${isMobile ? 'mobile-state' : ''}`}>
+      <GlobalResendWarningModal />
       <UrlManager />
       <a href="https://github.com/emunozgutier/Rework-Tracker" target="_blank" rel="noopener noreferrer" className="github-corner" aria-label="View source on GitHub">
         <svg width="80" height="80" viewBox="0 0 250 250" style={{ fill: 'var(--accent)', color: '#ffffff', position: 'absolute', top: 0, border: 0, left: 0, transform: 'scaleX(-1)', zIndex: 1000 }} aria-hidden="true">
@@ -137,6 +142,7 @@ function App() {
 
       {/* User Login & Role Status Badge */}
       <div className="user-profile-badge" style={{ position: 'absolute', top: '16px', right: '20px', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 900 }}>
+        <ResendTopBarBadge />
         <div style={{
           display: 'flex',
           alignItems: 'center',

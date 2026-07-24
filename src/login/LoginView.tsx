@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from './client';
 import { useAppState } from '../store/useAppState';
 import { useOwnerStore } from '../store/useOwnerStore';
-import { Mail, ShieldCheck, ArrowLeft, RefreshCw, Key } from 'lucide-react';
+import { API_BASE, apiFetch } from '../store/database/apiBridge';
+import { Mail, ShieldCheck, ArrowLeft, RefreshCw, Key, AlertTriangle, X } from 'lucide-react';
 import './LoginView.css';
 
 export function LoginView() {
@@ -23,11 +24,25 @@ export function LoginView() {
     const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
     const isVerifyingRef = useRef(false);
 
-    // Clear error on mount and fetch owners
+    // Resend configuration modal state
+    const [resendConfigured, setResendConfigured] = useState<boolean | null>(null);
+    const [showResendModal, setShowResendModal] = useState(false);
+
+    // Clear error on mount and fetch owners & check Resend status
     useEffect(() => {
         clearError();
         fetchOwners();
         setAttempts(0);
+
+        apiFetch(`${API_BASE}/auth/resend-config`)
+            .then(res => res.json())
+            .then(data => {
+                setResendConfigured(data.configured);
+                if (!data.configured) {
+                    setShowResendModal(true);
+                }
+            })
+            .catch(() => {});
     }, [clearError, fetchOwners]);
 
     // Handle email request
@@ -125,6 +140,19 @@ export function LoginView() {
                     {otpSent && <p className="subtitle">Verification Passcode</p>}
                 </div>
 
+                {resendConfigured === false && (
+                    <div className="resend-config-banner">
+                        <span>⚠️ Resend Email API not configured.</span>
+                        <button
+                            type="button"
+                            className="resend-banner-btn"
+                            onClick={() => useAppState.getState().setPage('setup_resend')}
+                        >
+                            Set Up Resend
+                        </button>
+                    </div>
+                )}
+
                 {error && (
                     <div className="login-error-toast" onClick={clearError}>
                         <span>{error}</span>
@@ -194,6 +222,24 @@ export function LoginView() {
                         <p className="login-note">
                             We will send a 6-digit verification code to your inbox. Valid for 15 minutes.
                         </p>
+
+                        <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                            <button
+                                type="button"
+                                onClick={() => useAppState.getState().setPage('setup_resend')}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--accent)',
+                                    fontSize: '0.82rem',
+                                    cursor: 'pointer',
+                                    textDecoration: 'underline',
+                                    opacity: 0.9
+                                }}
+                            >
+                                Configure Resend Email API Key
+                            </button>
+                        </div>
                     </form>
                 ) : (
                     <div className="login-form">
@@ -246,6 +292,38 @@ export function LoginView() {
                     </div>
                 )}
             </div>
+            {/* Pop-up Modal when Resend API is not configured */}
+            {showResendModal && (
+                <div className="resend-warning-modal-overlay">
+                    <div className="resend-warning-modal">
+                        <button className="modal-close-btn" onClick={() => setShowResendModal(false)}>
+                            <X size={18} />
+                        </button>
+                        <div className="modal-icon-header">
+                            <AlertTriangle className="warning-icon glow-amber" size={44} />
+                        </div>
+                        <h3>Resend Email API Not Configured</h3>
+                        <p>
+                            Real OTP email dispatching is currently inactive. Passcodes will log locally to <code>src/login/email_sent.txt</code> and console logs until an API key is set up.
+                        </p>
+                        <div className="modal-actions">
+                            <button 
+                                className="primary-setup-btn"
+                                onClick={() => useAppState.getState().setPage('setup_resend')}
+                            >
+                                <Key size={16} />
+                                <span>Set Up Resend Email API Now</span>
+                            </button>
+                            <button 
+                                className="secondary-dismiss-btn"
+                                onClick={() => setShowResendModal(false)}
+                            >
+                                Continue with Local Log Mode
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

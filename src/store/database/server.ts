@@ -813,11 +813,39 @@ app.put('/api/pcbs/:id', (req: Request, res: Response) => {
 });
 
 app.delete('/api/pcbs/:id', (req: Request, res: Response) => {
-    db.run("DELETE FROM pcbs WHERE id = ?", [req.params.id], function(this: any, err: any) {
+    const idParam = req.params.id;
+    
+    // 1. Explicitly check for associated rework logs
+    db.get("SELECT COUNT(*) as count FROM reworks WHERE pcb_id = ? OR CAST(pcb_id AS TEXT) = ?", [idParam, String(idParam)], (err: any, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ error: "PCB not found" });
-        db.run("DELETE FROM pcb_tags WHERE pcb_id = ?", [req.params.id], () => {
-            res.json({ deleted: this.changes });
+        if (row && row.count > 0) {
+            return res.status(400).json({ error: "Cannot delete PCB because it has rework logs associated with it." });
+        }
+
+        // 2. Check creation timestamp constraint (3 days limit)
+        db.get("SELECT created_at FROM pcbs WHERE id = ? OR CAST(id AS TEXT) = ?", [idParam, String(idParam)], (err: any, pcbRow: any) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (!pcbRow) return res.status(404).json({ error: "PCB not found" });
+
+            if (pcbRow.created_at) {
+                const dateStr = pcbRow.created_at.includes('T') ? pcbRow.created_at : pcbRow.created_at.replace(' ', 'T') + 'Z';
+                const createdDate = new Date(dateStr);
+                if (!isNaN(createdDate.getTime())) {
+                    const daysDiff = (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+                    if (daysDiff > 3) {
+                        return res.status(400).json({ error: "Cannot delete PCB because it was created more than 3 days ago." });
+                    }
+                }
+            }
+
+            // 3. Perform deletion
+            db.run("DELETE FROM pcbs WHERE id = ? OR CAST(id AS TEXT) = ?", [idParam, String(idParam)], function(this: any, err: any) {
+                if (err) return res.status(500).json({ error: err.message });
+                if (this.changes === 0) return res.status(404).json({ error: "PCB not found" });
+                db.run("DELETE FROM pcb_tags WHERE pcb_id = ? OR CAST(pcb_id AS TEXT) = ?", [idParam, String(idParam)], () => {
+                    res.json({ deleted: this.changes });
+                });
+            });
         });
     });
 });

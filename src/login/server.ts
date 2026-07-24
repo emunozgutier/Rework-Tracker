@@ -1,7 +1,7 @@
 import express, { type Request, type Response } from 'express';
 import crypto from 'crypto';
 import { db } from '../store/database/db.js';
-import { sendOtpEmail } from './email.js';
+import { sendOtpEmail, getResendApiKey, saveResendApiKey, deleteResendApiKey } from './email.js';
 
 export const loginRouter = express.Router();
 
@@ -220,4 +220,36 @@ loginRouter.post('/logout', (req: Request, res: Response) => {
         db.run("DELETE FROM user_sessions WHERE token = ?", [token]);
     }
     res.json({ message: "Successfully logged out." });
+});
+
+// 5. Resend API Configuration Management
+loginRouter.get('/resend-config', (_req: Request, res: Response) => {
+    const key = getResendApiKey();
+    if (!key) {
+        return res.json({ configured: false, maskedKey: null });
+    }
+    const maskedKey = key.length > 8 ? `${key.substring(0, 5)}...${key.substring(key.length - 4)}` : 're_****';
+    res.json({ configured: true, maskedKey });
+});
+
+loginRouter.post('/resend-config', (req: Request, res: Response) => {
+    const { apiKey } = req.body;
+    if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim().startsWith('re_')) {
+        return res.status(400).json({ error: "Invalid Resend API Key format. Key must start with 're_'." });
+    }
+    try {
+        saveResendApiKey(apiKey.trim());
+        res.json({ success: true, message: "Resend API key securely saved in private/resend_key.json" });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message || "Failed to save API key" });
+    }
+});
+
+loginRouter.delete('/resend-config', (_req: Request, res: Response) => {
+    try {
+        deleteResendApiKey();
+        res.json({ success: true, message: "Resend API key removed." });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message || "Failed to delete API key" });
+    }
 });

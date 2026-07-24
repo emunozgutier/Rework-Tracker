@@ -12,6 +12,7 @@ const initDb = (): Promise<void> => {
     return new Promise((resolve) => {
         db.serialize(() => {
             db.run('PRAGMA foreign_keys = ON');
+            db.run('PRAGMA journal_mode = WAL');
         
             // Projects Table
             db.run(`CREATE TABLE IF NOT EXISTS projects (
