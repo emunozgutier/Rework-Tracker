@@ -20,14 +20,8 @@ export function LoginView() {
     const [email, setEmail] = useState('');
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
     const [attempts, setAttempts] = useState(0);
-    const digitRefs = [
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-        useRef<HTMLInputElement>(null),
-    ];
+    const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const isVerifyingRef = useRef(false);
 
     // Clear error on mount and fetch owners
     useEffect(() => {
@@ -47,30 +41,36 @@ export function LoginView() {
     // Auto-verify once 6 digits are fully entered
     useEffect(() => {
         const verifyAndRedirect = async () => {
-            if (otpSent && otpDigits.every(digit => digit !== '')) {
+            if (otpSent && otpDigits.every(digit => digit !== '') && !loading && !isVerifyingRef.current) {
+                isVerifyingRef.current = true;
                 const code = otpDigits.join('');
-                const success = await verifyOtp(email, code);
-                if (success) {
-                    setAttempts(0);
-                    useAppState.getState().setPage('projects');
-                } else {
-                    const nextAttempts = attempts + 1;
-                    if (nextAttempts >= 3) {
+                // Clear digits immediately to prevent duplicate triggers on subsequent renders
+                setOtpDigits(['', '', '', '', '', '']);
+
+                try {
+                    const success = await verifyOtp(email, code);
+                    if (success) {
                         setAttempts(0);
-                        setOtpDigits(['', '', '', '', '', '']);
-                        setOtpSent(false);
-                        useAuthStore.setState({ error: 'Too many failed attempts. Please request a new passcode.' });
+                        useAppState.getState().setPage('projects');
                     } else {
-                        setAttempts(nextAttempts);
-                        setOtpDigits(['', '', '', '', '', '']);
-                        digitRefs[0].current?.focus();
-                        useAuthStore.setState({ error: `Invalid passcode. ${3 - nextAttempts} attempts remaining.` });
+                        const nextAttempts = attempts + 1;
+                        if (nextAttempts >= 3) {
+                            setAttempts(0);
+                            setOtpSent(false);
+                            useAuthStore.setState({ error: 'Too many failed attempts. Please request a new passcode.' });
+                        } else {
+                            setAttempts(nextAttempts);
+                            digitRefs.current[0]?.focus();
+                            useAuthStore.setState({ error: `Invalid passcode. ${3 - nextAttempts} attempts remaining.` });
+                        }
                     }
+                } finally {
+                    isVerifyingRef.current = false;
                 }
             }
         };
         verifyAndRedirect();
-    }, [otpDigits, otpSent, email, verifyOtp, attempts, digitRefs, setOtpSent]);
+    }, [otpDigits, otpSent, email, verifyOtp, attempts, loading, setOtpSent]);
 
     // Handle digit typing
     const handleDigitChange = (index: number, value: string) => {
@@ -83,7 +83,7 @@ export function LoginView() {
 
         // Auto focus next box if we typed a digit
         if (value !== '' && index < 5) {
-            digitRefs[index + 1].current?.focus();
+            digitRefs.current[index + 1]?.focus();
         }
     };
 
@@ -94,7 +94,7 @@ export function LoginView() {
                 const newDigits = [...otpDigits];
                 newDigits[index - 1] = '';
                 setOtpDigits(newDigits);
-                digitRefs[index - 1].current?.focus();
+                digitRefs.current[index - 1]?.focus();
             } else {
                 const newDigits = [...otpDigits];
                 newDigits[index] = '';
@@ -110,7 +110,7 @@ export function LoginView() {
         if (/^\d{6}$/.test(pasteData)) {
             const digits = pasteData.split('');
             setOtpDigits(digits);
-            digitRefs[5].current?.focus();
+            digitRefs.current[5]?.focus();
         }
     };
 
@@ -218,7 +218,7 @@ export function LoginView() {
                                 {otpDigits.map((digit, idx) => (
                                     <input
                                         key={idx}
-                                        ref={digitRefs[idx]}
+                                        ref={(el) => { digitRefs.current[idx] = el; }}
                                         type="text"
                                         maxLength={1}
                                         value={digit}
