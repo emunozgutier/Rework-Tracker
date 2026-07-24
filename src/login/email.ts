@@ -72,15 +72,17 @@ export function deleteResendApiKey(): void {
 /**
  * Sends an OTP email using Resend API if configured,
  * otherwise falls back to SMTP / local file log.
+ * Supports single recipient (string) or multiple recipients (string[]).
  */
-export async function sendOtpEmail(email: string, otp: string): Promise<void> {
+export async function sendOtpEmail(email: string | string[], otp: string): Promise<void> {
     const timestamp = new Date().toLocaleString();
+    const recipientList = Array.isArray(email) ? email.join(', ') : email;
     
     const emailHeader = `==================================================
 EMAIL NOTIFICATION - PCB REWORK TRACKER AUTH
 ==================================================
 Timestamp: ${timestamp}
-To:        ${email}
+To:        ${recipientList}
 Subject:   Your 6-Digit Verification Code
 
 Hello!
@@ -110,36 +112,37 @@ The Antigravity Team
     // 2. Try Resend API first if key is configured
     const resendApiKey = getResendApiKey();
     if (resendApiKey) {
-        try {
-            const resend = new Resend(resendApiKey);
-            const from = process.env.RESEND_FROM || 'PCB Rework Tracker <onboarding@resend.dev>';
+        const resend = new Resend(resendApiKey);
+        const from = process.env.RESEND_FROM || 'PCB Rework Tracker <onboarding@resend.dev>';
 
-            const res = await resend.emails.send({
-                from,
-                to: email,
-                subject: 'PCB Rework Tracker - Verification Code',
-                text: `Your 6-digit passcode to log in to the PCB Rework Tracker is: ${otp}\n\nThis code is valid for 15 minutes.`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #0f172a; color: #f8fafc; border-radius: 12px; max-width: 480px; margin: 0 auto; border: 1px solid #334155;">
-                        <h2 style="color: #6366f1; margin-top: 0; text-align: center;">PCB Rework Tracker</h2>
-                        <p style="font-size: 16px; color: #94a3b8; text-align: center;">Your Verification Passcode</p>
-                        
-                        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; text-align: center; margin: 24px 0; border: 1px solid #475569;">
-                            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #38bdf8;">${otp}</span>
-                        </div>
-                        
-                        <p style="font-size: 14px; color: #94a3b8; line-height: 1.5;">This passcode is valid for <strong>15 minutes</strong>. Do not share this code with anyone.</p>
-                        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;" />
-                        <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">If you did not request a passcode, you can safely ignore this email.</p>
+        const { data, error } = await resend.emails.send({
+            from,
+            to: email,
+            subject: 'PCB Rework Tracker - Verification Code',
+            text: `Your 6-digit passcode to log in to the PCB Rework Tracker is: ${otp}\n\nThis code is valid for 15 minutes.`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #0f172a; color: #f8fafc; border-radius: 12px; max-width: 480px; margin: 0 auto; border: 1px solid #334155;">
+                    <h2 style="color: #6366f1; margin-top: 0; text-align: center;">PCB Rework Tracker</h2>
+                    <p style="font-size: 16px; color: #94a3b8; text-align: center;">Your Verification Passcode</p>
+                    
+                    <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; text-align: center; margin: 24px 0; border: 1px solid #475569;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #38bdf8;">${otp}</span>
                     </div>
-                `
-            });
+                    
+                    <p style="font-size: 14px; color: #94a3b8; line-height: 1.5;">This passcode is valid for <strong>15 minutes</strong>. Do not share this code with anyone.</p>
+                    <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #64748b; text-align: center; margin: 0;">If you did not request a passcode, you can safely ignore this email.</p>
+                </div>
+            `
+        });
 
-            console.log(`[Resend Email] Successfully dispatched OTP email to ${email}. ID: ${res.data?.id}`);
-            return;
-        } catch (resendErr: any) {
-            console.error('[Resend Email] Error sending email via Resend:', resendErr.message || resendErr);
+        if (error) {
+            console.error('[Resend Email API Error]:', error.message || error);
+            throw new Error(`Resend Error: ${error.message}`);
         }
+
+        console.log(`[Resend Email] Successfully dispatched OTP email to ${email}. ID: ${data?.id}`);
+        return;
     }
 
     // 3. Fallback: SMTP transport

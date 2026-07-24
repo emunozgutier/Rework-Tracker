@@ -64,7 +64,7 @@ loginRouter.post('/request-otp', (req: Request, res: Response) => {
                 res.json({ message: "Passcode successfully dispatched to email." });
             } catch (emailErr: any) {
                 console.error("[Auth API] Email sending warning:", emailErr.message);
-                res.json({ message: "Passcode generated (please check console/file)." });
+                res.status(400).json({ error: emailErr.message || "Failed to dispatch email." });
             }
         }
     );
