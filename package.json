@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"node src/store/database/server.js\" \"vite\"",
+    "dev": "concurrently \"tsx src/store/database/server.ts\" \"vite\"",
     "build": "tsc -b && vite build && node copy-404.js",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "lint": "eslint .",
     "preview": "vite preview",
     "test:run": "vitest --run --environment jsdom --fileParallelism=false",
-    "test": "start-server-and-test 'node src/store/database/server.js' http-get://localhost:5002/api/dashboard test:run"
+    "test": "start-server-and-test 'tsx src/store/database/server.ts' http-get://localhost:5002/api/dashboard test:run"
   },
   "dependencies": {
     "cors": "^2.8.6",
