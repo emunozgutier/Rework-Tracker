@@ -9,7 +9,7 @@ const dbPath = path.resolve(__dirname, 'pcb_tracker.db');
 const db = new sqlite3.Database(dbPath);
 
 const initDb = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         db.serialize(() => {
             db.run('PRAGMA foreign_keys = ON');
         
