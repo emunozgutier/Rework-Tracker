@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import multer from 'multer';
@@ -704,7 +704,7 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
     const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : null;
 
-    db.get("SELECT number_format, project_key FROM projects WHERE id = ?", [req.params.id], (err: any, _row: any) => {
+    db.get("SELECT number_format, project_key FROM projects WHERE id = ?", [req.params.id], (_err: any, _row: any) => {
         db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', req.params.id], function(this: any, err: any) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
