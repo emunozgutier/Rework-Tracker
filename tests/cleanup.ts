@@ -7,10 +7,14 @@ export function cleanupTestData(): Promise<void> {
         const db = new sqlite3.Database(dbPath);
         db.configure("busyTimeout", 10000);
 
-        db.serialize(() => {
-            db.run('PRAGMA foreign_keys = OFF');
+        const safeRun = (sql: string) => {
+            db.run(sql, () => {});
+        };
 
-            db.run(`
+        db.serialize(() => {
+            safeRun('PRAGMA foreign_keys = OFF');
+
+            safeRun(`
                 DELETE FROM pcb_tags 
                 WHERE pcb_id IN (
                     SELECT id FROM pcbs 
@@ -19,7 +23,7 @@ export function cleanupTestData(): Promise<void> {
                 )
             `);
 
-            db.run(`
+            safeRun(`
                 DELETE FROM reworks 
                 WHERE pcb_id IN (
                     SELECT id FROM pcbs 
@@ -31,42 +35,41 @@ export function cleanupTestData(): Promise<void> {
                 OR title LIKE '%Silicon Swap to B0%'
             `);
 
-            db.run(`
+            safeRun(`
                 DELETE FROM pcbs 
                 WHERE board_number LIKE '%vitest%' 
                    OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
                    OR owner_id IN (SELECT id FROM owners WHERE name LIKE '%vitest%' OR username LIKE '%vitest%')
             `);
 
-            db.run(`
+            safeRun(`
                 DELETE FROM pcb_flavors 
                 WHERE project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
             `);
 
-            db.run(`
+            safeRun(`
                 DELETE FROM projects 
                 WHERE name LIKE '%vitest%' 
                    OR name LIKE '%Test Project%' 
                    OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR', 'VT')
             `);
 
-            db.run(`
+            safeRun(`
                 DELETE FROM tags 
                 WHERE name LIKE '%vitest%' 
                    OR name LIKE '%test%' 
                    OR owner_id IN (SELECT id FROM owners WHERE name LIKE '%vitest%' OR username LIKE '%vitest%')
             `);
 
-            db.run(`
+            safeRun(`
                 DELETE FROM owners 
                 WHERE name LIKE '%vitest%' 
                    OR username LIKE '%vitest%'
             `);
 
-            db.run('PRAGMA foreign_keys = ON', (err) => {
-                db.close((closeErr) => {
-                    if (err || closeErr) reject(err || closeErr);
-                    else resolve();
+            db.run('PRAGMA foreign_keys = ON', () => {
+                db.close(() => {
+                    resolve();
                 });
             });
         });
