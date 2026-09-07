@@ -337,7 +337,7 @@ const initDb = async (): Promise<void> => {
 
             // Migration: ensure board_formfactors has package_id and nullable silicon_version_id
             dbInstance.all('PRAGMA table_info(board_formfactors)', (_err: any, columns: any[]) => {
-                if (columns) {
+                if (columns && columns.length > 0) {
                     const siCol = columns.find((c: any) => c.name === 'silicon_version_id');
                     const hasPkgCol = columns.some((c: any) => c.name === 'package_id');
                     if (!hasPkgCol || (siCol && siCol.notnull === 1)) {
@@ -353,9 +353,10 @@ const initDb = async (): Promise<void> => {
                                 FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
                                 FOREIGN KEY (silicon_version_id) REFERENCES silicon_versions(id) ON DELETE CASCADE
                             )`);
+                            const pkgExpr = hasPkgCol ? "COALESCE(b.package_id, sv.package_id)" : "sv.package_id";
                             dbInstance.run(`INSERT OR IGNORE INTO board_formfactors_migration (id, package_id, silicon_version_id, name, description, created_at)
                                 SELECT b.id, 
-                                       COALESCE(b.package_id, sv.package_id), 
+                                       ${pkgExpr}, 
                                        b.silicon_version_id, 
                                        b.name, 
                                        b.description, 
@@ -373,7 +374,7 @@ const initDb = async (): Promise<void> => {
 
             // Migration: ensure silicon_versions has project_id and nullable package_id
             dbInstance.all('PRAGMA table_info(silicon_versions)', (_err: any, columns: any[]) => {
-                if (columns) {
+                if (columns && columns.length > 0) {
                     const pkgCol = columns.find((c: any) => c.name === 'package_id');
                     const hasProjCol = columns.some((c: any) => c.name === 'project_id');
                     if (!hasProjCol || (pkgCol && pkgCol.notnull === 1)) {
@@ -390,16 +391,18 @@ const initDb = async (): Promise<void> => {
                                 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
                                 FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
                             )`);
+                            const projExpr = hasProjCol ? "COALESCE(sv.project_id, pkg.project_id)" : "pkg.project_id";
+                            const pkgExpr = pkgCol ? "sv.package_id" : "NULL";
                             dbInstance.run(`INSERT OR IGNORE INTO silicon_versions_migration (id, project_id, package_id, name, silicon_corners, description, created_at)
                                 SELECT sv.id,
-                                       COALESCE(sv.project_id, pkg.project_id),
-                                       sv.package_id,
+                                       ${projExpr},
+                                       ${pkgExpr},
                                        sv.name,
                                        sv.silicon_corners,
                                        sv.description,
                                        sv.created_at
                                 FROM silicon_versions sv
-                                LEFT JOIN packages pkg ON pkg.id = sv.package_id`);
+                                LEFT JOIN packages pkg ON pkg.id = ${pkgExpr}`);
                             dbInstance.run("DROP TABLE silicon_versions");
                             dbInstance.run("ALTER TABLE silicon_versions_migration RENAME TO silicon_versions");
                             dbInstance.run("CREATE INDEX IF NOT EXISTS idx_silicon_versions_proj ON silicon_versions(project_id)");
