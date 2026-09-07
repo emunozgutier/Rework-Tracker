@@ -23,7 +23,10 @@ export const API_BASE = getApiBase();
 
 let internalProjects = [...demoData.demoProjects] as any[];
 let internalPcbs = [...demoData.demoPcbs] as any[];
-let internalOwners = [...demoData.demoOwners] as any[];
+let internalOwners = (demoData.demoOwners as any[]).map((o: any, idx: number) => ({
+    ...o,
+    is_super_user: o.is_super_user !== undefined ? o.is_super_user : (idx === 0 ? 1 : 0)
+}));
 let internalProjectDocs = [] as any[];
 let docIdCounter = 1;
 internalProjects.forEach((p: any) => {
@@ -491,7 +494,10 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             return createResponse(internalOwners);
         }
         if (method === 'POST') {
-            const newOwner = { id: Date.now(), ...body, pcb_count: 0, rework_count: 0, tag_count: 0 };
+            const superCount = internalOwners.filter(o => o.is_super_user === 1 || o.is_super_user === true).length;
+            const isFirst = internalOwners.length === 0 || superCount === 0;
+            const isSuperUser = isFirst ? 1 : (body.is_super_user !== undefined ? (body.is_super_user ? 1 : 0) : (body.role === 'Super User' ? 1 : 0));
+            const newOwner = { id: Date.now(), ...body, is_super_user: isSuperUser, pcb_count: 0, rework_count: 0, tag_count: 0 };
             internalOwners.push(newOwner);
             return createResponse(newOwner, 201);
         }
@@ -502,12 +508,26 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
         }
         if (method === 'DELETE') {
             const id = parseInt(localPath.split('/').pop() || '0');
+            const target = internalOwners.find(p => p.id === id);
+            if (target && (target.is_super_user === 1 || target.is_super_user === true)) {
+                const superCount = internalOwners.filter(o => o.is_super_user === 1 || o.is_super_user === true).length;
+                if (superCount <= 1) {
+                    return createResponse({ error: 'Cannot delete this user: it is the only super user.' }, 400);
+                }
+            }
             internalOwners = internalOwners.filter(p => p.id !== id);
             return createResponse({ message: 'Owner deleted' });
         }
         if (method === 'PATCH' && localPath.includes('/role')) {
             const id = parseInt(localPath.split('/')[2] || '0');
             const { role } = body as any;
+            const target = internalOwners.find(p => p.id === id);
+            if (target && (target.is_super_user === 1 || target.is_super_user === true) && role === 'User') {
+                const superCount = internalOwners.filter(o => o.is_super_user === 1 || o.is_super_user === true).length;
+                if (superCount <= 1) {
+                    return createResponse({ error: 'Cannot demote this user: it is the only super user.' }, 400);
+                }
+            }
             internalOwners = internalOwners.map(p =>
                 p.id === id ? { ...p, is_super_user: role === 'Super User' ? 1 : 0 } : p
             );

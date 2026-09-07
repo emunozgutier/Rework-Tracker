@@ -21,7 +21,7 @@ interface OwnerState {
     loading: boolean;
     error: string | null;
     fetchOwners: () => Promise<void>;
-    addOwner: (data: { name: string; username: string; email?: string; otp_secret?: string }) => Promise<boolean>;
+    addOwner: (data: { name: string; username: string; email?: string; otp_secret?: string; is_super_user?: number; role?: string }) => Promise<boolean>;
     updateOwner: (id: number | string, data: { name: string; username: string; email?: string }) => Promise<boolean>;
     updateOwnerRole: (id: number | string, role: 'Super User' | 'User') => Promise<boolean>;
     deleteOwner: (id: number | string) => Promise<boolean>;
@@ -115,7 +115,8 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
         try {
             const res = await apiFetch(`${API_BASE}/owners/${id}`, { method: 'DELETE' });
             if (!res.ok) {
-                set({ error: 'Failed to delete owner', loading: false });
+                const data = await res.json().catch(() => ({}));
+                set({ error: data.error || 'Failed to delete owner', loading: false });
                 return false;
             }
 

@@ -86,6 +86,11 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
         }
     };
 
+    const superUserCount = owners.filter(
+        (o: any) => o.is_super_user === 1 || o.is_super_user === true
+    ).length;
+    const isOnlySuperUser = ownerIsSuperUser && superUserCount <= 1;
+
     return (
         <div className="card-expanded-content" style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -159,15 +164,17 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <button
                             onClick={() => handleRoleChange(ownerRole === 'Super User' ? 'User' : 'Super User')}
-                            disabled={isChangingRole}
-                            title={ownerRole === 'Super User' ? 'Demote to regular User' : 'Promote to Super User'}
+                            disabled={isChangingRole || (ownerRole === 'Super User' && isOnlySuperUser)}
+                            title={ownerRole === 'Super User' 
+                                ? (isOnlySuperUser ? 'Cannot demote: this is the only super user' : 'Demote to regular User')
+                                : 'Promote to Super User'}
                             style={{
                                 background: 'none',
                                 border: `1px solid ${ownerRole === 'Super User' ? 'rgba(234, 179, 8, 0.4)' : 'rgba(99, 102, 241, 0.4)'}`,
                                 color: ownerRole === 'Super User' ? '#eab308' : '#818cf8',
                                 padding: '8px 16px',
                                 borderRadius: '10px',
-                                cursor: isChangingRole ? 'not-allowed' : 'pointer',
+                                cursor: (isChangingRole || (ownerRole === 'Super User' && isOnlySuperUser)) ? 'not-allowed' : 'pointer',
                                 fontSize: '0.85rem',
                                 fontWeight: 600,
                                 display: 'flex',
@@ -176,10 +183,10 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
                                 fontFamily: 'inherit',
                                 transition: 'all 0.2s ease',
                                 margin: 0,
-                                opacity: isChangingRole ? 0.6 : 1,
+                                opacity: (isChangingRole || (ownerRole === 'Super User' && isOnlySuperUser)) ? 0.4 : 1,
                             }}
                             onMouseEnter={(e) => {
-                                if (!isChangingRole) {
+                                if (!isChangingRole && !(ownerRole === 'Super User' && isOnlySuperUser)) {
                                     e.currentTarget.style.background = ownerRole === 'Super User'
                                         ? 'rgba(234, 179, 8, 0.08)'
                                         : 'rgba(99, 102, 241, 0.08)';

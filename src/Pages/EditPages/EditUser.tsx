@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -15,8 +15,13 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(true);
-    const { updateOwner, deleteOwner, error } = useOwnerStore();
+    const { owners, updateOwner, deleteOwner, error } = useOwnerStore();
     const [saving, setSaving] = useState(false);
+
+    const currentOwner = owners.find(o => o.id.toString() === id.toString());
+    const isOwnerSuperUser = currentOwner?.is_super_user === 1 || currentOwner?.is_super_user === (true as any);
+    const superUserCount = owners.filter(o => o.is_super_user === 1 || o.is_super_user === (true as any)).length;
+    const isOnlySuperUser = isOwnerSuperUser && superUserCount <= 1;
 
     useEffect(() => {
         apiFetch(`${API_BASE}/owners/${id}`)
@@ -44,6 +49,10 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     };
 
     const handleDelete = async () => {
+        if (isOnlySuperUser) {
+            alert('Cannot delete this user: it is the only Super User.');
+            return;
+        }
         if (!window.confirm('Are you sure you want to delete this owner?')) return;
         setSaving(true);
         const success = await deleteOwner(id);
@@ -60,8 +69,17 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
                     <ArrowLeft size={20} />
                 </button>
                 <h2>Edit Owner</h2>
-                <button onClick={handleDelete} className="delete-icon-button" title="Delete Owner">
-                    <Trash2 size={20} color="#ef4444" />
+                <button 
+                    onClick={handleDelete} 
+                    className="delete-icon-button" 
+                    title={isOnlySuperUser ? "Cannot delete: this is the only super user" : "Delete Owner"}
+                    disabled={isOnlySuperUser || saving}
+                    style={{
+                        opacity: isOnlySuperUser ? 0.35 : 1,
+                        cursor: isOnlySuperUser ? 'not-allowed' : 'pointer'
+                    }}
+                >
+                    <Trash2 size={20} color={isOnlySuperUser ? "#94a3b8" : "#ef4444"} />
                 </button>
             </header>
 

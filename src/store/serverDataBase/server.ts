@@ -1391,15 +1391,27 @@ app.get('/api/owners', (_req: Request, res: Response) => {
 app.post('/api/owners', (req: Request, res: Response) => {
     const { name, username, email, otp_secret, crc_format, is_super_user, role } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    const superUserVal = is_super_user !== undefined ? (is_super_user ? 1 : 0) : (role === 'Super User' ? 1 : 0);
-    db.run("INSERT INTO owners (name, username, email, otp_secret, crc_format, is_super_user) VALUES (?, ?, ?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null, crc_format || 'letter', superUserVal], function(this: any, err: Error | null) {
-        if (err) {
-            if (err.message.includes('UNIQUE constraint failed')) {
-                return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
+    let superUserVal = is_super_user !== undefined ? (is_super_user ? 1 : 0) : (role === 'Super User' ? 1 : 0);
+
+    // The first user created must be a super user (or if no super users currently exist)
+    db.get("SELECT COUNT(*) as total, SUM(CASE WHEN is_super_user = 1 THEN 1 ELSE 0 END) as super_count FROM owners", [], (countErr: Error | null, countRow: any) => {
+        if (!countErr && countRow) {
+            const total = countRow.total || 0;
+            const superCount = countRow.super_count || 0;
+            if (total === 0 || superCount === 0) {
+                superUserVal = 1;
             }
-            return res.status(500).json({ error: err.message });
         }
-        res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null, crc_format: crc_format || 'letter', is_super_user: superUserVal });
+
+        db.run("INSERT INTO owners (name, username, email, otp_secret, crc_format, is_super_user) VALUES (?, ?, ?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null, crc_format || 'letter', superUserVal], function(this: any, err: Error | null) {
+            if (err) {
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
+                }
+                return res.status(500).json({ error: err.message });
+            }
+            res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null, crc_format: crc_format || 'letter', is_super_user: superUserVal });
+        });
     });
 });
 
@@ -2067,41 +2079,70 @@ app.patch('/api/owners/:id/role', (req: Request, res: Response) => {
         return res.status(400).json({ error: 'Invalid role. Must be "Super User" or "User".' });
     }
 
-    // Enforce: must always have at least one Super User
-    if (role === 'User') {
-        db.get("SELECT COUNT(*) as cnt FROM owners WHERE is_super_user = 1", [], (err: Error | null, row: any) => {
-            if (err) return res.status(500).json({ error: err.message });
-            if (row && row.cnt <= 1) {
-                return res.status(400).json({ error: 'Cannot demote: there must always be at least one Super User.' });
-            }
-            const isSuperUserValue = 0;
-            db.run("UPDATE owners SET is_super_user = ? WHERE id = ?", [isSuperUserValue, req.params.id], function(this: any, err: Error | null) {
-                if (err) return res.status(500).json({ error: err.message });
-                if (this.changes === 0) return res.status(404).json({ error: 'Owner not found.' });
+    db.get("SELECT id, is_super_user FROM owners WHERE id = ?", [req.params.id], (errOwner: Error | null, ownerRow: any) => {
+        if (errOwner) return res.status(500).json({ error: errOwner.message });
+        if (!ownerRow) return res.status(404).json({ error: 'Owner not found.' });
+
+        const isCurrentlySuper = ownerRow.is_super_user === 1 || ownerRow.is_super_user === true;
+        // Enforce: cannot demote if it's the only Super User alive
+        if (role === 'User' && isCurrentlySuper) {
+            db.get("SELECT COUNT(*) as cnt FROM owners WHERE is_super_user = 1", [], (errCnt: Error | null, rowCnt: any) => {
+                if (errCnt) return res.status(500).json({ error: errCnt.message });
+                if (rowCnt && rowCnt.cnt <= 1) {
+                    return res.status(400).json({ error: 'Cannot demote this user: it is the only super user.' });
+                }
+                updateRole(0);
+            });
+        } else if (role === 'User') {
+            updateRole(0);
+        } else {
+            updateRole(1);
+        }
+
+        function updateRole(val: number) {
+            db.run("UPDATE owners SET is_super_user = ? WHERE id = ?", [val, req.params.id], function(this: any, errUp: Error | null) {
+                if (errUp) return res.status(500).json({ error: errUp.message });
                 res.json({ success: true, role });
             });
-        });
-    } else {
-        db.run("UPDATE owners SET is_super_user = 1 WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
-            if (err) return res.status(500).json({ error: err.message });
-            if (this.changes === 0) return res.status(404).json({ error: 'Owner not found.' });
-            res.json({ success: true, role });
-        });
-    }
+        }
+    });
 });
 
 app.delete('/api/owners/:id', (req: Request, res: Response) => {
     const ownerId = req.params.id;
-    // Automatically detach the owner from all dependencies to bypass Foreign Key constraint restrictions safely
-    db.serialize(() => {
-        db.run("UPDATE pcbs SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
-        db.run("UPDATE reworks SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
-        db.run("UPDATE tags SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
 
-        db.run("DELETE FROM owners WHERE id = ?", [ownerId], function(this: any, err: Error | null) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ deleted: this.changes });
-        });
+    // Check if target owner exists and is a Super User
+    db.get("SELECT id, is_super_user FROM owners WHERE id = ?", [ownerId], (err: Error | null, owner: any) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!owner) return res.status(404).json({ error: 'Owner not found.' });
+
+        const isSuper = owner.is_super_user === 1 || owner.is_super_user === true;
+        // Enforce: cannot delete if it's the only Super User alive
+        if (isSuper) {
+            db.get("SELECT COUNT(*) as cnt FROM owners WHERE is_super_user = 1", [], (errCnt: Error | null, rowCnt: any) => {
+                if (errCnt) return res.status(500).json({ error: errCnt.message });
+                if (rowCnt && rowCnt.cnt <= 1) {
+                    return res.status(400).json({ error: 'Cannot delete this user: it is the only super user.' });
+                }
+                executeDelete();
+            });
+        } else {
+            executeDelete();
+        }
+
+        function executeDelete() {
+            // Automatically detach the owner from all dependencies to bypass Foreign Key constraint restrictions safely
+            db.serialize(() => {
+                db.run("UPDATE pcbs SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
+                db.run("UPDATE reworks SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
+                db.run("UPDATE tags SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
+
+                db.run("DELETE FROM owners WHERE id = ?", [ownerId], function(this: any, errDel: Error | null) {
+                    if (errDel) return res.status(500).json({ error: errDel.message });
+                    res.json({ deleted: this.changes });
+                });
+            });
+        }
     });
 });
 

@@ -78,7 +78,17 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                 setSessionCookie(data.token, 7);
             }
             
-            const success = await addOwner({ name, username, email, otp_secret: secret });
+            const currentOwners = useOwnerStore.getState().owners;
+            const isFirstUserCreation = currentOwners.length === 0 || !currentOwners.some(o => o.is_super_user === 1 || o.is_super_user === (true as any));
+
+            const success = await addOwner({
+                name,
+                username,
+                email,
+                otp_secret: secret,
+                is_super_user: isFirstUserCreation ? 1 : 0,
+                role: isFirstUserCreation ? 'Super User' : 'User'
+            });
             if (success) {
                 // Auto-sign-in: find the new owner in the refreshed list and set them as current user
                 const allOwners = useOwnerStore.getState().owners;
@@ -88,7 +98,7 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                     const isSuperUser = newOwner.is_super_user === 1 || newOwner.is_super_user === (true as any);
                     const minId = allOwners.length > 0 ? Math.min(...allOwners.map(o => o.id)) : -1;
                     const isFirstUser = newOwner.id === minId;
-                    const role = (isSuperUser || allOwners.length === 1 || isFirstUser) ? 'Super User' : 'User';
+                    const role = (isSuperUser || isFirstUserCreation || allOwners.length === 1 || isFirstUser) ? 'Super User' : 'User';
                     setCurrentUser(newOwner, role);
                 }
                 onSuccess();
