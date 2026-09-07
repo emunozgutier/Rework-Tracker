@@ -64,17 +64,31 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
         if (project.packages && project.packages.length > 0) {
             for (const pkg of project.packages) {
                 if (pcb.package_name && pkg.name !== pcb.package_name) continue;
-                for (const sv of (pkg.silicon_versions || [])) {
-                    if (pcb.silicon_rev && sv.name !== pcb.silicon_rev) continue;
-                    for (const ff of (sv.formfactors || [])) {
-                        if (pcb.board_flavor && ff.name !== pcb.board_flavor) continue;
-                        for (const r of (ff.revisionDetails || [])) {
-                            if (pcb.board_rev && r.name === pcb.board_rev) {
-                                schematicFilename = r.schematic || r.doc || '';
-                                boardFileFilename = r.board_file || '';
-                                bomCsvFilename = r.bom_csv || '';
-                                datasheetFilename = r.datasheet || '';
-                                break;
+                for (const ff of (pkg.formfactors || [])) {
+                    if (pcb.board_flavor && ff.name !== pcb.board_flavor) continue;
+                    for (const r of (ff.revisionDetails || [])) {
+                        if (pcb.board_rev && r.name === pcb.board_rev) {
+                            schematicFilename = r.schematic || r.doc || '';
+                            boardFileFilename = r.board_file || '';
+                            bomCsvFilename = r.bom_csv || '';
+                            datasheetFilename = r.datasheet || '';
+                            break;
+                        }
+                    }
+                }
+                if (!schematicFilename) {
+                    for (const sv of (pkg.silicon_versions || [])) {
+                        if (pcb.silicon_rev && sv.name !== pcb.silicon_rev) continue;
+                        for (const ff of (sv.formfactors || [])) {
+                            if (pcb.board_flavor && ff.name !== pcb.board_flavor) continue;
+                            for (const r of (ff.revisionDetails || [])) {
+                                if (pcb.board_rev && r.name === pcb.board_rev) {
+                                    schematicFilename = r.schematic || r.doc || '';
+                                    boardFileFilename = r.board_file || '';
+                                    bomCsvFilename = r.bom_csv || '';
+                                    datasheetFilename = r.datasheet || '';
+                                    break;
+                                }
                             }
                         }
                     }

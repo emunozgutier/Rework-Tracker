@@ -485,187 +485,278 @@ function generateProjectKey(name: string, attempt = 1): Promise<string> {
     });
 }
 
-function saveProjectHierarchy(projectId: number | string, packagesInput: any[], done: (err?: Error | null) => void) {
-    db.run("DELETE FROM packages WHERE project_id = ?", [projectId], (errDel: Error | null) => {
-        if (errDel) return done(errDel);
-        if (!packagesInput || packagesInput.length === 0) return done(null);
+function extractProjectSiliconVersions(body: any, packagesInput?: any[]): any[] {
+    if (body && Array.isArray(body.silicon_versions) && body.silicon_versions.length > 0) {
+        return body.silicon_versions.map((sv: any) => ({
+            name: (typeof sv === 'object' ? sv.name : String(sv)) || 'A0',
+            silicon_corners: (typeof sv === 'object' && sv.silicon_corners) 
+                ? (Array.isArray(sv.silicon_corners) ? sv.silicon_corners : String(sv.silicon_corners).split(',').map((s: string) => s.trim()).filter(Boolean))
+                : ['TT'],
+            description: (typeof sv === 'object' && sv.description) ? sv.description : ''
+        }));
+    }
 
-        let pkgPending = packagesInput.length;
-        let hasError = false;
-
-        packagesInput.forEach((pkg: any) => {
-            if (hasError) return;
-            const pkgName = pkg.name || 'Default Package';
-            db.run("INSERT INTO packages (project_id, name, description) VALUES (?, ?, ?)", [projectId, pkgName, pkg.description || ''], function(this: any, errPkg: Error | null) {
-                if (errPkg) {
-                    if (!hasError) { hasError = true; done(errPkg); }
-                    return;
-                }
-                const packageId = this.lastID;
-                const siVersions = pkg.silicon_versions || [];
-                if (siVersions.length === 0) {
-                    if (--pkgPending === 0 && !hasError) done(null);
-                    return;
-                }
-
-                let svPending = siVersions.length;
-                siVersions.forEach((sv: any) => {
-                    if (hasError) return;
-                    const svName = sv.name || 'A0';
-                    const cornersStr = Array.isArray(sv.silicon_corners) ? sv.silicon_corners.join(', ') : (sv.silicon_corners || '');
-                    db.run("INSERT INTO silicon_versions (package_id, name, silicon_corners, description) VALUES (?, ?, ?, ?)", [packageId, svName, cornersStr, sv.description || ''], function(this: any, errSv: Error | null) {
-                        if (errSv) {
-                            if (!hasError) { hasError = true; done(errSv); }
-                            return;
-                        }
-                        const siliconVersionId = this.lastID;
-                        const cornersArr = Array.isArray(sv.silicon_corners) ? sv.silicon_corners : (sv.silicon_corners ? String(sv.silicon_corners).split(',').map((s: string) => s.trim()).filter(Boolean) : []);
-                        cornersArr.forEach((c: string) => {
-                            db.run("INSERT OR IGNORE INTO silicon_corners (silicon_version_id, name) VALUES (?, ?)", [siliconVersionId, c]);
+    const svMap = new Map<string, any>();
+    if (Array.isArray(packagesInput)) {
+        for (const pkg of packagesInput) {
+            if (Array.isArray(pkg.silicon_versions)) {
+                for (const sv of pkg.silicon_versions) {
+                    const svName = (typeof sv === 'object' ? sv.name : String(sv)) || 'A0';
+                    if (!svMap.has(svName)) {
+                        svMap.set(svName, {
+                            name: svName,
+                            silicon_corners: (typeof sv === 'object' && sv.silicon_corners) 
+                                ? (Array.isArray(sv.silicon_corners) ? sv.silicon_corners : String(sv.silicon_corners).split(',').map((s: string) => s.trim()).filter(Boolean))
+                                : ['TT'],
+                            description: (typeof sv === 'object' && sv.description) ? sv.description : ''
                         });
+                    }
+                }
+            }
+        }
+    }
+    if (svMap.size > 0) {
+        return Array.from(svMap.values());
+    }
 
-                        const formfactors = sv.formfactors || [];
-                        if (formfactors.length === 0) {
-                            if (--svPending === 0) {
-                                if (--pkgPending === 0 && !hasError) done(null);
-                            }
-                            return;
-                        }
+    if (body && body.revisions) {
+        const revs = typeof body.revisions === 'string' ? body.revisions.split(',').map((s: string) => s.trim()).filter(Boolean) : (Array.isArray(body.revisions) ? body.revisions : ['A0']);
+        const corners = body.silicon_corners ? String(body.silicon_corners).split(',').map((s: string) => s.trim()).filter(Boolean) : ['TT'];
+        return revs.map((r: string) => ({
+            name: r,
+            silicon_corners: corners,
+            description: ''
+        }));
+    }
 
-                        let ffPending = formfactors.length;
-                        formfactors.forEach((ff: any) => {
-                            if (hasError) return;
-                            const ffName = ff.name || 'Default';
-                            db.run("INSERT INTO board_formfactors (silicon_version_id, name, description) VALUES (?, ?, ?)", [siliconVersionId, ffName, ff.description || ''], function(this: any, errFf: Error | null) {
-                                if (errFf) {
-                                    if (!hasError) { hasError = true; done(errFf); }
-                                    return;
-                                }
-                                const formfactorId = this.lastID;
-                                const revisions = ff.revisionDetails || ff.revisions || [];
-                                if (revisions.length === 0) {
-                                    if (--ffPending === 0) {
-                                        if (--svPending === 0) {
-                                            if (--pkgPending === 0 && !hasError) done(null);
-                                        }
-                                    }
-                                    return;
-                                }
-
-                                let revPending = revisions.length;
-                                revisions.forEach((r: any) => {
-                                    if (hasError) return;
-                                    const revName = typeof r === 'object' ? (r.name || '1.0') : String(r);
-                                    db.run("INSERT INTO board_formfactor_revisions (board_formfactor_id, name, description) VALUES (?, ?, ?)", [formfactorId, revName, (typeof r === 'object' ? r.description : '') || ''], function(this: any, errRev: Error | null) {
-                                        if (errRev) {
-                                            if (!hasError) { hasError = true; done(errRev); }
-                                            return;
-                                        }
-                                        const revisionId = this.lastID;
-
-                                        let bomsList: string[] = [];
-                                        if (typeof r === 'object' && r) {
-                                            if (Array.isArray(r.boms)) bomsList = r.boms;
-                                            else if (r.boms) bomsList = String(r.boms).split(',').map((s: string) => s.trim()).filter(Boolean);
-                                            else if (Array.isArray(r.bom_flavors)) bomsList = r.bom_flavors.map((b: any) => b.name);
-                                        }
-
-                                        bomsList.forEach((bomName: string) => {
-                                            db.run("INSERT OR IGNORE INTO bom_flavors (formfactor_revision_id, name) VALUES (?, ?)", [revisionId, bomName]);
-                                        });
-
-                                        if (typeof r === 'object' && r) {
-                                            if (r.schematic || r.doc) {
-                                                const sch = r.schematic || r.doc;
-                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'schematic', ?, ?)", [revisionId, sch, `/docs/${sch}`]);
-                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'schematic', ?, ?, ?, 'application/pdf')", [revisionId, projectId, sch, sch, `/docs/${sch}`]);
-                                            }
-                                            if (r.board_file) {
-                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'board_file', ?, ?)", [revisionId, r.board_file, `/docs/${r.board_file}`]);
-                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'board_file', ?, ?, ?, 'application/octet-stream')", [revisionId, projectId, r.board_file, r.board_file, `/docs/${r.board_file}`]);
-                                            }
-                                            if (r.bom_csv) {
-                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'bom_csv', ?, ?)", [revisionId, r.bom_csv, `/docs/${r.bom_csv}`]);
-                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'bom_csv', ?, ?, ?, 'text/csv')", [revisionId, projectId, r.bom_csv, r.bom_csv, `/docs/${r.bom_csv}`]);
-                                            }
-                                            if (r.datasheet) {
-                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'datasheet', ?, ?)", [revisionId, r.datasheet, `/docs/${r.datasheet}`]);
-                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'datasheet', ?, ?, ?, 'application/pdf')", [revisionId, projectId, r.datasheet, r.datasheet, `/docs/${r.datasheet}`]);
-                                            }
-                                            if (Array.isArray(r.documents)) {
-                                                r.documents.forEach((docItem: any) => {
-                                                    if (docItem.filename && !['schematic', 'board_file', 'bom_csv', 'datasheet'].includes(docItem.doc_type)) {
-                                                        db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, ?, ?, ?)", [revisionId, docItem.doc_type || 'other', docItem.filename, docItem.path || `/docs/${docItem.filename}`]);
-                                                        db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path) VALUES ('revision', ?, ?, ?, ?, ?, ?)", [revisionId, projectId, docItem.doc_type || 'other', docItem.filename, docItem.filename, docItem.path || `/docs/${docItem.filename}`]);
-                                                    }
-                                                });
-                                            }
-                                        }
-
-                                        if (--revPending === 0) {
-                                            if (--ffPending === 0) {
-                                                if (--svPending === 0) {
-                                                    if (--pkgPending === 0 && !hasError) done(null);
-                                                }
-                                            }
-                                        }
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
+    return [{ name: 'A0', silicon_corners: ['TT'], description: '' }];
 }
 
-function normalizeIncomingPackages(body: any): any[] {
+function extractProjectPackages(body: any): any[] {
     if (body.packages && Array.isArray(body.packages) && body.packages.length > 0) {
-        return body.packages;
+        return body.packages.map((pkg: any) => {
+            let formfactors = pkg.formfactors || pkg.board_formfactors || [];
+            if ((!formfactors || formfactors.length === 0) && Array.isArray(pkg.silicon_versions)) {
+                const ffMap = new Map<string, any>();
+                for (const sv of pkg.silicon_versions) {
+                    if (Array.isArray(sv.formfactors)) {
+                        for (const ff of sv.formfactors) {
+                            if (!ffMap.has(ff.name)) {
+                                ffMap.set(ff.name, { ...ff });
+                            }
+                        }
+                    }
+                }
+                formfactors = Array.from(ffMap.values());
+            }
+            if ((!formfactors || formfactors.length === 0) && Array.isArray(body.flavors) && body.flavors.length > 0) {
+                formfactors = body.flavors;
+            }
+            return {
+                name: pkg.name || 'Default Package',
+                description: pkg.description || '',
+                formfactors: formfactors && formfactors.length > 0 ? formfactors : [{ name: 'Default', revisions: [{ name: '1.0', boms: ['Default'] }] }]
+            };
+        });
     }
-    let revs = body.revisions;
-    if (!revs) revs = ['A0'];
-    else if (typeof revs === 'string') revs = revs.split(',').map((s: string) => s.trim()).filter(Boolean);
-    if (!Array.isArray(revs) || revs.length === 0) revs = ['A0'];
 
-    const corners = body.silicon_corners ? String(body.silicon_corners).split(',').map((s: string) => s.trim()).filter(Boolean) : ['TT'];
     const flavors = body.flavors && Array.isArray(body.flavors) && body.flavors.length > 0
         ? body.flavors
         : [{ name: 'Default', revisions: [{ name: '1.0', boms: ['Default'] }] }];
 
-    const silicon_versions = revs.map((r: string) => ({
-        name: r,
-        silicon_corners: corners,
-        formfactors: flavors.map((f: any) => {
-            let fRevs: any[] = [];
-            if (Array.isArray(f.revisionDetails) && f.revisionDetails.length > 0) {
-                fRevs = f.revisionDetails;
-            } else if (Array.isArray(f.revisions) && f.revisions.length > 0) {
-                fRevs = f.revisions;
-            } else if (typeof f.revisions === 'string' && f.revisions.trim()) {
-                fRevs = f.revisions.split(',').map((s: string) => s.trim()).filter(Boolean);
-            } else {
-                fRevs = [{ name: '1.0', boms: [] }];
-            }
-
-            return {
-                name: f.name || 'Default',
-                revisionDetails: fRevs.map((revItem: any) => {
-                    if (typeof revItem === 'object' && revItem !== null) return revItem;
-                    return {
-                        name: String(revItem),
-                        boms: f.boms || []
-                    };
-                })
-            };
-        })
-    }));
-
     return [{
         name: 'Default Package',
-        silicon_versions
+        description: '',
+        formfactors: flavors
     }];
+}
+
+function saveProjectHierarchy(
+    projectId: number | string,
+    packagesInput: any[],
+    siliconVersionsInput?: any[] | ((err?: Error | null) => void),
+    maybeDone?: (err?: Error | null) => void
+) {
+    const done = typeof siliconVersionsInput === 'function' ? siliconVersionsInput : (maybeDone || (() => {}));
+    const siVersionsList: any[] = Array.isArray(siliconVersionsInput)
+        ? siliconVersionsInput
+        : extractProjectSiliconVersions({}, packagesInput);
+    let pkgsList: any[] = Array.isArray(packagesInput) ? packagesInput : [];
+    if (pkgsList.length === 0) {
+        pkgsList = [{ name: 'Default Package', description: '', formfactors: [] }];
+    }
+
+    db.run("DELETE FROM packages WHERE project_id = ?", [projectId], (errDel: Error | null) => {
+        if (errDel) return done(errDel);
+        db.run("DELETE FROM silicon_versions WHERE project_id = ?", [projectId], (errDelSv: Error | null) => {
+            if (errDelSv) return done(errDelSv);
+
+            let hasError = false;
+            const finish = (err?: Error | null) => {
+                if (hasError) return;
+                if (err) {
+                    hasError = true;
+                    return done(err);
+                }
+                done(null);
+            };
+
+            // 1. Insert packages first
+            let pkgPending = pkgsList.length;
+            const insertedPackages: { pkg: any; packageId: number }[] = [];
+
+            pkgsList.forEach((pkg: any) => {
+                const pkgName = pkg.name || 'Default Package';
+                db.run("INSERT INTO packages (project_id, name, description) VALUES (?, ?, ?)", [projectId, pkgName, pkg.description || ''], function(this: any, errPkg: Error | null) {
+                    if (errPkg) return finish(errPkg);
+                    insertedPackages.push({ pkg, packageId: this.lastID });
+                    if (--pkgPending === 0) {
+                        const firstPkgId = insertedPackages[0].packageId;
+
+                        // 2. Insert silicon versions with project_id and package_id (to satisfy NOT NULL)
+                        let svPending = siVersionsList.length;
+
+                        const onSiliconVersionsDone = () => {
+                            // 3. Insert board formfactors for each package
+                            let totalFfs = 0;
+                            insertedPackages.forEach(({ pkg }) => {
+                                let rawFfs = pkg.formfactors || pkg.board_formfactors || [];
+                                if (rawFfs.length === 0 && Array.isArray(pkg.silicon_versions)) {
+                                    const ffMap = new Map<string, any>();
+                                    for (const sv of pkg.silicon_versions) {
+                                        if (Array.isArray(sv.formfactors)) {
+                                            for (const ff of sv.formfactors) {
+                                                if (!ffMap.has(ff.name)) ffMap.set(ff.name, { ...ff });
+                                            }
+                                        }
+                                    }
+                                    rawFfs = Array.from(ffMap.values());
+                                }
+                                totalFfs += rawFfs.length;
+                            });
+
+                            if (totalFfs === 0) return finish(null);
+
+                            let ffsPending = totalFfs;
+                            insertedPackages.forEach(({ pkg, packageId }) => {
+                                let rawFfs = pkg.formfactors || pkg.board_formfactors || [];
+                                if (rawFfs.length === 0 && Array.isArray(pkg.silicon_versions)) {
+                                    const ffMap = new Map<string, any>();
+                                    for (const sv of pkg.silicon_versions) {
+                                        if (Array.isArray(sv.formfactors)) {
+                                            for (const ff of sv.formfactors) {
+                                                if (!ffMap.has(ff.name)) ffMap.set(ff.name, { ...ff });
+                                            }
+                                        }
+                                    }
+                                    rawFfs = Array.from(ffMap.values());
+                                }
+
+                                rawFfs.forEach((ff: any) => {
+                                    const ffName = ff.name || 'Default';
+                                    db.run("INSERT INTO board_formfactors (package_id, silicon_version_id, name, description) VALUES (?, ?, ?, ?)", [packageId, null, ffName, ff.description || ''], function(this: any, errFf: Error | null) {
+                                        if (errFf) return finish(errFf);
+                                        const formfactorId = this.lastID;
+                                        const rawRevs = ff.revisionDetails || ff.revisions || [];
+                                        let revisions: any[] = [];
+                                        if (typeof rawRevs === 'string') {
+                                            revisions = rawRevs.split(',').map((s: string) => s.trim()).filter(Boolean);
+                                        } else if (Array.isArray(rawRevs)) {
+                                            revisions = rawRevs;
+                                        } else if (rawRevs) {
+                                            revisions = [rawRevs];
+                                        }
+                                        if (revisions.length === 0) {
+                                            revisions = ['1.0'];
+                                        }
+
+                                        let revPending = revisions.length;
+                                        revisions.forEach((r: any) => {
+                                            const revName = typeof r === 'object' ? (r.name || '1.0') : String(r);
+                                            db.run("INSERT INTO board_formfactor_revisions (board_formfactor_id, name, description) VALUES (?, ?, ?)", [formfactorId, revName, (typeof r === 'object' ? r.description : '') || ''], function(this: any, errRev: Error | null) {
+                                                if (errRev) return finish(errRev);
+                                                const revisionId = this.lastID;
+
+                                                let bomsList: string[] = [];
+                                                if (typeof r === 'object' && r) {
+                                                    if (Array.isArray(r.boms)) bomsList = r.boms;
+                                                    else if (r.boms) bomsList = String(r.boms).split(',').map((s: string) => s.trim()).filter(Boolean);
+                                                    else if (Array.isArray(r.bom_flavors)) bomsList = r.bom_flavors.map((b: any) => b.name);
+                                                }
+                                                if (bomsList.length === 0) bomsList = ['Default'];
+
+                                                bomsList.forEach((bomName: string) => {
+                                                    db.run("INSERT OR IGNORE INTO bom_flavors (formfactor_revision_id, name) VALUES (?, ?)", [revisionId, bomName]);
+                                                });
+
+                                                if (typeof r === 'object' && r) {
+                                                    if (r.schematic || r.doc) {
+                                                        const sch = r.schematic || r.doc;
+                                                        db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'schematic', ?, ?)", [revisionId, sch, `/docs/${sch}`]);
+                                                        db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'schematic', ?, ?, ?, 'application/pdf')", [revisionId, projectId, sch, sch, `/docs/${sch}`]);
+                                                    }
+                                                    if (r.board_file) {
+                                                        db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'board_file', ?, ?)", [revisionId, r.board_file, `/docs/${r.board_file}`]);
+                                                        db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'board_file', ?, ?, ?, 'application/octet-stream')", [revisionId, projectId, r.board_file, r.board_file, `/docs/${r.board_file}`]);
+                                                    }
+                                                    if (r.bom_csv) {
+                                                        db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'bom_csv', ?, ?)", [revisionId, r.bom_csv, `/docs/${r.bom_csv}`]);
+                                                        db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'bom_csv', ?, ?, ?, 'text/csv')", [revisionId, projectId, r.bom_csv, r.bom_csv, `/docs/${r.bom_csv}`]);
+                                                    }
+                                                    if (r.datasheet) {
+                                                        db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'datasheet', ?, ?)", [revisionId, r.datasheet, `/docs/${r.datasheet}`]);
+                                                        db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'datasheet', ?, ?, ?, 'application/pdf')", [revisionId, projectId, r.datasheet, r.datasheet, `/docs/${r.datasheet}`]);
+                                                    }
+                                                    if (Array.isArray(r.documents)) {
+                                                        r.documents.forEach((docItem: any) => {
+                                                            if (docItem.filename && !['schematic', 'board_file', 'bom_csv', 'datasheet'].includes(docItem.doc_type)) {
+                                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, ?, ?, ?)", [revisionId, docItem.doc_type || 'other', docItem.filename, docItem.path || `/docs/${docItem.filename}`]);
+                                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path) VALUES ('revision', ?, ?, ?, ?, ?, ?)", [revisionId, projectId, docItem.doc_type || 'other', docItem.filename, docItem.filename, docItem.path || `/docs/${docItem.filename}`]);
+                                                            }
+                                                        });
+                                                    }
+                                                }
+
+                                                if (--revPending === 0) {
+                                                    if (--ffsPending === 0) {
+                                                        finish(null);
+                                                    }
+                                                }
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        };
+
+                        if (siVersionsList.length === 0) {
+                            onSiliconVersionsDone();
+                        } else {
+                            siVersionsList.forEach((sv: any) => {
+                                const svName = sv.name || 'A0';
+                                const cornersStr = Array.isArray(sv.silicon_corners) ? sv.silicon_corners.join(', ') : (sv.silicon_corners || '');
+                                db.run("INSERT INTO silicon_versions (project_id, package_id, name, silicon_corners, description) VALUES (?, ?, ?, ?, ?)", [projectId, firstPkgId, svName, cornersStr, sv.description || ''], function(this: any, errSv: Error | null) {
+                                    if (errSv) return finish(errSv);
+                                    const svId = this.lastID;
+
+                                    const cornersArr = Array.isArray(sv.silicon_corners)
+                                        ? sv.silicon_corners
+                                        : (sv.silicon_corners ? String(sv.silicon_corners).split(',').map((s: string) => s.trim()).filter(Boolean) : []);
+                                    cornersArr.forEach((c: string) => {
+                                        db.run("INSERT OR IGNORE INTO silicon_corners (silicon_version_id, name) VALUES (?, ?)", [svId, c]);
+                                    });
+
+                                    if (--svPending === 0) {
+                                        onSiliconVersionsDone();
+                                    }
+                                });
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    });
 }
 
 function fetchProjectsWithHierarchy(callback: (err: Error | null, projects?: any[]) => void) {
@@ -678,9 +769,10 @@ function fetchProjectsWithHierarchy(callback: (err: Error | null, projects?: any
             (SELECT COUNT(*) FROM formfactor_revision_docs ffrd 
              JOIN board_formfactor_revisions bfr ON ffrd.formfactor_revision_id = bfr.id
              JOIN board_formfactors bf ON bfr.board_formfactor_id = bf.id
-             JOIN silicon_versions sv ON bf.silicon_version_id = sv.id
-             JOIN packages pkg ON sv.package_id = pkg.id
-             WHERE pkg.project_id = projects.id)
+             LEFT JOIN packages pkg ON bf.package_id = pkg.id
+             LEFT JOIN silicon_versions sv ON bf.silicon_version_id = sv.id
+             LEFT JOIN packages pkg_sv ON sv.package_id = pkg_sv.id
+             WHERE pkg.project_id = projects.id OR pkg_sv.project_id = projects.id OR sv.project_id = projects.id)
         ) as doc_count
         FROM projects
         LEFT JOIN pcbs ON projects.id = pcbs.project_id
@@ -709,92 +801,101 @@ function fetchProjectsWithHierarchy(callback: (err: Error | null, projects?: any
 
                                         const result = rows.map(row => {
                                             const projPkgs = (packages || []).filter(pkg => pkg.project_id === row.id);
-                                            const assembledPackages = projPkgs.map(pkg => {
-                                                const pkgSiVers = (siliconVersions || []).filter(sv => sv.package_id === pkg.id);
-                                                const assembledSiVers = pkgSiVers.map(sv => {
-                                                    const svCorners = (siliconCorners || []).filter(sc => sc.silicon_version_id === sv.id).map(sc => sc.name);
-                                                    const svCornersList = svCorners.length > 0 
-                                                        ? svCorners 
-                                                        : (sv.silicon_corners ? sv.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : []);
-                                                    
-                                                    const svFfs = (boardFormFactors || []).filter(ff => ff.silicon_version_id === sv.id);
-                                                    const assembledFfs = svFfs.map(ff => {
-                                                        const ffRevs = (bffRevisions || []).filter(r => r.board_formfactor_id === ff.id);
-                                                        const assembledRevs = ffRevs.map(r => {
-                                                            const rBoms = (bomFlavors || []).filter(b => b.formfactor_revision_id === r.id);
-                                                            const rDocs = (revisionDocs || []).filter(d => d.formfactor_revision_id === r.id);
-                                                            
-                                                            const schDoc = rDocs.find(d => d.doc_type === 'schematic');
-                                                            const brdDoc = rDocs.find(d => d.doc_type === 'board_file');
-                                                            const bomCsvDoc = rDocs.find(d => d.doc_type === 'bom_csv');
-                                                            const dsDoc = rDocs.find(d => d.doc_type === 'datasheet');
+                                            const projSiVers = (siliconVersions || []).filter(sv => sv.project_id === row.id || projPkgs.some(p => p.id === sv.package_id));
 
-                                                            return {
-                                                                id: r.id,
-                                                                name: r.name,
-                                                                description: r.description,
-                                                                boms: rBoms.map(b => b.name),
-                                                                bom_flavors: rBoms,
-                                                                documents: rDocs,
-                                                                schematic: schDoc ? schDoc.filename : null,
-                                                                board_file: brdDoc ? brdDoc.filename : null,
-                                                                bom_csv: bomCsvDoc ? bomCsvDoc.filename : null,
-                                                                datasheet: dsDoc ? dsDoc.filename : null,
-                                                                doc: schDoc ? schDoc.filename : null
-                                                            };
-                                                        });
+                                            const assembledSiVers = projSiVers.map(sv => {
+                                                const svCorners = (siliconCorners || []).filter(sc => sc.silicon_version_id === sv.id).map(sc => sc.name);
+                                                const svCornersList = svCorners.length > 0 
+                                                    ? svCorners 
+                                                    : (sv.silicon_corners ? sv.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : []);
+                                                return {
+                                                    id: sv.id,
+                                                    name: sv.name,
+                                                    description: sv.description || '',
+                                                    silicon_corners: svCornersList
+                                                };
+                                            });
+
+                                            const assembledPackages = projPkgs.map(pkg => {
+                                                const pkgFfs = (boardFormFactors || []).filter(ff => ff.package_id === pkg.id || projSiVers.some(sv => sv.id === ff.silicon_version_id));
+                                                const assembledFfs = pkgFfs.map(ff => {
+                                                    const ffRevs = (bffRevisions || []).filter(r => r.board_formfactor_id === ff.id);
+                                                    const assembledRevs = ffRevs.map(r => {
+                                                        const rBoms = (bomFlavors || []).filter(b => b.formfactor_revision_id === r.id);
+                                                        const rDocs = (revisionDocs || []).filter(d => d.formfactor_revision_id === r.id);
+                                                        
+                                                        const schDoc = rDocs.find(d => d.doc_type === 'schematic');
+                                                        const brdDoc = rDocs.find(d => d.doc_type === 'board_file');
+                                                        const bomCsvDoc = rDocs.find(d => d.doc_type === 'bom_csv');
+                                                        const dsDoc = rDocs.find(d => d.doc_type === 'datasheet');
+
                                                         return {
-                                                            id: ff.id,
-                                                            name: ff.name,
-                                                            description: ff.description,
-                                                            revisions: assembledRevs.map(r => r.name),
-                                                            revisionDetails: assembledRevs
+                                                            id: r.id,
+                                                            name: r.name,
+                                                            description: r.description,
+                                                            boms: rBoms.map(b => b.name),
+                                                            bom_flavors: rBoms,
+                                                            documents: rDocs,
+                                                            schematic: schDoc ? schDoc.filename : null,
+                                                            board_file: brdDoc ? brdDoc.filename : null,
+                                                            bom_csv: bomCsvDoc ? bomCsvDoc.filename : null,
+                                                            datasheet: dsDoc ? dsDoc.filename : null,
+                                                            doc: schDoc ? schDoc.filename : null
                                                         };
                                                     });
                                                     return {
-                                                        id: sv.id,
-                                                        name: sv.name,
-                                                        silicon_corners: svCornersList,
-                                                        formfactors: assembledFfs
+                                                        id: ff.id,
+                                                        name: ff.name,
+                                                        description: ff.description,
+                                                        revisions: assembledRevs.map(r => r.name),
+                                                        revisionDetails: assembledRevs
                                                     };
                                                 });
+
+                                                const pkgSiliconVersions = assembledSiVers.map(sv => ({
+                                                    ...sv,
+                                                    formfactors: assembledFfs
+                                                }));
+
                                                 return {
                                                     id: pkg.id,
                                                     name: pkg.name,
                                                     description: pkg.description,
-                                                    silicon_versions: assembledSiVers
+                                                    formfactors: assembledFfs,
+                                                    board_formfactors: assembledFfs,
+                                                    silicon_versions: pkgSiliconVersions
                                                 };
                                             });
 
-                                            // Synthesize summaries
                                             const allSiRevs = new Set<string>();
                                             const allCorners = new Set<string>();
                                             const allFlavorsMap = new Map<string, any>();
 
+                                            assembledSiVers.forEach(sv => {
+                                                allSiRevs.add(sv.name);
+                                                sv.silicon_corners.forEach((c: string) => allCorners.add(c));
+                                            });
+
                                             assembledPackages.forEach(pkg => {
-                                                pkg.silicon_versions.forEach(sv => {
-                                                    allSiRevs.add(sv.name);
-                                                    sv.silicon_corners.forEach((c: string) => allCorners.add(c));
-                                                    sv.formfactors.forEach(ff => {
-                                                        if (!allFlavorsMap.has(ff.name)) {
-                                                            allFlavorsMap.set(ff.name, {
-                                                                id: ff.id,
-                                                                name: ff.name,
-                                                                revisions: [...ff.revisions],
-                                                                revisionDetails: [...ff.revisionDetails]
-                                                            });
-                                                        } else {
-                                                            const existing = allFlavorsMap.get(ff.name);
-                                                            ff.revisions.forEach(r => {
-                                                                if (!existing.revisions.includes(r)) existing.revisions.push(r);
-                                                            });
-                                                            ff.revisionDetails.forEach(rd => {
-                                                                if (!existing.revisionDetails.some((e: any) => e.name === rd.name)) {
-                                                                    existing.revisionDetails.push(rd);
-                                                                }
-                                                            });
-                                                        }
-                                                    });
+                                                (pkg.formfactors || []).forEach(ff => {
+                                                    if (!allFlavorsMap.has(ff.name)) {
+                                                        allFlavorsMap.set(ff.name, {
+                                                            id: ff.id,
+                                                            name: ff.name,
+                                                            revisions: [...ff.revisions],
+                                                            revisionDetails: [...ff.revisionDetails]
+                                                        });
+                                                    } else {
+                                                        const existing = allFlavorsMap.get(ff.name);
+                                                        ff.revisions.forEach((r: string) => {
+                                                            if (!existing.revisions.includes(r)) existing.revisions.push(r);
+                                                        });
+                                                        ff.revisionDetails.forEach((rd: any) => {
+                                                            if (!existing.revisionDetails.some((e: any) => e.name === rd.name)) {
+                                                                existing.revisionDetails.push(rd);
+                                                            }
+                                                        });
+                                                    }
                                                 });
                                             });
 
@@ -822,6 +923,7 @@ function fetchProjectsWithHierarchy(callback: (err: Error | null, projects?: any
                                             return {
                                                 ...row,
                                                 packages: assembledPackages,
+                                                silicon_versions: assembledSiVers,
                                                 revisions: synthesizedRevs,
                                                 silicon_corners: synthesizedCorners,
                                                 flavors: synthesizedFlavors,
@@ -856,7 +958,7 @@ app.post('/api/projects', async (req: Request, res: Response) => {
     if (!canAddProject(req as any)) {
         return res.status(403).json({ error: "You do not have permission to create projects." });
     }
-    const { name, description, revisions, project_key, flavors, silicon_corners, number_format, packages } = req.body;
+    const { name, description, revisions, project_key, silicon_corners, number_format } = req.body;
     const cleanName = sanitizeProjectName(name);
     
     if (!cleanName) return res.status(400).json({ error: "Project name is required and must contain alphanumeric characters" });
@@ -877,12 +979,10 @@ app.post('/api/projects', async (req: Request, res: Response) => {
                 return res.status(500).json({ error: err.message });
             }
             const newProjectId = this.lastID;
-            
-            const pkgsToSave = packages && Array.isArray(packages) && packages.length > 0 
-                ? packages 
-                : normalizeIncomingPackages({ revisions, flavors, silicon_corners });
+            const pkgsToSave = extractProjectPackages(req.body);
+            const siVersToSave = extractProjectSiliconVersions(req.body, pkgsToSave);
 
-            saveProjectHierarchy(newProjectId, pkgsToSave, (errHierarchy) => {
+            saveProjectHierarchy(newProjectId, pkgsToSave, siVersToSave, (errHierarchy) => {
                 if (errHierarchy) console.error("Error saving project hierarchy:", errHierarchy.message);
                 res.status(201).json({ id: newProjectId, name: cleanName, project_key: finalProjectKey });
             });
@@ -1453,7 +1553,7 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
     if (!canUpdateProject(req as any)) {
         return res.status(403).json({ error: "You do not have permission to update projects." });
     }
-    const { name, description, revisions, project_key, flavors, silicon_corners, number_format, packages } = req.body;
+    const { name, description, revisions, project_key, silicon_corners, number_format } = req.body;
     const cleanName = sanitizeProjectName(name);
 
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
@@ -1474,11 +1574,10 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
                 return res.status(500).json({ error: errUpdate.message });
             }
             
-            const pkgsToSave = packages && Array.isArray(packages) && packages.length > 0
-                ? packages
-                : normalizeIncomingPackages({ revisions, flavors, silicon_corners });
+            const pkgsToSave = extractProjectPackages(req.body);
+            const siVersToSave = extractProjectSiliconVersions(req.body, pkgsToSave);
 
-            saveProjectHierarchy(String(req.params.id), pkgsToSave, (errHierarchy) => {
+            saveProjectHierarchy(String(req.params.id), pkgsToSave, siVersToSave, (errHierarchy) => {
                 if (errHierarchy) console.error("Error saving updated project hierarchy:", errHierarchy.message);
                 res.json({ updated: this.changes, name: cleanName });
             });
@@ -1490,9 +1589,14 @@ app.delete('/api/projects/:id', (req: Request, res: Response) => {
     if (!canDeleteProject(req as any)) {
         return res.status(403).json({ error: "You do not have permission to delete projects." });
     }
-    db.run("DELETE FROM projects WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ deleted: this.changes });
+    db.get("SELECT COUNT(*) as cnt FROM pcbs WHERE project_id = ?", [req.params.id], (_errPcb: any, pcbRow: any) => {
+        if (pcbRow && pcbRow.cnt > 0) {
+            return res.status(400).json({ error: "Failed to delete project: project has active PCBs associated with it." });
+        }
+        db.run("DELETE FROM projects WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ deleted: this.changes });
+        });
     });
 });
 
@@ -2446,12 +2550,11 @@ async function seedDemoDatabase(): Promise<void> {
             [p.id, cleanName, p.description || '', Array.isArray(p.revisions) ? p.revisions.join(', ') : (p.revisions || ''), finalKey, p.silicon_corners || null, p.number_format || 'decimal', creator, creator]
         );
 
-        const pkgs = p.packages && Array.isArray(p.packages) && p.packages.length > 0
-            ? p.packages
-            : normalizeIncomingPackages(p);
+        const pkgs = extractProjectPackages(p);
+        const siVers = extractProjectSiliconVersions(p, pkgs);
 
         await new Promise<void>((resolve, reject) => {
-            saveProjectHierarchy(p.id, pkgs, (err) => {
+            saveProjectHierarchy(p.id, pkgs, siVers, (err) => {
                 if (err) return reject(err);
                 resolve();
             });

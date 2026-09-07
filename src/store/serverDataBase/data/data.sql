@@ -36,11 +36,13 @@ CREATE TABLE packages (
 
 CREATE TABLE silicon_versions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    package_id INTEGER NOT NULL,
+    project_id INTEGER,
+    package_id INTEGER,
     name TEXT NOT NULL,
     silicon_corners TEXT,
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
     FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
 );
 
@@ -53,10 +55,12 @@ CREATE TABLE silicon_corners (
 
 CREATE TABLE board_formfactors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    silicon_version_id INTEGER NOT NULL,
+    package_id INTEGER,
+    silicon_version_id INTEGER,
     name TEXT NOT NULL,
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
     FOREIGN KEY (silicon_version_id) REFERENCES silicon_versions(id) ON DELETE CASCADE
 );
 

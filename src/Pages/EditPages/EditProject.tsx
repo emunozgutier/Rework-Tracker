@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Save, Trash2, HelpCircle, Upload, FileText, Cpu, Layers } from 'lucide-react';
-import { FormTabs } from '../../components/forms/FormTabs';
+import React, { useEffect, useState } from 'react';
+import { 
+    ArrowLeft, Save, Trash2, Upload, FileText, Cpu, Layers, 
+    Box, Plus, CircuitBoard, Hash, Binary, Sparkles,
+    Paperclip, X, FileCheck
+} from 'lucide-react';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
 import type { Package } from '../../store/clientDataBase/useProjectStore';
@@ -26,18 +29,20 @@ interface FormRevision {
 
 interface FormBoardFormFactor {
     name: string;
+    description?: string;
     revisions: FormRevision[];
+}
+
+interface FormPackage {
+    name: string;
+    description?: string;
+    formfactors: FormBoardFormFactor[];
 }
 
 interface FormSiliconVersion {
     name: string;
     silicon_corners: string;
-    formfactors: FormBoardFormFactor[];
-}
-
-interface FormPackage {
-    name: string;
-    silicon_versions: FormSiliconVersion[];
+    description?: string;
 }
 
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
@@ -67,13 +72,18 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [name, setName] = useState('');
     const [projectKey, setProjectKey] = useState('');
     const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
+    const [description, setDescription] = useState('');
+
+    // Section 1 & Section 2 states
     const [packages, setPackages] = useState<FormPackage[]>([]);
+    const [siliconVersions, setSiliconVersions] = useState<FormSiliconVersion[]>([]);
     
     const [activePkgTab, setActivePkgTab] = useState(0);
     const [activeSiTab, setActiveSiTab] = useState(0);
     const [activeFfTab, setActiveFfTab] = useState(0);
     const [activeRevTab, setActiveRevTab] = useState(0);
 
+    const [newPkgInput, setNewPkgInput] = useState('');
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [loading, setLoading] = useState(true);
     const [isRemoveOpen, setIsRemoveOpen] = useState(false);
@@ -108,15 +118,34 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
             setName(existingProject.name);
             setProjectKey(existingProject.project_key || '');
             setNumberFormat((existingProject.number_format as 'hex' | 'decimal') || 'decimal');
-            
+            setDescription(existingProject.description || '');
+
+            // Load Silicon Versions
+            if (existingProject.silicon_versions && existingProject.silicon_versions.length > 0) {
+                setSiliconVersions(existingProject.silicon_versions.map(sv => ({
+                    name: sv.name,
+                    silicon_corners: Array.isArray(sv.silicon_corners) ? sv.silicon_corners.join(', ') : (sv.silicon_corners || ''),
+                    description: sv.description || ''
+                })));
+            } else if (existingProject.revisions && existingProject.revisions.length > 0) {
+                setSiliconVersions(existingProject.revisions.map(r => ({
+                    name: r,
+                    silicon_corners: existingProject.silicon_corners || 'TT, FF, SS',
+                    description: ''
+                })));
+            } else {
+                setSiliconVersions([{ name: 'A0', silicon_corners: 'TT, FF, SS', description: '' }]);
+            }
+
+            // Load Packages with Board Form Factors
             if (existingProject.packages && existingProject.packages.length > 0) {
-                const mappedPackages: FormPackage[] = existingProject.packages.map((pkg: Package) => ({
-                    name: pkg.name,
-                    silicon_versions: (pkg.silicon_versions || []).map(sv => ({
-                        name: sv.name,
-                        silicon_corners: Array.isArray(sv.silicon_corners) ? sv.silicon_corners.join(', ') : (sv.silicon_corners || ''),
-                        formfactors: (sv.formfactors || []).map(ff => ({
+                const mappedPackages: FormPackage[] = existingProject.packages.map((pkg: Package) => {
+                    let formfactorsList: FormBoardFormFactor[] = [];
+
+                    if (pkg.formfactors && pkg.formfactors.length > 0) {
+                        formfactorsList = pkg.formfactors.map(ff => ({
                             name: ff.name,
+                            description: ff.description || '',
                             revisions: (ff.revisionDetails || []).map(r => ({
                                 name: r.name,
                                 boms: Array.isArray(r.boms) ? r.boms.join(', ') : (r.boms || ''),
@@ -125,191 +154,266 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                 bom_csv: r.bom_csv || null,
                                 datasheet: r.datasheet || null
                             }))
-                        }))
-                    }))
-                }));
+                        }));
+                    } else if (pkg.silicon_versions && pkg.silicon_versions.length > 0) {
+                        // Legacy nested: extract formfactors from silicon versions
+                        const ffMap = new Map<string, FormBoardFormFactor>();
+                        for (const sv of pkg.silicon_versions) {
+                            for (const ff of (sv.formfactors || [])) {
+                                if (!ffMap.has(ff.name)) {
+                                    ffMap.set(ff.name, {
+                                        name: ff.name,
+                                        description: ff.description || '',
+                                        revisions: (ff.revisionDetails || []).map(r => ({
+                                            name: r.name,
+                                            boms: Array.isArray(r.boms) ? r.boms.join(', ') : (r.boms || ''),
+                                            schematic: r.schematic || r.doc || null,
+                                            board_file: r.board_file || null,
+                                            bom_csv: r.bom_csv || null,
+                                            datasheet: r.datasheet || null
+                                        }))
+                                    });
+                                }
+                            }
+                        }
+                        formfactorsList = Array.from(ffMap.values());
+                    }
+
+                    if (formfactorsList.length === 0) {
+                        formfactorsList = [{
+                            name: 'Demo',
+                            description: '',
+                            revisions: [{ name: '1.0', boms: 'BOM1', schematic: null, board_file: null, bom_csv: null, datasheet: null }]
+                        }];
+                    }
+
+                    return {
+                        name: pkg.name,
+                        description: pkg.description || '',
+                        formfactors: formfactorsList
+                    };
+                });
                 setPackages(mappedPackages);
             } else {
-                // Fallback to initial package structure
-                setPackages([
-                    {
-                        name: 'Default Package',
-                        silicon_versions: [
-                            {
-                                name: 'A0',
-                                silicon_corners: 'TT',
-                                formfactors: [
-                                    {
-                                        name: 'Demo',
-                                        revisions: [
-                                            { name: '1.0', boms: 'BOM1', schematic: null, board_file: null, bom_csv: null, datasheet: null }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]);
+                // Fallback from legacy flavors
+                const flavors = (existingProject.flavors && existingProject.flavors.length > 0) ? existingProject.flavors.map(f => ({
+                    name: f.name,
+                    description: '',
+                    revisions: (f.revisionDetails || []).map(r => ({
+                        name: r.name,
+                        boms: Array.isArray(r.boms) ? r.boms.join(', ') : (r.boms || ''),
+                        schematic: r.schematic || r.doc || null,
+                        board_file: r.board_file || null,
+                        bom_csv: r.bom_csv || null,
+                        datasheet: r.datasheet || null
+                    }))
+                })) : [{
+                    name: 'Demo',
+                    description: '',
+                    revisions: [{ name: '1.0', boms: 'BOM1', schematic: null, board_file: null, bom_csv: null, datasheet: null }]
+                }];
+
+                setPackages([{
+                    name: 'Default Package',
+                    description: '',
+                    formfactors: flavors
+                }]);
             }
+
             setLoading(false);
         }
     }, [id, projects]);
 
-    const currentPkg = packages[activePkgTab] || packages[0];
-    const currentSi = currentPkg?.silicon_versions[activeSiTab] || currentPkg?.silicon_versions[0];
-    const currentFf = currentSi?.formfactors[activeFfTab] || currentSi?.formfactors[0];
-    const currentRev = currentFf?.revisions[activeRevTab] || currentFf?.revisions[0];
-
-    const handleFileUpload = (file: File, updateRevField: (filename: string) => void) => {
+    const handleFileUpload = (file: File, updateRevField?: (filename: string) => void) => {
         if (file.size > 25 * 1024 * 1024) {
             alert(`File "${file.name}" exceeds the 25MB maximum size limit.`);
             return;
         }
-        if (!selectedFiles.some(f => f.name === file.name)) {
-            setSelectedFiles(prev => [...prev, file]);
+        setSelectedFiles(prev => {
+            const exists = prev.some(f => f.name === file.name);
+            return exists ? prev : [...prev, file];
+        });
+        if (updateRevField) {
+            updateRevField(file.name);
         }
-        updateRevField(file.name);
     };
 
-    const handleAddPackage = () => {
-        const newPkgNum = packages.length + 1;
-        setPackages([
-            ...packages,
-            {
-                name: `Package ${newPkgNum}`,
-                silicon_versions: [
-                    {
-                        name: 'A0',
-                        silicon_corners: 'TT, FF, SS',
-                        formfactors: [
-                            {
-                                name: 'Demo',
-                                revisions: [
-                                    {
-                                        name: '1.0',
-                                        boms: 'BOM1, BOM2',
-                                        schematic: null,
-                                        board_file: null,
-                                        bom_csv: null,
-                                        datasheet: null
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
+    const handleRemoveFile = (filename: string) => {
+        setSelectedFiles(prev => prev.filter(f => f.name !== filename));
+        setPackages(prev => prev.map(pkg => ({
+            ...pkg,
+            formfactors: pkg.formfactors.map(ff => ({
+                ...ff,
+                revisions: ff.revisions.map(r => ({
+                    ...r,
+                    schematic: r.schematic === filename ? null : r.schematic,
+                    board_file: r.board_file === filename ? null : r.board_file,
+                    bom_csv: r.bom_csv === filename ? null : r.bom_csv,
+                    datasheet: r.datasheet === filename ? null : r.datasheet,
+                }))
+            }))
+        })));
+    };
+
+    const handleMultipleFiles = (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        const fileList = Array.from(files);
+        fileList.forEach(file => {
+            handleFileUpload(file);
+            const ext = file.name.toLowerCase().split('.').pop() || '';
+            const curRev = packages[activePkgTab]?.formfactors[activeFfTab]?.revisions[activeRevTab];
+            if (curRev) {
+                const updated = [...packages];
+                const revRef = updated[activePkgTab].formfactors[activeFfTab].revisions[activeRevTab];
+                if (ext === 'pdf' && !revRef.schematic) {
+                    revRef.schematic = file.name;
+                } else if (ext === 'brd' && !revRef.board_file) {
+                    revRef.board_file = file.name;
+                } else if ((ext === 'csv' || ext === 'xlsx' || ext === 'xls') && !revRef.bom_csv) {
+                    revRef.bom_csv = file.name;
+                } else if (ext === 'pdf' && revRef.schematic && !revRef.datasheet) {
+                    revRef.datasheet = file.name;
+                }
+                setPackages(updated);
             }
-        ]);
+        });
+    };
+
+    const handleAddPackage = (pkgName?: string) => {
+        const nameToAdd = pkgName || newPkgInput || prompt("Enter package/pin count (e.g. 48 pin IC, BGA-128, 64-QFN):", "48 pin IC");
+        if (!nameToAdd || !nameToAdd.trim()) return;
+        const newPkg: FormPackage = {
+            name: nameToAdd.trim(),
+            description: '',
+            formfactors: [
+                {
+                    name: 'Demo',
+                    description: '',
+                    revisions: [
+                        { name: '1.0', boms: 'BOM1', schematic: null, board_file: null, bom_csv: null, datasheet: null }
+                    ]
+                }
+            ]
+        };
+        setPackages([...packages, newPkg]);
+        setNewPkgInput('');
         setActivePkgTab(packages.length);
-        setActiveSiTab(0);
         setActiveFfTab(0);
         setActiveRevTab(0);
     };
 
-    const handleDeletePackage = () => {
+    const handleDeletePackage = (idxToDelete: number) => {
         if (packages.length <= 1) return;
-        const updated = packages.filter((_, idx) => idx !== activePkgTab);
-        setPackages(updated);
-        setActivePkgTab(Math.max(0, activePkgTab - 1));
-        setActiveSiTab(0);
+        const targetPkg = packages[idxToDelete];
+        const confirmDelete = window.confirm(`Are you sure you want to delete package "${targetPkg.name}" and all its board form factors?`);
+        if (!confirmDelete) return;
+
+        const newPkgs = packages.filter((_, i) => i !== idxToDelete);
+        setPackages(newPkgs);
+        if (activePkgTab >= newPkgs.length) {
+            setActivePkgTab(Math.max(0, newPkgs.length - 1));
+        }
         setActiveFfTab(0);
         setActiveRevTab(0);
     };
 
     const handleAddSilicon = () => {
-        if (!currentPkg) return;
-        const newSiNum = currentPkg.silicon_versions.length;
-        const letters = ['A', 'B', 'C', 'D', 'E'];
-        const siName = `${letters[newSiNum % letters.length] || 'X'}0`;
-        const updated = [...packages];
-        updated[activePkgTab].silicon_versions.push({
-            name: siName,
+        const siName = prompt("Enter silicon revision name (e.g. B0, C0):", "B0");
+        if (!siName || !siName.trim()) return;
+        const newSi: FormSiliconVersion = {
+            name: siName.trim(),
             silicon_corners: 'TT, FF, SS',
-            formfactors: [
-                {
-                    name: 'Demo',
-                    revisions: [
-                        {
-                            name: '1.0',
-                            boms: 'BOM1, BOM2',
-                            schematic: null,
-                            board_file: null,
-                            bom_csv: null,
-                            datasheet: null
-                        }
-                    ]
-                }
-            ]
-        });
-        setPackages(updated);
-        setActiveSiTab(currentPkg.silicon_versions.length - 1);
-        setActiveFfTab(0);
-        setActiveRevTab(0);
+            description: ''
+        };
+        setSiliconVersions([...siliconVersions, newSi]);
+        setActiveSiTab(siliconVersions.length);
     };
 
-    const handleDeleteSilicon = () => {
-        if (!currentPkg || currentPkg.silicon_versions.length <= 1) return;
-        const updated = [...packages];
-        updated[activePkgTab].silicon_versions = currentPkg.silicon_versions.filter((_, idx) => idx !== activeSiTab);
-        setPackages(updated);
-        setActiveSiTab(Math.max(0, activeSiTab - 1));
-        setActiveFfTab(0);
-        setActiveRevTab(0);
+    const handleDeleteSilicon = (idxToDelete: number) => {
+        if (siliconVersions.length <= 1) return;
+        const confirmDelete = window.confirm(`Delete silicon version "${siliconVersions[idxToDelete].name}"?`);
+        if (!confirmDelete) return;
+
+        const newSi = siliconVersions.filter((_, i) => i !== idxToDelete);
+        setSiliconVersions(newSi);
+        if (activeSiTab >= newSi.length) {
+            setActiveSiTab(Math.max(0, newSi.length - 1));
+        }
     };
 
     const handleAddFormFactor = () => {
-        if (!currentSi) return;
-        const newFfNum = currentSi.formfactors.length + 1;
-        const updated = [...packages];
-        updated[activePkgTab].silicon_versions[activeSiTab].formfactors.push({
-            name: `FormFactor ${newFfNum}`,
+        const ffName = prompt("Enter board form factor name (e.g. Validation, SVB, Chamber, EVB):", "Validation");
+        if (!ffName || !ffName.trim()) return;
+        const newFf: FormBoardFormFactor = {
+            name: ffName.trim(),
+            description: '',
             revisions: [
-                {
-                    name: '1.0',
-                    boms: 'BOM1, BOM2',
-                    schematic: null,
-                    board_file: null,
-                    bom_csv: null,
-                    datasheet: null
-                }
+                { name: '1.0', boms: 'Default', schematic: null, board_file: null, bom_csv: null, datasheet: null }
             ]
-        });
+        };
+        const updated = [...packages];
+        updated[activePkgTab].formfactors.push(newFf);
         setPackages(updated);
-        setActiveFfTab(currentSi.formfactors.length - 1);
+        setActiveFfTab(updated[activePkgTab].formfactors.length - 1);
         setActiveRevTab(0);
     };
 
     const handleDeleteFormFactor = () => {
-        if (!currentSi || currentSi.formfactors.length <= 1) return;
+        const currentPkg = packages[activePkgTab];
+        if (!currentPkg || currentPkg.formfactors.length <= 1) return;
+        const confirmDelete = window.confirm(`Delete board form factor "${currentPkg.formfactors[activeFfTab]?.name || 'this form factor'}"?`);
+        if (!confirmDelete) return;
+
         const updated = [...packages];
-        updated[activePkgTab].silicon_versions[activeSiTab].formfactors = currentSi.formfactors.filter((_, idx) => idx !== activeFfTab);
+        updated[activePkgTab].formfactors = updated[activePkgTab].formfactors.filter((_, i) => i !== activeFfTab);
         setPackages(updated);
         setActiveFfTab(Math.max(0, activeFfTab - 1));
         setActiveRevTab(0);
     };
 
     const handleAddRevision = () => {
-        if (!currentFf) return;
-        const newRevNum = currentFf.revisions.length + 1;
-        const updated = [...packages];
-        updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions.push({
-            name: `${newRevNum}.0`,
-            boms: 'BOM1, BOM2',
+        const revName = prompt("Enter board revision (e.g. 2.0, 1.1):", "2.0");
+        if (!revName || !revName.trim()) return;
+        const newRev: FormRevision = {
+            name: revName.trim(),
+            boms: 'Default',
             schematic: null,
             board_file: null,
             bom_csv: null,
             datasheet: null
-        });
+        };
+        const updated = [...packages];
+        updated[activePkgTab].formfactors[activeFfTab].revisions.push(newRev);
         setPackages(updated);
-        setActiveRevTab(currentFf.revisions.length - 1);
+        setActiveRevTab(updated[activePkgTab].formfactors[activeFfTab].revisions.length - 1);
     };
 
     const handleDeleteRevision = () => {
+        const currentFf = packages[activePkgTab]?.formfactors[activeFfTab];
         if (!currentFf || currentFf.revisions.length <= 1) return;
+        const confirmDelete = window.confirm(`Delete board revision "${currentFf.revisions[activeRevTab]?.name || 'this revision'}"?`);
+        if (!confirmDelete) return;
+
         const updated = [...packages];
-        updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions = currentFf.revisions.filter((_, idx) => idx !== activeRevTab);
+        updated[activePkgTab].formfactors[activeFfTab].revisions = updated[activePkgTab].formfactors[activeFfTab].revisions.filter((_, i) => i !== activeRevTab);
         setPackages(updated);
         setActiveRevTab(Math.max(0, activeRevTab - 1));
+    };
+
+    const toggleCornerPreset = (corner: string) => {
+        const currentCorners = siliconVersions[activeSiTab].silicon_corners
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        let updatedCorners: string[];
+        if (currentCorners.includes(corner)) {
+            updatedCorners = currentCorners.filter(c => c !== corner);
+        } else {
+            updatedCorners = [...currentCorners, corner];
+        }
+        const updated = [...siliconVersions];
+        updated[activeSiTab].silicon_corners = updatedCorners.join(', ');
+        setSiliconVersions(updated);
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
@@ -317,30 +421,36 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
 
         const payloadPackages = packages.map(pkg => ({
             name: pkg.name.trim() || 'Default Package',
-            silicon_versions: pkg.silicon_versions.map(sv => ({
-                name: sv.name.trim() || 'A0',
-                silicon_corners: sv.silicon_corners.split(',').map(s => s.trim()).filter(Boolean),
-                formfactors: sv.formfactors.map(ff => ({
-                    name: ff.name.trim() || 'Default',
-                    revisions: ff.revisions.map(r => r.name.trim() || '1.0'),
-                    revisionDetails: ff.revisions.map(r => ({
-                        name: r.name.trim() || '1.0',
-                        boms: r.boms.split(',').map(b => b.trim()).filter(Boolean),
-                        schematic: r.schematic || null,
-                        board_file: r.board_file || null,
-                        bom_csv: r.bom_csv || null,
-                        datasheet: r.datasheet || null,
-                        doc: r.schematic || null
-                    }))
+            description: pkg.description || '',
+            formfactors: pkg.formfactors.map(ff => ({
+                name: ff.name.trim() || 'Default',
+                description: ff.description || '',
+                revisions: ff.revisions.map(r => r.name.trim() || '1.0'),
+                revisionDetails: ff.revisions.map(r => ({
+                    name: r.name.trim() || '1.0',
+                    boms: r.boms.split(',').map(b => b.trim()).filter(Boolean),
+                    schematic: r.schematic || null,
+                    board_file: r.board_file || null,
+                    bom_csv: r.bom_csv || null,
+                    datasheet: r.datasheet || null,
+                    doc: r.schematic || null
                 }))
             }))
         }));
 
+        const payloadSiliconVersions = siliconVersions.map(sv => ({
+            name: sv.name.trim() || 'A0',
+            silicon_corners: sv.silicon_corners.split(',').map(s => s.trim()).filter(Boolean),
+            description: sv.description || ''
+        }));
+
         const success = await updateProject(id, {
             name,
+            description,
             project_key: projectKey,
             number_format: numberFormat,
-            packages: payloadPackages as any
+            packages: payloadPackages as any,
+            silicon_versions: payloadSiliconVersions as any
         }, selectedFiles);
 
         if (success) {
@@ -348,554 +458,1008 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         }
     };
 
-    const handleDelete = async () => {
+    const handleConfirmedDelete = async () => {
         const success = await deleteProject(id);
         if (success) {
-            setIsRemoveOpen(false);
             onSuccess();
         }
     };
 
-    if (loading) return <div className="loading">Loading project...</div>;
+    if (loading) {
+        return (
+            <div className="project-form-container" style={{ textAlign: 'center', padding: '48px' }}>
+                <div style={{ color: 'var(--text-muted)' }}>Loading project configuration...</div>
+            </div>
+        );
+    }
 
-    const fileOptions = Array.from(new Set([
-        ...selectedFiles.map(f => f.name),
-        ...(currentRev?.schematic ? [currentRev.schematic] : []),
-        ...(currentRev?.board_file ? [currentRev.board_file] : []),
-        ...(currentRev?.bom_csv ? [currentRev.bom_csv] : []),
-        ...(currentRev?.datasheet ? [currentRev.datasheet] : []),
-    ])).filter(Boolean);
+    const currentPkg = packages[activePkgTab] || packages[0];
+    const currentSi = siliconVersions[activeSiTab] || siliconVersions[0];
+    const currentFf = currentPkg?.formfactors[activeFfTab] || currentPkg?.formfactors[0];
+    const currentRev = currentFf?.revisions[activeRevTab] || currentFf?.revisions[0];
+
+    // Totals
+    const totalPackages = packages.length;
+    const totalSi = siliconVersions.length;
+    const totalFf = packages.reduce((acc, p) => acc + (p.formfactors?.length || 0), 0);
+    const totalRev = packages.reduce((acc, p) => acc + (p.formfactors?.reduce((acc2, f) => acc2 + (f.revisions?.length || 0), 0) || 0), 0);
 
     return (
-        <div className="project-page-container">
+        <div className="project-form-container">
             <header className="add-page-header">
-                <button onClick={onBack} className="back-button">
+                <button onClick={onBack} className="back-button" title="Go Back">
                     <ArrowLeft size={20} />
                 </button>
-                <h2>Edit Project</h2>
-                <button 
-                    type="button" 
-                    onClick={() => setIsRemoveOpen(true)} 
-                    className="delete-icon-button"
-                    title="Delete Project"
-                    style={{ marginLeft: 'auto' }}
-                >
-                    <Trash2 size={20} />
-                </button>
-            </header>
-
-            {debugBypassPermissions && currentUserRole !== 'Super User' && (
-                <div className="debug-preview-banner">
-                    <span className="debug-preview-banner-text">
-                        ⚡ Debug Preview Mode: UI permissions bypassed for page inspection.
-                    </span>
-                </div>
-            )}
-
-            <form onSubmit={handleUpdate} className="add-form">
-                <div className="form-group">
-                    <label htmlFor="name">Project Name</label>
-                    <input 
-                        id="name"
-                        type="text" 
-                        value={name} 
-                        onChange={(e) => setName(e.target.value)} 
-                        required 
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="project_key" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Project Key (3 Letters)
-                        <span title="The 3-letter project key cannot be easily changed once assigned" style={{ cursor: 'help', display: 'flex' }}>
-                            <HelpCircle size={14} color="var(--text-muted)" />
-                        </span>
-                    </label>
-                    <input 
-                        id="project_key"
-                        type="text" 
-                        maxLength={3}
-                        value={projectKey} 
-                        disabled
-                        style={{ opacity: 0.6, cursor: 'not-allowed', textTransform: 'uppercase' }}
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Board Number Format</label>
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'normal' }}>
-                            <input 
-                                type="radio" 
-                                name="numberFormat" 
-                                value="hex" 
-                                checked={numberFormat === 'hex'} 
-                                onChange={() => setNumberFormat('hex')} 
-                            />
-                            Hex (0x)
-                        </label>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'normal' }}>
-                            <input 
-                                type="radio" 
-                                name="numberFormat" 
-                                value="decimal" 
-                                checked={numberFormat === 'decimal'} 
-                                onChange={() => setNumberFormat('decimal')} 
-                            />
-                            Decimal
-                        </label>
-                    </div>
-                </div>
-
-                {/* --- HARDWARE HIERARCHY SECTION (FULL WIDTH - NO NESTED INDENTATION) --- */}
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '18px',
-                    border: '1px solid var(--border)',
-                    borderRadius: '16px',
-                    padding: '24px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.015)'
-                }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                     <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                            <Layers size={20} color="var(--accent)" />
-                            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text)' }}>
-                                Hardware Hierarchy Configuration
-                            </h3>
-                        </div>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            Configure packages, silicon versions, board form factors, and revisions. Each section maintains full width.
+                        <h2 style={{ fontSize: '1.6rem', fontWeight: 700, margin: 0 }}>Edit Project: {name}</h2>
+                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                            Modify project silicon architecture and package board form factors
                         </p>
                     </div>
+                    {currentUserRole === 'Super User' && (
+                        <button 
+                            type="button" 
+                            onClick={() => setIsRemoveOpen(true)} 
+                            className="delete-icon-button"
+                            title="Delete Project"
+                            style={{
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                borderRadius: '8px',
+                                padding: '8px 12px',
+                                color: '#ef4444',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                        >
+                            <Trash2 size={16} />
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Delete</span>
+                        </button>
+                    )}
+                </div>
+            </header>
 
-                    {/* Breadcrumb Path Bar */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        backgroundColor: 'rgba(99, 102, 241, 0.08)',
-                        border: '1px solid rgba(99, 102, 241, 0.2)',
-                        fontSize: '0.85rem',
-                        fontWeight: 500,
-                        flexWrap: 'wrap'
-                    }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Configuring Branch:</span>
-                        <span style={{ color: '#818cf8', fontWeight: 600 }}>📦 {currentPkg?.name || 'Package'}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>›</span>
-                        <span style={{ color: '#c084fc', fontWeight: 600 }}>⚡ {currentSi?.name || 'Silicon'}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>›</span>
-                        <span style={{ color: '#60a5fa', fontWeight: 600 }}>🖥️ {currentFf?.name || 'Board'}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>›</span>
-                        <span style={{ color: '#34d399', fontWeight: 600 }}>📋 {currentRev?.name || 'Revision'}</span>
+            <form onSubmit={handleUpdate} className="add-form" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                
+                {/* 1. PROJECT OVERVIEW CARD */}
+                <div className="project-meta-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Sparkles size={18} color="var(--accent)" />
+                        <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)' }}>
+                            Project Details
+                        </h3>
                     </div>
 
-                    {/* LEVEL 1: PACKAGES */}
-                    <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#6366f1', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>1</span>
-                                <label style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>Packages</label>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>(e.g. 40 pin, 48 pin IC, BGA-128)</span>
+                    <div className="project-meta-grid">
+                        {/* Project Name */}
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label htmlFor="edit_name" style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', display: 'block' }}>
+                                Project Name <span style={{ color: '#ef4444' }}>*</span>
+                            </label>
+                            <input 
+                                id="edit_name"
+                                type="text" 
+                                value={name} 
+                                onChange={(e) => setName(e.target.value)} 
+                                required 
+                                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px', backgroundColor: 'var(--bg-secondary)', color: 'var(--text)' }}
+                            />
+                        </div>
+
+                        {/* Project Key */}
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label htmlFor="edit_key" style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', display: 'block' }}>
+                                Project Key <span style={{ color: '#ef4444' }}>*</span>
+                            </label>
+                            <input 
+                                id="edit_key"
+                                type="text" 
+                                value={projectKey} 
+                                onChange={(e) => setProjectKey(e.target.value.toUpperCase().slice(0, 3))} 
+                                placeholder="3 letters"
+                                maxLength={3}
+                                required 
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '0.75rem', 
+                                    border: '1px solid var(--border)', 
+                                    borderRadius: '8px', 
+                                    backgroundColor: 'var(--bg-secondary)', 
+                                    color: 'var(--text)',
+                                    fontWeight: '700',
+                                    letterSpacing: '2px',
+                                    textTransform: 'uppercase'
+                                }}
+                            />
+                        </div>
+
+                        {/* Number Format */}
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', display: 'block' }}>
+                                Board Number Format
+                            </label>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setNumberFormat('decimal')}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        padding: '0.75rem',
+                                        border: `1px solid ${numberFormat === 'decimal' ? 'var(--accent)' : 'var(--border)'}`,
+                                        borderRadius: '8px',
+                                        background: numberFormat === 'decimal' ? 'rgba(99, 102, 241, 0.15)' : 'var(--bg-secondary)',
+                                        color: numberFormat === 'decimal' ? 'var(--accent)' : 'var(--text-muted)',
+                                        fontWeight: 600,
+                                        fontSize: '0.85rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Hash size={16} />
+                                    <span>Decimal</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setNumberFormat('hex')}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        padding: '0.75rem',
+                                        border: `1px solid ${numberFormat === 'hex' ? 'var(--accent)' : 'var(--border)'}`,
+                                        borderRadius: '8px',
+                                        background: numberFormat === 'hex' ? 'rgba(99, 102, 241, 0.15)' : 'var(--bg-secondary)',
+                                        color: numberFormat === 'hex' ? 'var(--accent)' : 'var(--text-muted)',
+                                        fontWeight: 600,
+                                        fontSize: '0.85rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Binary size={16} />
+                                    <span>Hex (0x)</span>
+                                </button>
                             </div>
                         </div>
 
-                        <FormTabs
-                            tabs={packages.map(p => p.name || 'Unnamed Package')}
-                            activeTab={activePkgTab}
-                            onTabChange={(idx) => {
-                                setActivePkgTab(idx);
-                                setActiveSiTab(0);
-                                setActiveFfTab(0);
-                                setActiveRevTab(0);
-                            }}
-                            onAddTab={handleAddPackage}
-                            onDeleteActiveTab={handleDeletePackage}
-                            canDeleteActiveTab={packages.length > 1}
-                        >
-                            {currentPkg && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                                    <div style={{ flex: 1, minWidth: '220px' }}>
-                                        <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block', color: 'var(--text-muted)' }}>Package Name</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="e.g. 40 pin QFN" 
-                                            value={currentPkg.name} 
-                                            style={{ width: '100%', padding: '0.55rem', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)' }}
-                                            onChange={e => {
-                                                const updated = [...packages];
-                                                updated[activePkgTab].name = e.target.value;
-                                                setPackages(updated);
-                                            }}
-                                        />
-                                    </div>
+                        {/* Description */}
+                        <div className="form-group" style={{ margin: 0 }}>
+                            <label htmlFor="edit_desc" style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', display: 'block' }}>
+                                Description
+                            </label>
+                            <input 
+                                id="edit_desc"
+                                type="text" 
+                                value={description} 
+                                onChange={(e) => setDescription(e.target.value)} 
+                                placeholder="Optional project notes"
+                                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px', backgroundColor: 'var(--bg-secondary)', color: 'var(--text)' }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* ============================================================== */}
+                {/* SECTION 1: SILICON (PACKAGES/PIN COUNTS & SILICON VERSIONS)     */}
+                {/* ============================================================== */}
+                <div className="project-section-card section-silicon">
+                    <div className="section-card-header">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="section-badge section-badge-silicon">
+                                <Cpu size={14} />
+                                Section 1: Silicon
+                            </span>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)' }}>
+                                    Silicon Tapeout & Packages
+                                </h3>
+                                <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                    (1) Packages / Pin counts and (2) Silicon revisions with process corners
+                                </p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <span style={{ fontSize: '0.75rem', background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
+                                {packages.length} Package{packages.length !== 1 ? 's' : ''}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+                                {siliconVersions.length} Si Revision{siliconVersions.length !== 1 ? 's' : ''}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="silicon-two-col">
+                        {/* Sub-panel 1: Packages & Pin Counts */}
+                        <div className="silicon-subpanel">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Box size={16} color="#818cf8" />
+                                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>
+                                        (1) Packages / Pin Counts
+                                    </h4>
                                 </div>
-                            )}
-                        </FormTabs>
-                    </div>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                    e.g. 40 pin, 48 pin IC
+                                </span>
+                            </div>
 
-                    {/* LEVEL 2: SILICON VERSIONS */}
-                    <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#a855f7', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>2</span>
-                                <Cpu size={16} color="#a855f7" />
-                                <label style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>
-                                    Silicon Versions for <span style={{ color: '#818cf8' }}>"{currentPkg?.name || 'Package'}"</span>
-                                </label>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>(e.g. A0, B0)</span>
+                            {/* Add Package Input Bar */}
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <input
+                                    type="text"
+                                    value={newPkgInput}
+                                    onChange={(e) => setNewPkgInput(e.target.value)}
+                                    placeholder="Add package (e.g. 48 pin IC, BGA-128)"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleAddPackage(newPkgInput);
+                                        }
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        padding: '0.6rem 0.8rem',
+                                        fontSize: '0.85rem',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--border)',
+                                        background: 'rgba(0, 0, 0, 0.3)',
+                                        color: 'var(--text)'
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleAddPackage(newPkgInput)}
+                                    className="nested-add-tab-btn"
+                                    style={{ padding: '0.6rem 1rem' }}
+                                >
+                                    <Plus size={15} />
+                                    <span>Add</span>
+                                </button>
+                            </div>
+
+                            {/* Packages List */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
+                                {packages.map((pkg, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className={`package-item-card ${activePkgTab === idx ? 'active-pkg' : ''}`}
+                                        onClick={() => {
+                                            setActivePkgTab(idx);
+                                            setActiveFfTab(0);
+                                            setActiveRevTab(0);
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <span style={{ 
+                                                width: '24px', 
+                                                height: '24px', 
+                                                borderRadius: '6px', 
+                                                background: activePkgTab === idx ? '#6366f1' : 'rgba(255, 255, 255, 0.1)', 
+                                                color: '#fff', 
+                                                fontSize: '0.75rem', 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'center',
+                                                fontWeight: 700 
+                                            }}>
+                                                {idx + 1}
+                                            </span>
+                                            <input
+                                                type="text"
+                                                value={pkg.name}
+                                                onClick={(e) => e.stopPropagation()}
+                                                onChange={(e) => {
+                                                    const updated = [...packages];
+                                                    updated[idx].name = e.target.value;
+                                                    setPackages(updated);
+                                                }}
+                                                placeholder="Package Name"
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    color: 'var(--text)',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.9rem',
+                                                    outline: 'none',
+                                                    width: '140px'
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                {pkg.formfactors.length} form factor{pkg.formfactors.length !== 1 ? 's' : ''}
+                                            </span>
+                                            {packages.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeletePackage(idx);
+                                                    }}
+                                                    title="Delete this package"
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: 'none',
+                                                        color: '#ef4444',
+                                                        cursor: 'pointer',
+                                                        padding: '4px',
+                                                        display: 'flex',
+                                                        alignItems: 'center'
+                                                    }}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        <FormTabs
-                            tabs={currentPkg ? currentPkg.silicon_versions.map(sv => sv.name || 'Unnamed Version') : []}
-                            activeTab={activeSiTab}
-                            onTabChange={(idx) => {
-                                setActiveSiTab(idx);
-                                setActiveFfTab(0);
-                                setActiveRevTab(0);
-                            }}
-                            onAddTab={handleAddSilicon}
-                            onDeleteActiveTab={handleDeleteSilicon}
-                            canDeleteActiveTab={currentPkg ? currentPkg.silicon_versions.length > 1 : false}
-                        >
+                        {/* Sub-panel 2: Silicon Versions & Corners */}
+                        <div className="silicon-subpanel">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Layers size={16} color="#c084fc" />
+                                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>
+                                        (2) Silicon Versions
+                                    </h4>
+                                </div>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                    e.g. A0, B0 with TT, FF, SS
+                                </span>
+                            </div>
+
+                            {/* Silicon Version Tabs */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                                {siliconVersions.map((sv, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        className={`nested-tab-chip ${activeSiTab === idx ? 'active-t2' : ''}`}
+                                        onClick={() => setActiveSiTab(idx)}
+                                        style={{ padding: '6px 12px' }}
+                                    >
+                                        <Cpu size={14} />
+                                        <span>{sv.name || `Si ${idx + 1}`}</span>
+                                    </button>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="nested-add-tab-btn"
+                                    onClick={handleAddSilicon}
+                                    style={{ padding: '6px 10px' }}
+                                    title="Add silicon revision"
+                                >
+                                    <Plus size={13} />
+                                    <span>Add Si</span>
+                                </button>
+                            </div>
+
+                            {/* Active Silicon Version Form */}
                             {currentSi && (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 280px) 1fr', gap: '16px', alignItems: 'start' }}>
-                                    <div>
-                                        <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block', color: 'var(--text-muted)' }}>Silicon Version</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="e.g. A0" 
-                                            value={currentSi.name} 
-                                            style={{ width: '100%', padding: '0.55rem', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)' }}
-                                            onChange={e => {
-                                                const updated = [...packages];
-                                                updated[activePkgTab].silicon_versions[activeSiTab].name = e.target.value;
-                                                setPackages(updated);
-                                            }}
-                                        />
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
+                                                Silicon Revision Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={currentSi.name}
+                                                onChange={(e) => {
+                                                    const updated = [...siliconVersions];
+                                                    updated[activeSiTab].name = e.target.value;
+                                                    setSiliconVersions(updated);
+                                                }}
+                                                placeholder="e.g. A0, B0"
+                                                style={{ width: '100%', padding: '0.55rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'rgba(0,0,0,0.3)', color: 'var(--text)' }}
+                                            />
+                                        </div>
+                                        {siliconVersions.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteSilicon(activeSiTab)}
+                                                style={{
+                                                    alignSelf: 'flex-end',
+                                                    padding: '7px 12px',
+                                                    background: 'rgba(239, 68, 68, 0.1)',
+                                                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                    borderRadius: '6px',
+                                                    color: '#ef4444',
+                                                    fontSize: '0.78rem',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}
+                                                title="Delete this silicon revision"
+                                            >
+                                                <Trash2 size={13} />
+                                                <span>Remove</span>
+                                            </button>
+                                        )}
                                     </div>
+
                                     <div>
-                                        <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block', color: 'var(--text-muted)' }}>Silicon Corners</label>
+                                        <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
+                                            Silicon Corners
+                                        </label>
+                                        <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                                            {['TT', 'FF', 'SS', 'FS', 'SF'].map(c => {
+                                                const cornersArr = currentSi.silicon_corners.split(',').map(s => s.trim());
+                                                const isSel = cornersArr.includes(c);
+                                                return (
+                                                    <button
+                                                        key={c}
+                                                        type="button"
+                                                        onClick={() => toggleCornerPreset(c)}
+                                                        className={`corner-preset-chip ${isSel ? 'selected' : ''}`}
+                                                    >
+                                                        {c}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                         <MultipleInputs
                                             value={currentSi.silicon_corners}
                                             onChange={(val) => {
-                                                const updated = [...packages];
-                                                updated[activePkgTab].silicon_versions[activeSiTab].silicon_corners = val;
-                                                setPackages(updated);
+                                                const updated = [...siliconVersions];
+                                                updated[activeSiTab].silicon_corners = val;
+                                                setSiliconVersions(updated);
                                             }}
-                                            placeholder="e.g. TT, FF, SS"
+                                            placeholder="Corners: TT, FF, SS"
                                         />
                                     </div>
                                 </div>
                             )}
-                        </FormTabs>
-                    </div>
-
-                    {/* LEVEL 3: BOARD FORM FACTORS */}
-                    <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#3b82f6', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>3</span>
-                                <label style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>
-                                    Board Form Factors for <span style={{ color: '#c084fc' }}>"{currentSi?.name || 'Silicon'}"</span>
-                                </label>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>(e.g. Demo, Validation, SVB)</span>
-                            </div>
                         </div>
-
-                        <FormTabs
-                            tabs={currentSi ? currentSi.formfactors.map(ff => ff.name || 'Unnamed FormFactor') : []}
-                            activeTab={activeFfTab}
-                            onTabChange={(idx) => {
-                                setActiveFfTab(idx);
-                                setActiveRevTab(0);
-                            }}
-                            onAddTab={handleAddFormFactor}
-                            onDeleteActiveTab={handleDeleteFormFactor}
-                            canDeleteActiveTab={currentSi ? currentSi.formfactors.length > 1 : false}
-                        >
-                            {currentFf && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                                    <div style={{ flex: 1, minWidth: '220px' }}>
-                                        <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block', color: 'var(--text-muted)' }}>Board FormFactor Name</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="e.g. Demo, Validation" 
-                                            value={currentFf.name} 
-                                            style={{ width: '100%', padding: '0.55rem', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)' }}
-                                            onChange={e => {
-                                                const updated = [...packages];
-                                                updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].name = e.target.value;
-                                                setPackages(updated);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                        </FormTabs>
-                    </div>
-
-                    {/* LEVEL 4: REVISIONS & DOCUMENTS */}
-                    <div style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '16px', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#10b981', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>4</span>
-                                <label style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>
-                                    Revisions & Documents for <span style={{ color: '#60a5fa' }}>"{currentFf?.name || 'Board'}"</span>
-                                </label>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>(e.g. 1.0, 2.0, proto)</span>
-                            </div>
-                        </div>
-
-                        <FormTabs
-                            tabs={currentFf ? currentFf.revisions.map(r => r.name || 'Unnamed Rev') : []}
-                            activeTab={activeRevTab}
-                            onTabChange={(idx) => setActiveRevTab(idx)}
-                            onAddTab={handleAddRevision}
-                            onDeleteActiveTab={handleDeleteRevision}
-                            canDeleteActiveTab={currentFf ? currentFf.revisions.length > 1 : false}
-                        >
-                            {currentRev && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 260px) 1fr', gap: '16px', alignItems: 'start' }}>
-                                        <div>
-                                            <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block', color: 'var(--text-muted)' }}>Revision Name</label>
-                                            <input 
-                                                type="text" 
-                                                placeholder="e.g. 1.0" 
-                                                value={currentRev.name} 
-                                                style={{ width: '100%', padding: '0.55rem', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)' }}
-                                                onChange={e => {
-                                                    const updated = [...packages];
-                                                    updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].name = e.target.value;
-                                                    setPackages(updated);
-                                                }}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block', color: 'var(--text-muted)' }}>BOMs (comma separated)</label>
-                                            <MultipleInputs
-                                                value={currentRev.boms}
-                                                onChange={(val) => {
-                                                    const updated = [...packages];
-                                                    updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].boms = val;
-                                                    setPackages(updated);
-                                                }}
-                                                placeholder="e.g. BOM1, BOM2"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Associated Documents Grid */}
-                                    <div style={{ marginTop: '8px', borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-                                        <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '12px', color: 'var(--text)' }}>
-                                            Revision Documents (PDFs, Schematics, Layouts)
-                                        </label>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                                            {/* Schematic */}
-                                            <div style={{ padding: '10px', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0,0,0,0.18)' }}>
-                                                <span style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                                                    <FileText size={14} color="#6366f1" /> Schematic (.pdf)
-                                                </span>
-                                                <div style={{ display: 'flex', gap: '6px' }}>
-                                                    <select
-                                                        value={currentRev.schematic || ''}
-                                                        style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0,0,0,0.3)', color: 'var(--text)' }}
-                                                        onChange={e => {
-                                                            const updated = [...packages];
-                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].schematic = e.target.value || null;
-                                                            setPackages(updated);
-                                                        }}
-                                                    >
-                                                        <option value="">-- None --</option>
-                                                        {fileOptions.map(name => (
-                                                            <option key={name} value={name}>{name}</option>
-                                                        ))}
-                                                    </select>
-                                                    <input 
-                                                        type="file" 
-                                                        accept=".pdf" 
-                                                        id={`sch-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                        style={{ display: 'none' }}
-                                                        onClick={e => { (e.target as HTMLInputElement).value = ''; }}
-                                                        onChange={e => {
-                                                            if (e.target.files && e.target.files[0]) {
-                                                                handleFileUpload(e.target.files[0], (fn) => {
-                                                                    const updated = [...packages];
-                                                                    updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].schematic = fn;
-                                                                    setPackages(updated);
-                                                                });
-                                                            }
-                                                        }}
-                                                    />
-                                                    <label 
-                                                        htmlFor={`sch-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                        style={{ cursor: 'pointer', padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', backgroundColor: 'var(--surface-hover)' }}
-                                                        title="Upload file"
-                                                    >
-                                                        <Upload size={14} />
-                                                    </label>
-                                                </div>
-                                            </div>
-
-                                            {/* Board File */}
-                                            <div style={{ padding: '10px', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0,0,0,0.18)' }}>
-                                                <span style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                                                    <FileText size={14} color="#3b82f6" /> Board File (.brd)
-                                                </span>
-                                                <div style={{ display: 'flex', gap: '6px' }}>
-                                                    <select
-                                                        value={currentRev.board_file || ''}
-                                                        style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0,0,0,0.3)', color: 'var(--text)' }}
-                                                        onChange={e => {
-                                                            const updated = [...packages];
-                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].board_file = e.target.value || null;
-                                                            setPackages(updated);
-                                                        }}
-                                                    >
-                                                        <option value="">-- None --</option>
-                                                        {fileOptions.map(name => (
-                                                            <option key={name} value={name}>{name}</option>
-                                                        ))}
-                                                    </select>
-                                                    <input 
-                                                        type="file" 
-                                                        accept=".brd" 
-                                                        id={`brd-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                        style={{ display: 'none' }}
-                                                        onClick={e => { (e.target as HTMLInputElement).value = ''; }}
-                                                        onChange={e => {
-                                                            if (e.target.files && e.target.files[0]) {
-                                                                handleFileUpload(e.target.files[0], (fn) => {
-                                                                    const updated = [...packages];
-                                                                    updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].board_file = fn;
-                                                                    setPackages(updated);
-                                                                });
-                                                            }
-                                                        }}
-                                                    />
-                                                    <label 
-                                                        htmlFor={`brd-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                        style={{ cursor: 'pointer', padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', backgroundColor: 'var(--surface-hover)' }}
-                                                        title="Upload file"
-                                                    >
-                                                        <Upload size={14} />
-                                                    </label>
-                                                </div>
-                                            </div>
-
-                                            {/* BOM CSV */}
-                                            <div style={{ padding: '10px', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0,0,0,0.18)' }}>
-                                                <span style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                                                    <FileText size={14} color="#10b981" /> BOM CSV (.csv)
-                                                </span>
-                                                <div style={{ display: 'flex', gap: '6px' }}>
-                                                    <select
-                                                        value={currentRev.bom_csv || ''}
-                                                        style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0,0,0,0.3)', color: 'var(--text)' }}
-                                                        onChange={e => {
-                                                            const updated = [...packages];
-                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].bom_csv = e.target.value || null;
-                                                            setPackages(updated);
-                                                        }}
-                                                    >
-                                                        <option value="">-- None --</option>
-                                                        {fileOptions.map(name => (
-                                                            <option key={name} value={name}>{name}</option>
-                                                        ))}
-                                                    </select>
-                                                    <input 
-                                                        type="file" 
-                                                        accept=".csv,.xlsx,.xls,.txt" 
-                                                        id={`bom-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                        style={{ display: 'none' }}
-                                                        onClick={e => { (e.target as HTMLInputElement).value = ''; }}
-                                                        onChange={e => {
-                                                            if (e.target.files && e.target.files[0]) {
-                                                                handleFileUpload(e.target.files[0], (fn) => {
-                                                                    const updated = [...packages];
-                                                                    updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].bom_csv = fn;
-                                                                    setPackages(updated);
-                                                                });
-                                                            }
-                                                        }}
-                                                    />
-                                                    <label 
-                                                        htmlFor={`bom-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                        style={{ cursor: 'pointer', padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', backgroundColor: 'var(--surface-hover)' }}
-                                                        title="Upload file"
-                                                    >
-                                                        <Upload size={14} />
-                                                    </label>
-                                                </div>
-                                            </div>
-
-                                            {/* Datasheet */}
-                                            <div style={{ padding: '10px', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0,0,0,0.18)' }}>
-                                                <span style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                                                    <FileText size={14} color="#f59e0b" /> Datasheet (.pdf)
-                                                </span>
-                                                <div style={{ display: 'flex', gap: '6px' }}>
-                                                    <select
-                                                        value={currentRev.datasheet || ''}
-                                                        style={{ flex: 1, padding: '0.45rem', fontSize: '0.8rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0,0,0,0.3)', color: 'var(--text)' }}
-                                                        onChange={e => {
-                                                            const updated = [...packages];
-                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].datasheet = e.target.value || null;
-                                                            setPackages(updated);
-                                                        }}
-                                                    >
-                                                        <option value="">-- None --</option>
-                                                        {fileOptions.map(name => (
-                                                            <option key={name} value={name}>{name}</option>
-                                                        ))}
-                                                    </select>
-                                                    <input 
-                                                        type="file" 
-                                                        accept=".pdf,.txt" 
-                                                        id={`ds-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                        style={{ display: 'none' }}
-                                                        onClick={e => { (e.target as HTMLInputElement).value = ''; }}
-                                                        onChange={e => {
-                                                            if (e.target.files && e.target.files[0]) {
-                                                                handleFileUpload(e.target.files[0], (fn) => {
-                                                                    const updated = [...packages];
-                                                                    updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].datasheet = fn;
-                                                                    setPackages(updated);
-                                                                });
-                                                            }
-                                                        }}
-                                                    />
-                                                    <label 
-                                                        htmlFor={`ds-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                        style={{ cursor: 'pointer', padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', backgroundColor: 'var(--surface-hover)' }}
-                                                        title="Upload file"
-                                                    >
-                                                        <Upload size={14} />
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </FormTabs>
                     </div>
                 </div>
 
-                <button type="submit" className="submit-button" disabled={saving}>
-                    <Save size={18} />
-                    <span>{saving ? 'Saving Changes...' : 'Save Changes'}</span>
-                </button>
+                {/* ============================================================== */}
+                {/* SECTION 2: BOARD FORM FACTOR (CONFIGURED PER PACKAGE)          */}
+                {/* ============================================================== */}
+                <div className="project-section-card section-board-ff">
+                    <div className="section-card-header">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="section-badge section-badge-board-ff">
+                                <CircuitBoard size={14} />
+                                Section 2: Board Form Factor
+                            </span>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)' }}>
+                                    Package Board Form Factors & CAD
+                                </h3>
+                                <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                    Each package has board form factors, versions, BOM flavors, and documents
+                                </p>
+                            </div>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(14, 165, 233, 0.15)', color: '#38bdf8', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(14, 165, 233, 0.3)' }}>
+                            Active Package: <strong>{currentPkg?.name}</strong>
+                        </span>
+                    </div>
+
+                    {/* Step 1: Package Switcher Bar */}
+                    <div style={{ padding: '12px 22px', background: 'rgba(0, 0, 0, 0.2)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Select Package:
+                        </span>
+                        {packages.map((pkg, idx) => (
+                            <button
+                                key={idx}
+                                type="button"
+                                className={`nested-tab-chip ${activePkgTab === idx ? 'active-t1' : ''}`}
+                                onClick={() => {
+                                    setActivePkgTab(idx);
+                                    setActiveFfTab(0);
+                                    setActiveRevTab(0);
+                                }}
+                            >
+                                <Box size={14} />
+                                <span>{pkg.name || `Package ${idx + 1}`}</span>
+                                <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.15)', padding: '1px 6px', borderRadius: '10px' }}>
+                                    {pkg.formfactors.length}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Step 2: Form Factor Tabs Bar */}
+                    <div className="nested-tabs-nav" style={{ background: 'rgba(0,0,0,0.15)' }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginRight: '6px' }}>
+                            Form Factors:
+                        </span>
+                        {currentPkg?.formfactors.map((ff, idx) => (
+                            <button
+                                key={idx}
+                                type="button"
+                                className={`nested-tab-chip ${activeFfTab === idx ? 'active-t3' : ''}`}
+                                onClick={() => {
+                                    setActiveFfTab(idx);
+                                    setActiveRevTab(0);
+                                }}
+                            >
+                                <CircuitBoard size={14} />
+                                <span>{ff.name || `Form Factor ${idx + 1}`}</span>
+                            </button>
+                        ))}
+                        <button
+                            type="button"
+                            className="nested-add-tab-btn"
+                            onClick={handleAddFormFactor}
+                            title="Add board form factor"
+                        >
+                            <Plus size={14} />
+                            <span>Add Form Factor</span>
+                        </button>
+                    </div>
+
+                    {/* Active Form Factor Content */}
+                    <div className="nested-tier-body" style={{ padding: '22px' }}>
+                        {currentFf ? (
+                            <>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                                    <div style={{ flex: 1, minWidth: '220px' }}>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>
+                                            Form Factor Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={currentFf.name}
+                                            onChange={(e) => {
+                                                const updated = [...packages];
+                                                updated[activePkgTab].formfactors[activeFfTab].name = e.target.value;
+                                                setPackages(updated);
+                                            }}
+                                            placeholder="e.g. Demo, Validation, Chamber"
+                                            style={{ width: '100%', maxWidth: '320px', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'rgba(0,0,0,0.25)', color: 'var(--text)' }}
+                                        />
+                                    </div>
+                                    {currentPkg.formfactors.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={handleDeleteFormFactor}
+                                            style={{
+                                                padding: '6px 14px',
+                                                background: 'rgba(239, 68, 68, 0.1)',
+                                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                borderRadius: '6px',
+                                                color: '#ef4444',
+                                                fontSize: '0.8rem',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}
+                                        >
+                                            <Trash2 size={14} />
+                                            <span>Delete Form Factor</span>
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Step 3: Board Revisions Bar */}
+                                <div style={{ marginTop: '12px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span className="tier-badge tier-badge-4">Version & BOM</span>
+                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                                Board revisions for <strong>{currentFf.name}</strong>
+                                            </span>
+                                        </div>
+                                        {currentFf.revisions.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={handleDeleteRevision}
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: 'none',
+                                                    color: '#ef4444',
+                                                    fontSize: '0.78rem',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}
+                                            >
+                                                <Trash2 size={13} />
+                                                <span>Delete Revision</span>
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Revision Tabs */}
+                                    <div className="nested-tabs-nav" style={{ padding: '8px 12px', borderRadius: '8px', marginBottom: '16px' }}>
+                                        {currentFf.revisions.map((rev, idx) => (
+                                            <button
+                                                key={idx}
+                                                type="button"
+                                                className={`nested-tab-chip ${activeRevTab === idx ? 'active-t4' : ''}`}
+                                                onClick={() => setActiveRevTab(idx)}
+                                            >
+                                                <Layers size={13} />
+                                                <span>{rev.name || `Rev ${idx + 1}`}</span>
+                                            </button>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            className="nested-add-tab-btn"
+                                            onClick={handleAddRevision}
+                                            title="Add board revision"
+                                        >
+                                            <Plus size={13} />
+                                            <span>Add Revision</span>
+                                        </button>
+                                    </div>
+
+                                    {/* Active Revision Details */}
+                                    {currentRev && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                                            <div className="responsive-tier-grid">
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '6px', display: 'block', color: 'var(--text-muted)' }}>
+                                                        Board Revision Name
+                                                    </label>
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="e.g. 1.0, 1.1, 2.0" 
+                                                        value={currentRev.name} 
+                                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '6px', backgroundColor: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)' }}
+                                                        onChange={e => {
+                                                            const updated = [...packages];
+                                                            updated[activePkgTab].formfactors[activeFfTab].revisions[activeRevTab].name = e.target.value;
+                                                            setPackages(updated);
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '6px', display: 'block', color: 'var(--text-muted)' }}>
+                                                        BOM Flavors
+                                                    </label>
+                                                    <MultipleInputs
+                                                        value={currentRev.boms}
+                                                        onChange={(val) => {
+                                                            const updated = [...packages];
+                                                            updated[activePkgTab].formfactors[activeFfTab].revisions[activeRevTab].boms = val;
+                                                            setPackages(updated);
+                                                        }}
+                                                        placeholder="e.g. BOM1, BOM2, Default"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* CAD Documents Grid */}
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <Paperclip size={15} color="#34d399" />
+                                                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text)' }}>
+                                                            CAD & Documentation ({currentRev.name})
+                                                        </span>
+                                                    </div>
+                                                    <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                                                        Auto-classified on upload
+                                                    </span>
+                                                </div>
+
+                                                <div className="doc-slot-grid">
+                                                    {/* Schematic Slot */}
+                                                    <div className="doc-slot-card">
+                                                        <div className="doc-slot-title">
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <FileText size={14} color="#ef4444" />
+                                                                <span>Schematic PDF</span>
+                                                            </div>
+                                                            {currentRev.schematic && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="doc-clear-btn"
+                                                                    onClick={() => handleRemoveFile(currentRev.schematic!)}
+                                                                    title="Remove schematic"
+                                                                >
+                                                                    <X size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {currentRev.schematic ? (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                                                                <FileCheck size={14} />
+                                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentRev.schematic}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <label className="doc-browse-btn">
+                                                                <Upload size={13} />
+                                                                <span>Attach Schematic</span>
+                                                                <input
+                                                                    type="file"
+                                                                    accept=".pdf"
+                                                                    style={{ display: 'none' }}
+                                                                    onChange={(e) => {
+                                                                        if (e.target.files && e.target.files[0]) {
+                                                                            handleFileUpload(e.target.files[0], (fname) => {
+                                                                                const updated = [...packages];
+                                                                                updated[activePkgTab].formfactors[activeFfTab].revisions[activeRevTab].schematic = fname;
+                                                                                setPackages(updated);
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Board File Slot */}
+                                                    <div className="doc-slot-card">
+                                                        <div className="doc-slot-title">
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <Layers size={14} color="#3b82f6" />
+                                                                <span>Board File (BRD)</span>
+                                                            </div>
+                                                            {currentRev.board_file && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="doc-clear-btn"
+                                                                    onClick={() => handleRemoveFile(currentRev.board_file!)}
+                                                                    title="Remove board file"
+                                                                >
+                                                                    <X size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {currentRev.board_file ? (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                                                                <FileCheck size={14} />
+                                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentRev.board_file}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <label className="doc-browse-btn">
+                                                                <Upload size={13} />
+                                                                <span>Attach Board File</span>
+                                                                <input
+                                                                    type="file"
+                                                                    accept=".brd,.cad"
+                                                                    style={{ display: 'none' }}
+                                                                    onChange={(e) => {
+                                                                        if (e.target.files && e.target.files[0]) {
+                                                                            handleFileUpload(e.target.files[0], (fname) => {
+                                                                                const updated = [...packages];
+                                                                                updated[activePkgTab].formfactors[activeFfTab].revisions[activeRevTab].board_file = fname;
+                                                                                setPackages(updated);
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                        )}
+                                                    </div>
+
+                                                    {/* BOM CSV Slot */}
+                                                    <div className="doc-slot-card">
+                                                        <div className="doc-slot-title">
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <FileText size={14} color="#10b981" />
+                                                                <span>BOM (CSV/Excel)</span>
+                                                            </div>
+                                                            {currentRev.bom_csv && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="doc-clear-btn"
+                                                                    onClick={() => handleRemoveFile(currentRev.bom_csv!)}
+                                                                    title="Remove BOM file"
+                                                                >
+                                                                    <X size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {currentRev.bom_csv ? (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                                                                <FileCheck size={14} />
+                                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentRev.bom_csv}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <label className="doc-browse-btn">
+                                                                <Upload size={13} />
+                                                                <span>Attach BOM File</span>
+                                                                <input
+                                                                    type="file"
+                                                                    accept=".csv,.xlsx,.xls"
+                                                                    style={{ display: 'none' }}
+                                                                    onChange={(e) => {
+                                                                        if (e.target.files && e.target.files[0]) {
+                                                                            handleFileUpload(e.target.files[0], (fname) => {
+                                                                                const updated = [...packages];
+                                                                                updated[activePkgTab].formfactors[activeFfTab].revisions[activeRevTab].bom_csv = fname;
+                                                                                setPackages(updated);
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Datasheet Slot */}
+                                                    <div className="doc-slot-card">
+                                                        <div className="doc-slot-title">
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <FileText size={14} color="#a855f7" />
+                                                                <span>Datasheet (PDF)</span>
+                                                            </div>
+                                                            {currentRev.datasheet && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="doc-clear-btn"
+                                                                    onClick={() => handleRemoveFile(currentRev.datasheet!)}
+                                                                    title="Remove datasheet"
+                                                                >
+                                                                    <X size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        {currentRev.datasheet ? (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#22c55e', background: 'rgba(34, 197, 94, 0.1)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+                                                                <FileCheck size={14} />
+                                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentRev.datasheet}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <label className="doc-browse-btn">
+                                                                <Upload size={13} />
+                                                                <span>Attach Datasheet</span>
+                                                                <input
+                                                                    type="file"
+                                                                    accept=".pdf"
+                                                                    style={{ display: 'none' }}
+                                                                    onChange={(e) => {
+                                                                        if (e.target.files && e.target.files[0]) {
+                                                                            handleFileUpload(e.target.files[0], (fname) => {
+                                                                                const updated = [...packages];
+                                                                                updated[activePkgTab].formfactors[activeFfTab].revisions[activeRevTab].datasheet = fname;
+                                                                                setPackages(updated);
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Generic Multiple File Drop Zone */}
+                                                <div 
+                                                    style={{
+                                                        marginTop: '12px',
+                                                        padding: '14px',
+                                                        border: '1px dashed var(--border)',
+                                                        borderRadius: '8px',
+                                                        background: 'rgba(0,0,0,0.2)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        flexWrap: 'wrap',
+                                                        gap: '10px'
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        <Upload size={16} color="var(--text-muted)" />
+                                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                            Batch attach docs for this revision (PDF, BRD, CSV)
+                                                        </span>
+                                                    </div>
+                                                    <label className="doc-browse-btn">
+                                                        <span>Browse Files</span>
+                                                        <input
+                                                            type="file"
+                                                            multiple
+                                                            style={{ display: 'none' }}
+                                                            onChange={(e) => handleMultipleFiles(e.target.files)}
+                                                        />
+                                                    </label>
+                                                </div>
+
+                                                {/* Staged files overview */}
+                                                {selectedFiles.length > 0 && (
+                                                    <div className="staged-files-card">
+                                                        <div className="staged-files-header">
+                                                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text)' }}>
+                                                                Files Ready to Upload ({selectedFiles.length})
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                            {selectedFiles.map((file, fIdx) => (
+                                                                <div key={fIdx} className="staged-file-chip">
+                                                                    <FileText size={12} color="var(--accent)" />
+                                                                    <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveFile(file.name)}
+                                                                        className="staged-file-remove"
+                                                                        title="Remove from upload queue"
+                                                                    >
+                                                                        <X size={11} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                                <p>No form factors for this package yet.</p>
+                                <button type="button" onClick={handleAddFormFactor} className="nested-add-tab-btn" style={{ margin: '0 auto' }}>
+                                    <Plus size={14} />
+                                    <span>Add Form Factor</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Summary & Save Action Bar */}
+                <div className="form-sticky-bar">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                            Summary:
+                        </div>
+                        <span style={{ fontSize: '0.78rem', background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
+                            {totalPackages} Pkg{totalPackages !== 1 ? 's' : ''}
+                        </span>
+                        <span style={{ fontSize: '0.78rem', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+                            {totalSi} Si Rev{totalSi !== 1 ? 's' : ''}
+                        </span>
+                        <span style={{ fontSize: '0.78rem', background: 'rgba(14, 165, 233, 0.15)', color: '#38bdf8', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(14, 165, 233, 0.3)' }}>
+                            {totalFf} Board Form Factor{totalFf !== 1 ? 's' : ''}
+                        </span>
+                        <span style={{ fontSize: '0.78rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                            {totalRev} Board Rev{totalRev !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        disabled={saving || !name || projectKey.length !== 3} 
+                        className="save-button"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '0.75rem 1.6rem',
+                            background: 'var(--accent)',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontWeight: 700,
+                            cursor: saving ? 'not-allowed' : 'pointer',
+                            opacity: (saving || !name || projectKey.length !== 3) ? 0.6 : 1
+                        }}
+                    >
+                        <Save size={18} />
+                        <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+                    </button>
+                </div>
             </form>
 
-            <RemoveProject
-                isOpen={isRemoveOpen}
-                project={projects.find(p => p.id.toString() === id.toString()) || { id, name, pcb_count: pcbCount }}
-                onConfirm={handleDelete}
-                onClose={() => setIsRemoveOpen(false)}
-            />
+            {isRemoveOpen && (
+                <RemoveProject 
+                    isOpen={isRemoveOpen}
+                    project={{ name, pcb_count: pcbCount }}
+                    onClose={() => setIsRemoveOpen(false)}
+                    onConfirm={handleConfirmedDelete}
+                />
+            )}
         </div>
     );
 }

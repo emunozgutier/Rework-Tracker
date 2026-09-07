@@ -36,6 +36,7 @@ export interface BoardFormFactorRevision {
 
 export interface BoardFormFactor {
     id?: number;
+    package_id?: number;
     silicon_version_id?: number;
     name: string;
     description?: string;
@@ -45,10 +46,12 @@ export interface BoardFormFactor {
 
 export interface SiliconVersion {
     id?: number;
+    project_id?: number;
     package_id?: number;
     name: string;
     silicon_corners: string[];
-    formfactors: BoardFormFactor[];
+    description?: string;
+    formfactors?: BoardFormFactor[];
 }
 
 export interface Package {
@@ -56,7 +59,9 @@ export interface Package {
     project_id?: number;
     name: string;
     description?: string;
-    silicon_versions: SiliconVersion[];
+    formfactors?: BoardFormFactor[];
+    board_formfactors?: BoardFormFactor[];
+    silicon_versions?: SiliconVersion[];
 }
 
 // Backward compatibility helper interfaces
@@ -85,6 +90,7 @@ export interface Project {
     project_key: string;
     number_format?: 'hex' | 'decimal' | string;
     packages: Package[];
+    silicon_versions?: SiliconVersion[];
     pcb_count: number;
     doc_count?: number;
     pcbs: string[];
@@ -105,8 +111,8 @@ interface ProjectState {
     fetchDocs: (projectId: number | string) => Promise<void>;
     uploadDocs: (projectId: number | string, files: File[]) => Promise<boolean>;
     deleteDoc: (projectId: number | string, docId: number | string) => Promise<boolean>;
-    addProject: (data: { name: string; description?: string; project_key: string; number_format?: string; packages?: Package[]; revisions?: string; flavors?: any[]; silicon_corners?: string }, files?: File[]) => Promise<boolean>;
-    updateProject: (id: number | string, data: { name: string; description?: string; project_key: string; number_format?: string; packages?: Package[]; revisions?: string; flavors?: any[]; silicon_corners?: string }, files?: File[]) => Promise<boolean>;
+    addProject: (data: { name: string; description?: string; project_key: string; number_format?: string; packages?: Package[]; silicon_versions?: SiliconVersion[]; revisions?: string; flavors?: any[]; silicon_corners?: string }, files?: File[]) => Promise<boolean>;
+    updateProject: (id: number | string, data: { name: string; description?: string; project_key: string; number_format?: string; packages?: Package[]; silicon_versions?: SiliconVersion[]; revisions?: string; flavors?: any[]; silicon_corners?: string }, files?: File[]) => Promise<boolean>;
     deleteProject: (id: number | string) => Promise<boolean>;
 }
 

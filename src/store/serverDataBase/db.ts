@@ -132,14 +132,16 @@ const initDb = async (): Promise<void> => {
             // Silicon Versions Table (e.g. 'A0', 'B0')
             dbInstance.run(`CREATE TABLE IF NOT EXISTS silicon_versions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                package_id INTEGER NOT NULL,
+                project_id INTEGER,
+                package_id INTEGER,
                 name TEXT NOT NULL,
                 silicon_corners TEXT,
                 description TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
                 FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
             )`);
-            dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_silicon_versions_pkg_name ON silicon_versions(package_id, name COLLATE NOCASE)`);
+            dbInstance.run(`CREATE INDEX IF NOT EXISTS idx_silicon_versions_pkg ON silicon_versions(package_id)`);
 
             // Silicon Corners Table (e.g. 'TT', 'FF', 'SS')
             dbInstance.run(`CREATE TABLE IF NOT EXISTS silicon_corners (
@@ -153,13 +155,14 @@ const initDb = async (): Promise<void> => {
             // Board FormFactors Table (e.g. 'Demo', 'Validation', 'SVB')
             dbInstance.run(`CREATE TABLE IF NOT EXISTS board_formfactors (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                silicon_version_id INTEGER NOT NULL,
+                package_id INTEGER,
+                silicon_version_id INTEGER,
                 name TEXT NOT NULL,
                 description TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
                 FOREIGN KEY (silicon_version_id) REFERENCES silicon_versions(id) ON DELETE CASCADE
             )`);
-            dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_board_formfactors_ver_name ON board_formfactors(silicon_version_id, name COLLATE NOCASE)`);
 
             // Board FormFactor Revisions Table (e.g. '1.0', '1.1', '2.0')
             dbInstance.run(`CREATE TABLE IF NOT EXISTS board_formfactor_revisions (
@@ -325,6 +328,84 @@ const initDb = async (): Promise<void> => {
                     }
                     if (!columns.some((c: any) => c.name === 'bom_flavor_id')) {
                         dbInstance.run(`ALTER TABLE pcbs ADD COLUMN bom_flavor_id INTEGER REFERENCES bom_flavors(id)`);
+                    }
+                }
+            });
+
+            // Drop obsolete unique index on silicon_version_id if present
+            dbInstance.run("DROP INDEX IF EXISTS idx_board_formfactors_ver_name");
+
+            // Migration: ensure board_formfactors has package_id and nullable silicon_version_id
+            dbInstance.all('PRAGMA table_info(board_formfactors)', (_err: any, columns: any[]) => {
+                if (columns) {
+                    const siCol = columns.find((c: any) => c.name === 'silicon_version_id');
+                    const hasPkgCol = columns.some((c: any) => c.name === 'package_id');
+                    if (!hasPkgCol || (siCol && siCol.notnull === 1)) {
+                        dbInstance.serialize(() => {
+                            dbInstance.run("PRAGMA foreign_keys = OFF");
+                            dbInstance.run(`CREATE TABLE IF NOT EXISTS board_formfactors_migration (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                package_id INTEGER,
+                                silicon_version_id INTEGER,
+                                name TEXT NOT NULL,
+                                description TEXT,
+                                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE,
+                                FOREIGN KEY (silicon_version_id) REFERENCES silicon_versions(id) ON DELETE CASCADE
+                            )`);
+                            dbInstance.run(`INSERT OR IGNORE INTO board_formfactors_migration (id, package_id, silicon_version_id, name, description, created_at)
+                                SELECT b.id, 
+                                       COALESCE(b.package_id, sv.package_id), 
+                                       b.silicon_version_id, 
+                                       b.name, 
+                                       b.description, 
+                                       b.created_at
+                                FROM board_formfactors b
+                                LEFT JOIN silicon_versions sv ON sv.id = b.silicon_version_id`);
+                            dbInstance.run("DROP TABLE board_formfactors");
+                            dbInstance.run("ALTER TABLE board_formfactors_migration RENAME TO board_formfactors");
+                            dbInstance.run("CREATE INDEX IF NOT EXISTS idx_board_formfactors_pkg ON board_formfactors(package_id)");
+                            dbInstance.run("PRAGMA foreign_keys = ON");
+                        });
+                    }
+                }
+            });
+
+            // Migration: ensure silicon_versions has project_id and nullable package_id
+            dbInstance.all('PRAGMA table_info(silicon_versions)', (_err: any, columns: any[]) => {
+                if (columns) {
+                    const pkgCol = columns.find((c: any) => c.name === 'package_id');
+                    const hasProjCol = columns.some((c: any) => c.name === 'project_id');
+                    if (!hasProjCol || (pkgCol && pkgCol.notnull === 1)) {
+                        dbInstance.serialize(() => {
+                            dbInstance.run("PRAGMA foreign_keys = OFF");
+                            dbInstance.run(`CREATE TABLE IF NOT EXISTS silicon_versions_migration (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                project_id INTEGER,
+                                package_id INTEGER,
+                                name TEXT NOT NULL,
+                                silicon_corners TEXT,
+                                description TEXT,
+                                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+                                FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
+                            )`);
+                            dbInstance.run(`INSERT OR IGNORE INTO silicon_versions_migration (id, project_id, package_id, name, silicon_corners, description, created_at)
+                                SELECT sv.id,
+                                       COALESCE(sv.project_id, pkg.project_id),
+                                       sv.package_id,
+                                       sv.name,
+                                       sv.silicon_corners,
+                                       sv.description,
+                                       sv.created_at
+                                FROM silicon_versions sv
+                                LEFT JOIN packages pkg ON pkg.id = sv.package_id`);
+                            dbInstance.run("DROP TABLE silicon_versions");
+                            dbInstance.run("ALTER TABLE silicon_versions_migration RENAME TO silicon_versions");
+                            dbInstance.run("CREATE INDEX IF NOT EXISTS idx_silicon_versions_proj ON silicon_versions(project_id)");
+                            dbInstance.run("CREATE INDEX IF NOT EXISTS idx_silicon_versions_pkg ON silicon_versions(package_id)");
+                            dbInstance.run("PRAGMA foreign_keys = ON");
+                        });
                     }
                 }
             });

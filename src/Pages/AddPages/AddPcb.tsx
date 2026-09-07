@@ -89,13 +89,17 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const availablePackages: Package[] = selectedProjData?.packages || [];
 
     const selectedPkgData = availablePackages.find(pkg => pkg.name === selectedPackage) || availablePackages[0];
-    const availableSiliconVersions: SiliconVersion[] = selectedPkgData?.silicon_versions || [];
+    const availableSiliconVersions: SiliconVersion[] = (selectedProjData?.silicon_versions && selectedProjData.silicon_versions.length > 0)
+        ? selectedProjData.silicon_versions
+        : (selectedPkgData?.silicon_versions || []);
 
     const selectedSiData = availableSiliconVersions.find(sv => sv.name === selectedSiliconRev) || availableSiliconVersions[0];
     const availableCorners: string[] = selectedSiData?.silicon_corners 
         ? (Array.isArray(selectedSiData.silicon_corners) ? selectedSiData.silicon_corners : String(selectedSiData.silicon_corners).split(',').map(s => s.trim()))
         : [];
-    const availableFormFactors: BoardFormFactor[] = selectedSiData?.formfactors || [];
+    const availableFormFactors: BoardFormFactor[] = (selectedPkgData?.formfactors && selectedPkgData.formfactors.length > 0)
+        ? selectedPkgData.formfactors
+        : (selectedPkgData?.board_formfactors || selectedSiData?.formfactors || []);
 
     const selectedFfData = availableFormFactors.find(ff => ff.name === selectedFormfactor) || availableFormFactors[0];
     const availableRevisions: (string | BoardFormFactorRevision)[] = selectedFfData?.revisionDetails || selectedFfData?.revisions || [];
@@ -177,28 +181,43 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
 
     const initializeCascading = (proj: any) => {
         const pkgs = proj.packages || [];
+        const siVers = (proj.silicon_versions && proj.silicon_versions.length > 0)
+            ? proj.silicon_versions
+            : (pkgs[0]?.silicon_versions || []);
+        
+        if (siVers.length > 0) {
+            const firstSi = siVers[0];
+            setSelectedSiliconRev(firstSi.name);
+            const corners = Array.isArray(firstSi.silicon_corners) ? firstSi.silicon_corners : String(firstSi.silicon_corners || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+            setSiliconCorner(corners.length > 0 ? corners[0] : '');
+        } else {
+            setSelectedSiliconRev('');
+            setSiliconCorner('');
+        }
+
         if (pkgs.length > 0) {
             const firstPkg = pkgs[0];
             setSelectedPackage(firstPkg.name);
-            const siVers = firstPkg.silicon_versions || [];
-            if (siVers.length > 0) {
-                const firstSi = siVers[0];
-                setSelectedSiliconRev(firstSi.name);
-                const corners = Array.isArray(firstSi.silicon_corners) ? firstSi.silicon_corners : String(firstSi.silicon_corners || '').split(',').map((s: string) => s.trim()).filter(Boolean);
-                setSiliconCorner(corners.length > 0 ? corners[0] : '');
-                
-                const ffs = firstSi.formfactors || [];
-                if (ffs.length > 0) {
-                    const firstFf = ffs[0];
-                    setSelectedFormfactor(firstFf.name);
-                    const revs = firstFf.revisionDetails || firstFf.revisions || [];
-                    if (revs.length > 0) {
-                        const firstRev = typeof revs[0] === 'object' ? revs[0].name : revs[0];
-                        setPcbRev(firstRev);
-                        const boms = typeof revs[0] === 'object' ? revs[0].boms : [];
-                        setBom(boms && boms.length > 0 ? boms[0] : '');
-                    }
+            const ffs = (firstPkg.formfactors && firstPkg.formfactors.length > 0)
+                ? firstPkg.formfactors
+                : (firstPkg.board_formfactors || firstPkg.silicon_versions?.[0]?.formfactors || []);
+            if (ffs.length > 0) {
+                const firstFf = ffs[0];
+                setSelectedFormfactor(firstFf.name);
+                const revs = firstFf.revisionDetails || firstFf.revisions || [];
+                if (revs.length > 0) {
+                    const firstRev = typeof revs[0] === 'object' ? revs[0].name : revs[0];
+                    setPcbRev(firstRev);
+                    const boms = typeof revs[0] === 'object' ? revs[0].boms : [];
+                    setBom(boms && boms.length > 0 ? boms[0] : '');
+                } else {
+                    setPcbRev('');
+                    setBom('');
                 }
+            } else {
+                setSelectedFormfactor('');
+                setPcbRev('');
+                setBom('');
             }
         }
     };
@@ -214,13 +233,10 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const handlePackageChange = (pkgName: string) => {
         setSelectedPackage(pkgName);
         const pkg = availablePackages.find(p => p.name === pkgName);
-        if (pkg && pkg.silicon_versions && pkg.silicon_versions.length > 0) {
-            const firstSi = pkg.silicon_versions[0];
-            setSelectedSiliconRev(firstSi.name);
-            const corners = Array.isArray(firstSi.silicon_corners) ? firstSi.silicon_corners : String(firstSi.silicon_corners || '').split(',').map((s: string) => s.trim()).filter(Boolean);
-            setSiliconCorner(corners.length > 0 ? corners[0] : '');
-            
-            const ffs = firstSi.formfactors || [];
+        if (pkg) {
+            const ffs = (pkg.formfactors && pkg.formfactors.length > 0)
+                ? pkg.formfactors
+                : (pkg.board_formfactors || pkg.silicon_versions?.[0]?.formfactors || []);
             if (ffs.length > 0) {
                 const firstFf = ffs[0];
                 setSelectedFormfactor(firstFf.name);
@@ -230,7 +246,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     setPcbRev(firstRev);
                     const boms = typeof revs[0] === 'object' ? revs[0].boms : [];
                     setBom(boms && boms.length > 0 ? boms[0] : '');
+                } else {
+                    setPcbRev('');
+                    setBom('');
                 }
+            } else {
+                setSelectedFormfactor('');
+                setPcbRev('');
+                setBom('');
             }
         }
     };
@@ -241,19 +264,8 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         if (si) {
             const corners = Array.isArray(si.silicon_corners) ? si.silicon_corners : String(si.silicon_corners || '').split(',').map((s: string) => s.trim()).filter(Boolean);
             setSiliconCorner(corners.length > 0 ? corners[0] : '');
-            
-            const ffs = si.formfactors || [];
-            if (ffs.length > 0) {
-                const firstFf = ffs[0];
-                setSelectedFormfactor(firstFf.name);
-                const revs = firstFf.revisionDetails || firstFf.revisions || [];
-                if (revs.length > 0) {
-                    const firstRev = typeof revs[0] === 'object' ? revs[0].name : revs[0];
-                    setPcbRev(firstRev);
-                    const boms = typeof revs[0] === 'object' ? revs[0].boms : [];
-                    setBom(boms && boms.length > 0 ? boms[0] : '');
-                }
-            }
+        } else {
+            setSiliconCorner('');
         }
     };
 
