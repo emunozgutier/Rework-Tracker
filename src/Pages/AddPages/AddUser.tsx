@@ -32,7 +32,10 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
         try {
             const host = window.location.host;
             const res = await apiFetch(`${API_BASE}/otp/setup?username=${encodeURIComponent(username.trim())}&host=${encodeURIComponent(host)}`);
-            if (!res.ok) throw new Error('Failed to generate OTP setup.');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Failed to generate OTP setup.');
+            }
             const data = await res.json();
             
             const qrCodeDataUrl = await QRCode.toDataURL(data.otpauthUrl, {

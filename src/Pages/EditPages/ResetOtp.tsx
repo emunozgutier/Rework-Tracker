@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, RefreshCw, Save, CheckCircle2 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -41,7 +41,10 @@ export function ResetOtp({ token, onBack }: ResetOtpProps) {
                 // Instantly generate OTP secret and QR code for this owner
                 const host = window.location.host;
                 const setupRes = await apiFetch(`${API_BASE}/otp/setup?username=${encodeURIComponent(data.owner.username)}&host=${encodeURIComponent(host)}`);
-                if (!setupRes.ok) throw new Error('Failed to generate OTP setup.');
+                if (!setupRes.ok) {
+                    const setupData = await setupRes.json().catch(() => ({}));
+                    throw new Error(setupData.error || 'Failed to generate OTP setup.');
+                }
                 const setupData = await setupRes.json();
 
                 const qrCodeDataUrl = await QRCode.toDataURL(setupData.otpauthUrl, {
