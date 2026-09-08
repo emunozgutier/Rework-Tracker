@@ -615,16 +615,32 @@ export function autoMigrateUploadedDocs(dbInstance: any = db) {
     // 2. Backfill from formfactor_revision_docs
     dbInstance.run(`
         INSERT OR IGNORE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, uploaded_at)
-        SELECT 'revision', ffrd.formfactor_revision_id, (SELECT id FROM projects WHERE id = pkg.project_id), ffrd.doc_type, ffrd.filename, ffrd.filename, ffrd.path, ffrd.uploaded_at
+        SELECT 'revision', ffrd.formfactor_revision_id, COALESCE(pkg.project_id, sv.project_id, pkg_sv.project_id), ffrd.doc_type, ffrd.filename, ffrd.filename, ffrd.path, ffrd.uploaded_at
         FROM formfactor_revision_docs ffrd
         LEFT JOIN board_formfactor_revisions bffr ON bffr.id = ffrd.formfactor_revision_id
         LEFT JOIN board_formfactors bff ON bff.id = bffr.board_formfactor_id
+        LEFT JOIN packages pkg ON pkg.id = bff.package_id
         LEFT JOIN silicon_versions sv ON sv.id = bff.silicon_version_id
-        LEFT JOIN packages pkg ON pkg.id = sv.package_id
+        LEFT JOIN packages pkg_sv ON pkg_sv.id = sv.package_id
         WHERE NOT EXISTS (
             SELECT 1 FROM uploaded_docs u
             WHERE u.entity_type = 'revision' AND u.entity_id = ffrd.formfactor_revision_id AND u.path = ffrd.path
         )
+    `);
+
+    // Backfill any NULL or 0 project_ids in uploaded_docs for revision entries
+    dbInstance.run(`
+        UPDATE uploaded_docs
+        SET project_id = (
+            SELECT COALESCE(pkg.project_id, sv.project_id, pkg_sv.project_id)
+            FROM board_formfactor_revisions bffr
+            LEFT JOIN board_formfactors bff ON bff.id = bffr.board_formfactor_id
+            LEFT JOIN packages pkg ON pkg.id = bff.package_id
+            LEFT JOIN silicon_versions sv ON sv.id = bff.silicon_version_id
+            LEFT JOIN packages pkg_sv ON pkg_sv.id = sv.package_id
+            WHERE bffr.id = uploaded_docs.entity_id
+        )
+        WHERE entity_type = 'revision' AND (project_id IS NULL OR project_id = 0)
     `);
 
     // 3. Backfill from reworks.image_path

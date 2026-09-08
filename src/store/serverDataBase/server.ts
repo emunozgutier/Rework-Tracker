@@ -1810,7 +1810,6 @@ app.get('/api/uploaded-docs', (req: Request, res: Response) => {
                p.name as project_name, 
                p.project_key,
                pcb.board_number as pcb_board_number,
-               pcb.crc as pcb_crc,
                rw.rework_number as rework_number,
                rw.title as rework_title
         FROM uploaded_docs ud
@@ -1829,11 +1828,13 @@ app.get('/api/uploaded-docs', (req: Request, res: Response) => {
         query += " AND ud.entity_id = ?";
         params.push(entity_id);
     }
-    if (project_id) {
+    if (project_id && pcb_id) {
+        query += " AND (ud.project_id = ? OR ud.pcb_id = ?)";
+        params.push(project_id, pcb_id);
+    } else if (project_id) {
         query += " AND ud.project_id = ?";
         params.push(project_id);
-    }
-    if (pcb_id) {
+    } else if (pcb_id) {
         query += " AND ud.pcb_id = ?";
         params.push(pcb_id);
     }
@@ -1858,11 +1859,13 @@ app.get('/api/uploaded-docs/summary', (req: Request, res: Response) => {
     const { project_id, pcb_id } = req.query;
     let whereClause = "WHERE 1=1";
     const params: any[] = [];
-    if (project_id) {
+    if (project_id && pcb_id) {
+        whereClause += " AND (project_id = ? OR pcb_id = ?)";
+        params.push(project_id, pcb_id);
+    } else if (project_id) {
         whereClause += " AND project_id = ?";
         params.push(project_id);
-    }
-    if (pcb_id) {
+    } else if (pcb_id) {
         whereClause += " AND pcb_id = ?";
         params.push(pcb_id);
     }

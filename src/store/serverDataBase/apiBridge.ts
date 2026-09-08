@@ -254,7 +254,93 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             });
         });
 
-        // 2. Rework images
+        // 2. Revision docs from internalProjects
+        internalProjects.forEach(p => {
+            const seenFiles = new Set(allDocs.filter(d => d.project_id === p.id).map(d => d.filename));
+            if (p.packages && Array.isArray(p.packages)) {
+                p.packages.forEach((pkg: any) => {
+                    const ffs = pkg.formfactors || pkg.board_formfactors || [];
+                    ffs.forEach((ff: any) => {
+                        const revs = ff.revisionDetails || ff.revisions || [];
+                        revs.forEach((r: any) => {
+                            if (typeof r === 'object' && r) {
+                                const sch = r.schematic || r.doc;
+                                if (sch && !seenFiles.has(sch)) {
+                                    seenFiles.add(sch);
+                                    allDocs.push({
+                                        id: 200000 + p.id * 100 + allDocs.length,
+                                        entity_type: 'revision',
+                                        entity_id: p.id,
+                                        project_id: p.id,
+                                        project_name: p.name,
+                                        project_key: p.project_key || 'PRJ',
+                                        doc_type: 'schematic',
+                                        filename: sch,
+                                        original_filename: sch,
+                                        path: r.path || `/docs/${sch}`,
+                                        mime_type: 'application/pdf',
+                                        uploaded_at: new Date().toISOString()
+                                    });
+                                }
+                                if (r.board_file && !seenFiles.has(r.board_file)) {
+                                    seenFiles.add(r.board_file);
+                                    allDocs.push({
+                                        id: 200000 + p.id * 100 + allDocs.length,
+                                        entity_type: 'revision',
+                                        entity_id: p.id,
+                                        project_id: p.id,
+                                        project_name: p.name,
+                                        project_key: p.project_key || 'PRJ',
+                                        doc_type: 'board_file',
+                                        filename: r.board_file,
+                                        original_filename: r.board_file,
+                                        path: r.path || `/docs/${r.board_file}`,
+                                        mime_type: 'application/octet-stream',
+                                        uploaded_at: new Date().toISOString()
+                                    });
+                                }
+                                if (r.bom_csv && !seenFiles.has(r.bom_csv)) {
+                                    seenFiles.add(r.bom_csv);
+                                    allDocs.push({
+                                        id: 200000 + p.id * 100 + allDocs.length,
+                                        entity_type: 'revision',
+                                        entity_id: p.id,
+                                        project_id: p.id,
+                                        project_name: p.name,
+                                        project_key: p.project_key || 'PRJ',
+                                        doc_type: 'bom_csv',
+                                        filename: r.bom_csv,
+                                        original_filename: r.bom_csv,
+                                        path: r.path || `/docs/${r.bom_csv}`,
+                                        mime_type: 'text/csv',
+                                        uploaded_at: new Date().toISOString()
+                                    });
+                                }
+                                if (r.datasheet && !seenFiles.has(r.datasheet)) {
+                                    seenFiles.add(r.datasheet);
+                                    allDocs.push({
+                                        id: 200000 + p.id * 100 + allDocs.length,
+                                        entity_type: 'revision',
+                                        entity_id: p.id,
+                                        project_id: p.id,
+                                        project_name: p.name,
+                                        project_key: p.project_key || 'PRJ',
+                                        doc_type: 'datasheet',
+                                        filename: r.datasheet,
+                                        original_filename: r.datasheet,
+                                        path: r.path || `/docs/${r.datasheet}`,
+                                        mime_type: 'application/pdf',
+                                        uploaded_at: new Date().toISOString()
+                                    });
+                                }
+                            }
+                        });
+                    });
+                });
+            }
+        });
+
+        // 3. Rework images
         internalReworks.forEach(r => {
             if (r.image_path) {
                 let paths: string[] = [];
@@ -290,6 +376,24 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             }
         });
 
+        const [, qStr] = localPath.split('?');
+        const qParams = new URLSearchParams(qStr || '');
+        const pId = qParams.get('project_id');
+        const bId = qParams.get('pcb_id');
+        const dType = qParams.get('doc_type');
+
+        let filtered = allDocs;
+        if (pId && bId) {
+            filtered = filtered.filter(d => String(d.project_id) === pId || String(d.pcb_id) === bId);
+        } else if (pId) {
+            filtered = filtered.filter(d => String(d.project_id) === pId);
+        } else if (bId) {
+            filtered = filtered.filter(d => String(d.pcb_id) === bId);
+        }
+        if (dType && dType !== 'all') {
+            filtered = filtered.filter(d => d.doc_type === dType);
+        }
+
         if (localPath.includes('/summary')) {
             const counts: Record<string, number> = {
                 picture: 0,
@@ -298,16 +402,16 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
                 bom_csv: 0,
                 datasheet: 0,
                 other: 0,
-                total: allDocs.length
+                total: filtered.length
             };
-            allDocs.forEach(d => {
+            filtered.forEach(d => {
                 if (counts[d.doc_type] !== undefined) counts[d.doc_type]++;
                 else counts.other++;
             });
             return createResponse(counts);
         }
 
-        return createResponse(allDocs);
+        return createResponse(filtered);
     }
     if (localPath.startsWith('/projects')) {
         const parts = localPath.split('/');
