@@ -61,8 +61,26 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
         }
     }, [isOpen, project?.id, pcb?.id, fetchDocs]);
 
+    const deduplicatedDocs = useMemo(() => {
+        const seen = new Set<string>();
+        const result: UploadedDoc[] = [];
+        for (const doc of docs) {
+            const key = `${doc.project_id || ''}-${doc.pcb_id || ''}-${doc.original_filename || doc.filename}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                result.push(doc);
+            } else if (doc.path && !doc.path.endsWith(`/${doc.filename}`)) {
+                const idx = result.findIndex(r => `${r.project_id || ''}-${r.pcb_id || ''}-${r.original_filename || r.filename}` === key);
+                if (idx !== -1) {
+                    result[idx] = doc;
+                }
+            }
+        }
+        return result;
+    }, [docs]);
+
     const filteredDocs = useMemo(() => {
-        return docs.filter(doc => {
+        return deduplicatedDocs.filter(doc => {
             const matchesCategory = 
                 activeTab === 'all' ? true :
                 activeTab === 'picture' ? doc.doc_type === 'picture' :
@@ -81,22 +99,22 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
 
             return matchesCategory && matchesSearch;
         });
-    }, [docs, activeTab, searchTerm]);
+    }, [deduplicatedDocs, activeTab, searchTerm]);
 
     const counts = useMemo(() => {
         const c: Record<string, number> = {
-            all: docs.length,
+            all: deduplicatedDocs.length,
             picture: 0,
             schematic: 0,
             board_file: 0,
             bom_csv: 0,
             datasheet: 0
         };
-        docs.forEach(d => {
+        deduplicatedDocs.forEach(d => {
             if (c[d.doc_type] !== undefined) c[d.doc_type]++;
         });
         return c;
-    }, [docs]);
+    }, [deduplicatedDocs]);
 
     if (!isOpen) return null;
 
@@ -133,10 +151,10 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
                 : doc.filename;
             setLightboxImage({ url: imgUrl, title });
         } else if (doc.doc_type === 'board_file' || doc.filename.toLowerCase().endsWith('.brd')) {
-            editItem('board_viewer', doc.filename);
+            editItem('board_viewer', doc.path || doc.filename);
             onClose();
         } else {
-            editItem('doc_viewer', doc.filename);
+            editItem('doc_viewer', doc.path || doc.filename);
             onClose();
         }
     };

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useProjectStore } from '../store/clientDataBase/useProjectStore';
+import { useUploadedDocsStore } from '../store/clientDataBase/useUploadedDocsStore';
 import { BoardCanvas } from './BoardViewer/canvas';
 import { parseEagleXML, parseBinaryFallback, parseAllegro } from './BoardViewer/parser';
 import type { BoardData } from './BoardViewer/parser';
@@ -60,15 +61,26 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
 
         const doLoad = async () => {
             try {
+                const matchDoc = (d: any) =>
+                    d && (
+                        String(d.id) === String(docId) ||
+                        d.filename === String(docId) ||
+                        d.original_filename === String(docId) ||
+                        d.path === String(docId)
+                    );
+
                 // ── Fast path: doc already in store (opened from a card) ──────
                 setCurrentStep(2); // show "Resolving" immediately
                 const existing = useProjectStore.getState().projectDocs;
                 let found: any = null;
                 for (const pid in existing) {
-                    const doc = existing[pid].find(
-                        (d: any) => d.id.toString() === docId.toString()
-                    );
+                    const doc = existing[pid].find(matchDoc);
                     if (doc) { found = doc; break; }
+                }
+
+                if (!found) {
+                    const upDocs = useUploadedDocsStore.getState().docs;
+                    found = upDocs.find(matchDoc);
                 }
 
                 if (!found) {
@@ -91,10 +103,21 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                     await new Promise(r => setTimeout(r, 30));
                     const { projectDocs } = useProjectStore.getState();
                     for (const pid in projectDocs) {
-                        const doc = projectDocs[pid].find(
-                            (d: any) => d.id.toString() === docId.toString()
-                        );
+                        const doc = projectDocs[pid].find(matchDoc);
                         if (doc) { found = doc; break; }
+                    }
+
+                    if (!found) {
+                        const upDocs = useUploadedDocsStore.getState().docs;
+                        found = upDocs.find(matchDoc);
+                    }
+
+                    if (!found && typeof docId === 'string' && (docId.toLowerCase().endsWith('.brd') || docId.includes('/'))) {
+                        found = {
+                            id: docId,
+                            filename: docId.split('/').pop() || docId,
+                            path: docId.startsWith('/') ? docId : `/docs/${docId}`
+                        };
                     }
                 }
 

@@ -281,6 +281,31 @@ if (fs.existsSync(oldSchematicsDir)) {
 
 app.use('/api/pictures', express.static(path.join(__dirname, 'pictures')));
 app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
+app.use('/api/docs', (req: Request, res: Response, next: NextFunction) => {
+    const requestedFile = path.basename(req.path);
+    if (!requestedFile) return next();
+
+    const docsRoot = path.join(__dirname, 'docs');
+    if (!fs.existsSync(docsRoot)) return next();
+
+    try {
+        const subdirs = fs.readdirSync(docsRoot, { withFileTypes: true });
+        for (const dirent of subdirs) {
+            if (dirent.isDirectory()) {
+                const subPath = path.join(docsRoot, dirent.name);
+                const candidates = fs.readdirSync(subPath);
+                const matched = candidates.find(c => c === requestedFile || c.endsWith(`-${requestedFile}`));
+                if (matched) {
+                    const fullMatchPath = path.join(subPath, matched);
+                    return res.sendFile(fullMatchPath);
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Docs fallback error:", err);
+    }
+    next();
+});
 
 // Initialize Database
 initDb().then(() => {
@@ -765,14 +790,19 @@ function fetchProjectsWithHierarchy(callback: (err: Error | null, projects?: any
         COUNT(DISTINCT pcbs.id) as pcb_count,
         GROUP_CONCAT(DISTINCT pcbs.board_number) as pcb_list,
         (
-            (SELECT COUNT(*) FROM project_docs WHERE project_docs.project_id = projects.id) +
-            (SELECT COUNT(*) FROM formfactor_revision_docs ffrd 
-             JOIN board_formfactor_revisions bfr ON ffrd.formfactor_revision_id = bfr.id
-             JOIN board_formfactors bf ON bfr.board_formfactor_id = bf.id
-             LEFT JOIN packages pkg ON bf.package_id = pkg.id
-             LEFT JOIN silicon_versions sv ON bf.silicon_version_id = sv.id
-             LEFT JOIN packages pkg_sv ON sv.package_id = pkg_sv.id
-             WHERE pkg.project_id = projects.id OR pkg_sv.project_id = projects.id OR sv.project_id = projects.id)
+            SELECT COUNT(DISTINCT filename) FROM (
+                SELECT filename FROM project_docs WHERE project_docs.project_id = projects.id
+                UNION
+                SELECT ffrd.filename FROM formfactor_revision_docs ffrd 
+                JOIN board_formfactor_revisions bfr ON ffrd.formfactor_revision_id = bfr.id
+                JOIN board_formfactors bf ON bfr.board_formfactor_id = bf.id
+                LEFT JOIN packages pkg ON bf.package_id = pkg.id
+                LEFT JOIN silicon_versions sv ON bf.silicon_version_id = sv.id
+                LEFT JOIN packages pkg_sv ON sv.package_id = pkg_sv.id
+                WHERE pkg.project_id = projects.id OR pkg_sv.project_id = projects.id OR sv.project_id = projects.id
+                UNION
+                SELECT filename FROM uploaded_docs WHERE uploaded_docs.project_id = projects.id AND uploaded_docs.doc_type != 'picture'
+            )
         ) as doc_count
         FROM projects
         LEFT JOIN pcbs ON projects.id = pcbs.project_id
@@ -1678,7 +1708,20 @@ app.post('/api/projects/:id/docs', upload.any(), fileSanityCheckMiddleware, (req
                                     uploaded_at: new Date().toISOString()
                                 });
 
-                                // Record in uploaded_docs
+                                // Synchronize matching formfactor_revision_docs path
+                                db.run(
+                                    `UPDATE formfactor_revision_docs SET path = ? WHERE filename = ? AND formfactor_revision_id IN (
+                                        SELECT bfr.id FROM board_formfactor_revisions bfr
+                                        JOIN board_formfactors bf ON bfr.board_formfactor_id = bf.id
+                                        LEFT JOIN packages pkg ON bf.package_id = pkg.id
+                                        LEFT JOIN silicon_versions sv ON bf.silicon_version_id = sv.id
+                                        LEFT JOIN packages pkg_sv ON sv.package_id = pkg_sv.id
+                                        WHERE pkg.project_id = ? OR pkg_sv.project_id = ? OR sv.project_id = ?
+                                    )`,
+                                    [relativePath, originalName, projectId, projectId, projectId]
+                                );
+
+                                // Record in uploaded_docs, updating existing entry if one already exists
                                 const docType = originalName.toLowerCase().endsWith('.brd') ? 'board_file'
                                               : originalName.toLowerCase().endsWith('.csv') ? 'bom_csv'
                                               : originalName.toLowerCase().includes('datasheet') ? 'datasheet'
@@ -1686,15 +1729,29 @@ app.post('/api/projects/:id/docs', upload.any(), fileSanityCheckMiddleware, (req
                                               : 'other';
                                 const mimeType = file.mimetype || (docType === 'board_file' ? 'application/octet-stream' : docType === 'bom_csv' ? 'text/csv' : 'application/pdf');
                                 const editor = req.headers['x-user-username'] || 'guest';
-                                db.run(
-                                    "INSERT INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, file_size, mime_type, uploaded_by) VALUES ('project', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                    [projectId, projectId, docType, originalName, originalName, relativePath, file.size || 0, mimeType, editor]
+
+                                db.get(
+                                    "SELECT id FROM uploaded_docs WHERE project_id = ? AND (filename = ? OR original_filename = ?) LIMIT 1",
+                                    [projectId, originalName, originalName],
+                                    (_eUp: any, existingUpDoc: any) => {
+                                        if (existingUpDoc) {
+                                            db.run(
+                                                "UPDATE uploaded_docs SET path = ?, original_filename = ?, file_size = ?, mime_type = ?, uploaded_by = ? WHERE id = ?",
+                                                [relativePath, originalName, file.size || 0, mimeType, editor, existingUpDoc.id]
+                                            );
+                                        } else {
+                                            db.run(
+                                                "INSERT INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, file_size, mime_type, uploaded_by) VALUES ('project', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                                [projectId, projectId, docType, originalName, originalName, relativePath, file.size || 0, mimeType, editor]
+                                            );
+                                        }
+                                        
+                                        processedCount++;
+                                        if (processedCount === reqFiles.length && !errorOccurred) {
+                                            res.status(201).json(insertedDocs);
+                                        }
+                                    }
                                 );
-                                
-                                processedCount++;
-                                if (processedCount === reqFiles.length && !errorOccurred) {
-                                    res.status(201).json(insertedDocs);
-                                }
                             }
                         );
                     } else {
@@ -1722,8 +1779,9 @@ app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response)
         db.run("DELETE FROM project_docs WHERE id = ?", [docId], function(this: any, deleteErr: Error | null) {
             if (deleteErr) return res.status(500).json({ error: deleteErr.message });
 
-            // Also remove from uploaded_docs
-            db.run("DELETE FROM uploaded_docs WHERE entity_type = 'project' AND project_id = ? AND (path = ? OR filename = ?)", [projectId, row.path, row.filename]);
+            // Also remove from uploaded_docs and formfactor_revision_docs
+            db.run("DELETE FROM uploaded_docs WHERE project_id = ? AND (path = ? OR filename = ? OR original_filename = ?)", [projectId, row.path, row.filename, row.filename]);
+            db.run("DELETE FROM formfactor_revision_docs WHERE (path = ? OR filename = ?)", [row.path, row.filename]);
 
             try {
                 if (fs.existsSync(filePath)) {

@@ -339,7 +339,7 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
                                 id: Date.now() + Math.floor(Math.random() * 1000) + created.length,
                                 project_id: projectId,
                                 filename: file.name,
-                                path: "/docs/demo_doc.pdf",
+                                path: file.name.toLowerCase().endsWith('.brd') ? "/docs/BBB.brd" : "/docs/demo_doc.pdf",
                                 uploaded_at: new Date().toISOString()
                             };
                             internalProjectDocs.push(sch);

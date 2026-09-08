@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useProjectStore } from './store/clientDataBase/useProjectStore';
+import { useUploadedDocsStore } from './store/clientDataBase/useUploadedDocsStore';
 import { TopBar } from './Pages/BoardViewer/TopBar';
 import { getDocumentUrl } from './store/useDemoStore';
 import { Loader2 } from 'lucide-react';
@@ -11,20 +12,33 @@ interface DocViewerProps {
 
 export function DocViewer({ docId, onBack }: DocViewerProps) {
     const { projectDocs, fetchDocs, projects } = useProjectStore();
+    const uploadedDocs = useUploadedDocsStore((state) => state.docs);
     
-    // Find the document across all projects or uploaded docs
-    let boardDoc: any = null;
-    for (const projId in projectDocs) {
-        const found = projectDocs[projId].find(d => String(d.id) === String(docId) || d.filename === String(docId));
-        if (found) {
-            boardDoc = found;
-            break;
+    const matchDoc = (d: any) =>
+        d && (
+            String(d.id) === String(docId) ||
+            d.filename === String(docId) ||
+            d.original_filename === String(docId) ||
+            d.path === String(docId)
+        );
+
+    // 1. Check in useUploadedDocsStore
+    let boardDoc: any = uploadedDocs.find(matchDoc);
+
+    // 2. Check across all projectDocs
+    if (!boardDoc) {
+        for (const projId in projectDocs) {
+            const found = projectDocs[projId]?.find(matchDoc);
+            if (found) {
+                boardDoc = found;
+                break;
+            }
         }
     }
 
     if (!boardDoc) {
-        const uploadedDocs = (window as any).__lastUploadedDocs || [];
-        const foundUp = uploadedDocs.find((d: any) => String(d.id) === String(docId) || d.filename === String(docId));
+        const legacyDocs = (window as any).__lastUploadedDocs || [];
+        const foundUp = legacyDocs.find(matchDoc);
         if (foundUp) {
             boardDoc = foundUp;
         } else if (typeof docId === 'string' && (docId.includes('.') || docId.includes('/'))) {
