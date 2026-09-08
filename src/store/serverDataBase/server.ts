@@ -55,7 +55,12 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
-const upload = multer({ storage: storage });
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 100 * 1024 * 1024 // 100 MB limit for uploaded files
+    }
+});
 
 // Middleware
 app.use(cors({
@@ -63,7 +68,8 @@ app.use(cors({
     credentials: true
 }));
 app.use(authenticateToken as any);
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(morgan('dev', {
     skip: (req) => req.method === 'GET'
 }));

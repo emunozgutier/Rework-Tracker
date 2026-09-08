@@ -85,12 +85,12 @@ describe('Input Sanity Checker - Unit Tests', () => {
         });
 
         it('should reject files exceeding max size limits', () => {
+            expect(MAX_DOC_SIZE).toBe(100 * 1024 * 1024);
             const filePath = path.join(tempTestDir, 'oversized.pdf');
-            const largeBuffer = Buffer.alloc(MAX_DOC_SIZE + 10);
-            fs.writeFileSync(filePath, largeBuffer);
-            const result = validateFile(filePath, 'oversized.pdf', largeBuffer.length);
+            fs.writeFileSync(filePath, '%PDF-1.4');
+            const result = validateFile(filePath, 'oversized.pdf', MAX_DOC_SIZE + 10);
             expect(result.isValid).toBe(false);
-            expect(result.error).toContain('exceeds maximum allowed size');
+            expect(result.error).toContain('exceeds maximum allowed size of 100MB');
         });
 
         it('should reject PE (Windows MZ) binaries', () => {

@@ -173,7 +173,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
             return b.id - a.id;
         });
 
-    const hasAnyDocs = Boolean(schematicDoc || boardFileDoc || bomCsvDoc || datasheetDoc || pcbReworks.some((r: any) => r.image_path));
+    const hasAnyDocs = Boolean(schematicDoc || boardFileDoc || bomCsvDoc || datasheetDoc);
 
 
 

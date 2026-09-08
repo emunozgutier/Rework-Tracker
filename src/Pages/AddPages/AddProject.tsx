@@ -170,8 +170,8 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     };
 
     const handleFileUpload = (file: File, updateRevField?: (filename: string) => void) => {
-        if (file.size > 25 * 1024 * 1024) {
-            alert(`File "${file.name}" exceeds the 25MB maximum size limit.`);
+        if (file.size > 100 * 1024 * 1024) {
+            alert(`File "${file.name}" exceeds the 100MB maximum size limit.`);
             return;
         }
         setSelectedFiles(prev => {

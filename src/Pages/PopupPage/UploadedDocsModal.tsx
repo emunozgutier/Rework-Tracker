@@ -5,8 +5,6 @@ import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
 import { useAppState } from '../../store/useAppState';
 import { usePermissionsStore } from '../../store/clientDataBase/usePermissionsStore';
 import { getDocumentUrl } from '../../store/useDemoStore';
-import { API_BASE } from '../../store/serverDataBase/apiBridge';
-import { PictureCard } from '../ViewPages/Cards/PictureCard';
 import { 
     FileText, 
     Eye, 
@@ -14,7 +12,6 @@ import {
     Loader2, 
     Upload, 
     Trash2, 
-    Image as ImageIcon, 
     Layers, 
     Cpu, 
     Table, 
@@ -47,10 +44,9 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
     const canAddDocs = !!permissions[`Docs__Add__${roleKey}`];
     const canDeleteDocs = !!permissions[`Docs__Delete__${roleKey}`];
 
-    const [activeTab, setActiveTab] = useState<string>(initialCategory);
+    const [activeTab, setActiveTab] = useState<string>(initialCategory === 'picture' ? 'all' : initialCategory);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [uploading, setUploading] = useState(false);
-    const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string } | null>(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -65,6 +61,9 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
         const seen = new Set<string>();
         const result: UploadedDoc[] = [];
         for (const doc of docs) {
+            // Do not show pictures on docs view
+            if (doc.doc_type === 'picture') continue;
+
             const key = `${doc.project_id || ''}-${doc.pcb_id || ''}-${doc.original_filename || doc.filename}`;
             if (!seen.has(key)) {
                 seen.add(key);
@@ -83,7 +82,6 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
         return deduplicatedDocs.filter(doc => {
             const matchesCategory = 
                 activeTab === 'all' ? true :
-                activeTab === 'picture' ? doc.doc_type === 'picture' :
                 activeTab === 'schematic' ? doc.doc_type === 'schematic' :
                 activeTab === 'board_file' ? doc.doc_type === 'board_file' :
                 activeTab === 'bom_csv' ? doc.doc_type === 'bom_csv' :
@@ -104,7 +102,6 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
     const counts = useMemo(() => {
         const c: Record<string, number> = {
             all: deduplicatedDocs.length,
-            picture: 0,
             schematic: 0,
             board_file: 0,
             bom_csv: 0,
@@ -120,8 +117,13 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0 && project?.id) {
-            setUploading(true);
             const filesArray = Array.from(e.target.files);
+            const oversized = filesArray.find(f => f.size > 100 * 1024 * 1024);
+            if (oversized) {
+                alert(`File "${oversized.name}" exceeds the 100MB maximum size limit.`);
+                return;
+            }
+            setUploading(true);
             const success = await uploadDocs(project.id, filesArray);
             setUploading(false);
             if (!success) {
@@ -142,15 +144,7 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
     };
 
     const handleView = (doc: UploadedDoc) => {
-        if (doc.doc_type === 'picture') {
-            const imgUrl = doc.path.startsWith('/api') 
-                ? `${API_BASE.replace('/api', '')}${doc.path}`
-                : `${API_BASE.replace('/api', '')}/api${doc.path}`;
-            const title = doc.pcb_board_number 
-                ? `${doc.pcb_board_number}${doc.rework_number ? `-R${String(doc.rework_number).padStart(3, '0')}` : ''}`
-                : doc.filename;
-            setLightboxImage({ url: imgUrl, title });
-        } else if (doc.doc_type === 'board_file' || doc.filename.toLowerCase().endsWith('.brd')) {
+        if (doc.doc_type === 'board_file' || doc.filename.toLowerCase().endsWith('.brd')) {
             editItem('board_viewer', doc.path || doc.filename);
             onClose();
         } else {
@@ -161,8 +155,6 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
 
     const getDocIcon = (docType: string) => {
         switch (docType) {
-            case 'picture':
-                return <ImageIcon size={20} color="#a855f7" />;
             case 'board_file':
                 return <Cpu size={20} color="#06b6d4" />;
             case 'bom_csv':
@@ -177,7 +169,6 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
 
     const getDocBadgeColor = (docType: string) => {
         switch (docType) {
-            case 'picture': return { bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.3)', text: '#c084fc' };
             case 'board_file': return { bg: 'rgba(6, 182, 212, 0.12)', border: 'rgba(6, 182, 212, 0.3)', text: '#22d3ee' };
             case 'bom_csv': return { bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.3)', text: '#34d399' };
             case 'datasheet': return { bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.3)', text: '#fbbf24' };
@@ -207,7 +198,6 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
                     <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', borderBottom: '1px solid var(--border)' }}>
                         {[
                             { key: 'all', label: 'All', count: counts.all },
-                            { key: 'picture', label: 'Pictures', count: counts.picture },
                             { key: 'schematic', label: 'Schematics', count: counts.schematic },
                             { key: 'board_file', label: 'Board Files', count: counts.board_file },
                             { key: 'bom_csv', label: 'BOMs', count: counts.bom_csv },
@@ -287,10 +277,7 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '340px', overflowY: 'auto', paddingRight: '4px' }}>
                             {filteredDocs.map((item) => {
                                 const badgeStyle = getDocBadgeColor(item.doc_type);
-                                const isPicture = item.doc_type === 'picture';
-                                const fullUrl = isPicture 
-                                    ? (item.path.startsWith('/api') ? `${API_BASE.replace('/api', '')}${item.path}` : `${API_BASE.replace('/api', '')}/api${item.path}`)
-                                    : getDocumentUrl(item.path, item.filename);
+                                const fullUrl = getDocumentUrl(item.path, item.filename);
 
                                 return (
                                     <div
@@ -310,47 +297,20 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
                                         onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)'; }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
-                                            {/* Thumbnail / Icon */}
-                                            {isPicture ? (
-                                                <div 
-                                                    onClick={() => handleView(item)}
-                                                    style={{
-                                                        width: '44px',
-                                                        height: '44px',
-                                                        borderRadius: '6px',
-                                                        overflow: 'hidden',
-                                                        cursor: 'pointer',
-                                                        border: '1px solid var(--border)',
-                                                        flexShrink: 0,
-                                                        background: '#000'
-                                                    }}
-                                                    title="Click to view photo"
-                                                >
-                                                    <img 
-                                                        src={fullUrl} 
-                                                        alt={item.filename}
-                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none';
-                                                            e.currentTarget.parentElement!.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/></svg></div>';
-                                                        }}
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div style={{
-                                                    width: '40px',
-                                                    height: '40px',
-                                                    borderRadius: '8px',
-                                                    background: badgeStyle.bg,
-                                                    border: `1px solid ${badgeStyle.border}`,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    flexShrink: 0
-                                                }}>
-                                                    {getDocIcon(item.doc_type)}
-                                                </div>
-                                            )}
+                                            {/* Icon */}
+                                            <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '8px',
+                                                background: badgeStyle.bg,
+                                                border: `1px solid ${badgeStyle.border}`,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0
+                                            }}>
+                                                {getDocIcon(item.doc_type)}
+                                            </div>
 
                                             {/* Details */}
                                             <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
@@ -474,7 +434,7 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
                             <input 
                                 type="file" 
                                 multiple 
-                                accept=".pdf,.brd,.csv,.png,.jpg,.jpeg" 
+                                accept=".pdf,.brd,.csv,.xlsx,.xls,.txt" 
                                 onChange={handleFileChange}
                                 style={{ display: 'none' }}
                                 id="uploaded-docs-file-input"
@@ -503,15 +463,6 @@ export function UploadedDocsModal({ isOpen, onClose, project, pcb, initialCatego
                     )}
                 </div>
             </Popup>
-
-            {/* Lightbox for pictures */}
-            {lightboxImage && (
-                <PictureCard
-                    images={[lightboxImage.url]}
-                    title={lightboxImage.title}
-                    onClose={() => setLightboxImage(null)}
-                />
-            )}
         </>
     );
 }

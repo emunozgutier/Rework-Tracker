@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 // Define maximum size limits
 export const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
-export const MAX_DOC_SIZE = 25 * 1024 * 1024; // 25 MB
+export const MAX_DOC_SIZE = 100 * 1024 * 1024; // 100 MB
 
 export const ALLOWED_EXTENSIONS = ['.pdf', '.brd', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.csv', '.xlsx', '.xls', '.txt'];
 
