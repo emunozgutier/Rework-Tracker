@@ -713,7 +713,7 @@ function extractTraces(
     const net = netAssignMap.get(track.netAssignment) ?? '';
 
     // Resolve layer index from subclass (0-based ETCH layer)
-    const layerIdx = track.layer.subclass > 0 ? track.layer.subclass - 1 : 0;
+    const layerIdx = track.layer.subclass;
 
     // Walk segment chain: firstSegPtr → 0x15/16/17 segments + 0x01 arcs
     let segKey = track.firstSegPtr;

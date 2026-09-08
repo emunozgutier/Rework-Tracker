@@ -4,7 +4,7 @@ import { Search, X, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
 interface SearchProps {
     searchQuery: string;
     onSearchChange: (query: string) => void;
-    elements: Array<{ name: string; value?: string; package?: string }>;
+    elements: Array<{ name: string; value?: string; package?: string; layer?: 'top' | 'bottom' | string }>;
     onSelect: (type: 'element' | 'net', name: string) => void;
     selectedItem: { type: 'element' | 'net'; name: string } | null;
 }
@@ -30,7 +30,9 @@ export function BoardSearch({
               (el) =>
                   el.name.toLowerCase().includes(cleanQuery) ||
                   (el.value && el.value.toLowerCase().includes(cleanQuery)) ||
-                  (el.package && el.package.toLowerCase().includes(cleanQuery))
+                  (el.package && el.package.toLowerCase().includes(cleanQuery)) ||
+                  (el.layer && el.layer.toLowerCase().includes(cleanQuery)) ||
+                  `${el.name.toLowerCase()} (${el.layer || ''})`.includes(cleanQuery)
           )
         : sortedElements;
 
@@ -289,7 +291,15 @@ export function BoardSearch({
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                                                                 <Cpu size={12} color={isSelected ? 'var(--accent)' : 'var(--text-muted)'} style={{ flexShrink: 0 }} />
                                                                 <span style={{ fontSize: '0.8rem', fontWeight: isSelected ? 600 : 500, color: 'var(--text-h)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                    {el.name}
+                                                                    {el.name}{' '}
+                                                                    <span style={{
+                                                                        fontSize: '0.72rem',
+                                                                        fontWeight: 500,
+                                                                        color: el.layer === 'bottom' ? '#60a5fa' : '#f87171',
+                                                                        marginLeft: '2px'
+                                                                    }}>
+                                                                        ({el.layer || 'top'})
+                                                                    </span>
                                                                 </span>
                                                             </div>
                                                             {el.value && (

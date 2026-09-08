@@ -8,7 +8,7 @@ interface SideMenuProps {
     boardData: BoardData | null;
     searchQuery: string;
     onSearchChange: (query: string) => void;
-    elements: Array<{ name: string; value?: string; package?: string }>;
+    elements: Array<{ name: string; value?: string; package?: string; layer?: 'top' | 'bottom' | string }>;
     onSelect: (type: 'element' | 'net', name: string) => void;
     selectedItem: { type: 'element' | 'net'; name: string } | null;
     visibleLayers: Set<number>;

@@ -210,7 +210,22 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
 
     const elementsList = useMemo(() => {
         if (!boardData) return [];
-        return boardData.elements.map(e => ({ name: e.name, value: e.value, package: e.package }));
+        return boardData.elements
+            .filter(e => !e.name.startsWith('___GLOBAL_SILK'))
+            .map(e => {
+            const isBottom = Boolean(
+                e.mirror ||
+                (e.smds && e.smds.some(s => s.layer === 16 || s.layer === 22)) ||
+                (e.silks && e.silks.some(s => s.layer === 22 || s.layer === 26)) ||
+                (e as any).side === 'bottom'
+            );
+            return {
+                name: e.name,
+                value: e.value,
+                package: e.package,
+                layer: (isBottom ? 'bottom' : 'top') as 'top' | 'bottom'
+            };
+        });
     }, [boardData]);
 
     const handleSelectSearchItem = (type: 'element' | 'net', name: string) => {

@@ -150,15 +150,18 @@ function adaptAllegroBoardData(ripperData: any): BoardData {
         };
     });
 
-    // Append global silkscreen paths under a dummy component
+    // Append global silkscreen paths under dummy components (separate top and bottom)
     if (ripperData.silkscreen && ripperData.silkscreen.length > 0) {
-        const globalSilks: any[] = [];
+        const topSilks: any[] = [];
+        const botSilks: any[] = [];
         ripperData.silkscreen.forEach((pathItem: any) => {
-            const layer = pathItem.side === 'bottom' ? 22 : 21;
+            const isBottom = pathItem.side === 'bottom';
+            const layer = isBottom ? 22 : 21;
+            const target = isBottom ? botSilks : topSilks;
             for (let i = 0; i < pathItem.points.length - 1; i++) {
                 const p1 = pathItem.points[i];
                 const p2 = pathItem.points[i + 1];
-                globalSilks.push({
+                target.push({
                     x1: p1.x,
                     y1: p1.y,
                     x2: p2.x,
@@ -169,19 +172,36 @@ function adaptAllegroBoardData(ripperData: any): BoardData {
             }
         });
         
-        elements.push({
-            name: '___GLOBAL_SILK___',
-            value: '',
-            package: '',
-            x: 0,
-            y: 0,
-            rot: 'R0',
-            mirror: false,
-            angle: 0,
-            smds: [],
-            pads: [],
-            silks: globalSilks
-        });
+        if (topSilks.length > 0) {
+            elements.push({
+                name: '___GLOBAL_SILK_TOP___',
+                value: '',
+                package: '',
+                x: 0,
+                y: 0,
+                rot: 'R0',
+                mirror: false,
+                angle: 0,
+                smds: [],
+                pads: [],
+                silks: topSilks
+            });
+        }
+        if (botSilks.length > 0) {
+            elements.push({
+                name: '___GLOBAL_SILK_BOT___',
+                value: '',
+                package: '',
+                x: 0,
+                y: 0,
+                rot: 'R0',
+                mirror: true,
+                angle: 0,
+                smds: [],
+                pads: [],
+                silks: botSilks
+            });
+        }
     }
 
     // 3. Map traces/nets to signals

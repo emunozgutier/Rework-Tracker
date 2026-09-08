@@ -123,12 +123,14 @@ export const drawElementSilkscreen = (
         ctx.save();
         ctx.translate(el.x, -el.y);
         ctx.rotate((-el.angle * Math.PI) / 180);
-        if (el.mirror) {
+        if (el.mirror && !el.name.startsWith('___GLOBAL_SILK')) {
             ctx.scale(-1, 1);
         }
 
         ctx.lineWidth = 0.15;
         el.silks.forEach(silk => {
+            if (drawBottom && silk.layer && silk.layer !== 22 && silk.layer !== 26) return;
+            if (!drawBottom && silk.layer && silk.layer !== 21 && silk.layer !== 25) return;
             ctx.beginPath();
             ctx.moveTo(silk.x1, -silk.y1);
             ctx.lineTo(silk.x2, -silk.y2);
@@ -136,14 +138,16 @@ export const drawElementSilkscreen = (
         });
         ctx.restore();
 
-        // 2. Draw un-rotated, un-mirrored refdes label at the component center
-        ctx.save();
-        ctx.translate(el.x, -el.y);
-        ctx.font = `${Math.max(1.2, 8 / scale)}px monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(el.name, 0, 0);
-        ctx.restore();
+        // 2. Draw un-rotated, un-mirrored refdes label at the component center (skip dummy elements)
+        if (!el.name.startsWith('___GLOBAL_SILK')) {
+            ctx.save();
+            ctx.translate(el.x, -el.y);
+            ctx.font = `${Math.max(1.2, 8 / scale)}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(el.name, 0, 0);
+            ctx.restore();
+        }
     });
 };
 
