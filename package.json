@@ -10,6 +10,7 @@
     "db:clean-test": "tsx scripts/cleanTestData.ts",
     "db:seed": "tsx scripts/seedDemoData.ts",
     "db:reset-sandbox": "tsx scripts/resetSandbox.ts",
+    "demo:files": "python3 scripts/create_demo_files.py",
     "diag:5001": "python3 diagnose_5001.py",
     "build": "tsc -b && vite build && node copy-404.js",
     "predeploy": "npm run build",

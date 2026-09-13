@@ -41,3 +41,4 @@ src/store/serverDataBase/data/sandbox_uploads/
 sandbox_uploads/
 *.db-wal
 *.db-shm
+scripts/dump/
