@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { db, initDb } from '../src/store/serverDataBase/db';
 import { useDemoStore } from '../src/store/useDemoStore';
@@ -13,7 +14,6 @@ describe('Project Documents and Count Accuracy', () => {
 
     beforeAll(async () => {
         useDemoStore.getState().setDemoMode(false);
-        await initDb();
     });
 
     it('should create a project with revision details referencing schematic and board file', async () => {

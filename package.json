@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"tsx watch src/store/serverDataBase/server.ts\" \"vite\"",
+    "dev:sandbox": "concurrently \"DB_PATH=src/store/serverDataBase/data/pcb_tracker_sandbox.db UPLOAD_DIR=src/store/serverDataBase/data/sandbox_uploads tsx watch src/store/serverDataBase/server.ts\" \"vite\"",
     "dev:caddy": "concurrently \"tsx watch src/store/serverDataBase/server.ts\" \"vite --base=/RT/\"",
+    "db:clean-test": "tsx scripts/cleanTestData.ts",
+    "db:seed": "tsx scripts/seedDemoData.ts",
+    "db:reset-sandbox": "tsx scripts/resetSandbox.ts",
     "diag:5001": "python3 diagnose_5001.py",
     "build": "tsc -b && vite build && node copy-404.js",
     "predeploy": "npm run build",

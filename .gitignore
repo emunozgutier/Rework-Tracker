@@ -37,3 +37,7 @@ src/store/serverDataBase/docs/
 src/store/serverDataBase/logs/
 src/store/serverDataBase/pictures/
 src/store/serverDataBase/schematics/
+src/store/serverDataBase/data/sandbox_uploads/
+sandbox_uploads/
+*.db-wal
+*.db-shm

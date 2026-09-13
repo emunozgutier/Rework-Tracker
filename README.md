@@ -47,15 +47,34 @@ npm run dev
 
 ---
 
-## 🧪 Integration Testing
+## 🧪 Testing & Sandbox Environment
 
-The application features a fully automated integration test suite that proves the database constraints (duplication prevention, foreign-key blocks, cascading teardowns) work flawlessly.
-
+### 1. Isolated Sandbox Dev Server
+Run a dedicated sandbox that uses an isolated database (`pcb_tracker_sandbox.db`) and sandbox upload folder (`sandbox_uploads/`) pre-seeded with demo data. Any testing or experimentation here will not affect your main data:
 ```bash
-npm run test
+npm run dev:sandbox
 ```
 
-*Uses `start-server-and-test` to automatically spin up a temporary ghost backend, run all Vitest integration suites against a temporary database, and safely shut everything down afterward.*
+### 2. Reset or Clean Test Data
+- **Reset Sandbox:** Wipes the sandbox database and upload folder:
+  ```bash
+  npm run db:reset-sandbox
+  ```
+- **Purge Test Records:** Removes any test entities (`[TEST]`, `vitest`, `Test Project`) and test upload files from the active database:
+  ```bash
+  npm run db:clean-test
+  ```
+- **Re-Seed Demo Data:** Restores the database with standard demo data from `demoData.json`:
+  ```bash
+  npm run db:seed
+  ```
+
+### 3. Automated Vitest Suites
+The application features a fully automated integration test suite that proves database constraints work flawlessly against an isolated test database:
+```bash
+npm run test:run        # Run test suite directly
+npm run test            # Spins up backend on port 5002 and runs vitest
+```
 
 ---
 

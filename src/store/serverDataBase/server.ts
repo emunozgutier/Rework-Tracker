@@ -36,14 +36,23 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 5002;
 
+const UPLOAD_ROOT = process.env.UPLOAD_DIR ? path.resolve(process.cwd(), process.env.UPLOAD_DIR) : __dirname;
+export const picturesDir = path.join(UPLOAD_ROOT, 'pictures');
+export const docsDir = path.join(UPLOAD_ROOT, 'docs');
+
+export const resolveDiskPath = (relativePath: string): string => {
+    const cleanRel = relativePath.replace(/^\//, '');
+    return path.join(UPLOAD_ROOT, cleanRel);
+};
+
 // Configure Multer Storage
 const storage = multer.diskStorage({
     destination: function (req, _file, cb) {
         let dir = '';
         if (req.originalUrl.includes('/docs')) {
-            dir = path.join(__dirname, 'docs');
+            dir = docsDir;
         } else {
-            dir = path.join(__dirname, 'pictures');
+            dir = picturesDir;
         }
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir, { recursive: true });
@@ -272,26 +281,30 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     serializeWrites(req, res, next);
 });
 
-// Migrate legacy physical schematics folder to docs on startup
-const oldSchematicsDir = path.join(__dirname, 'schematics');
-const newDocsDir = path.join(__dirname, 'docs');
-if (fs.existsSync(oldSchematicsDir)) {
-    if (!fs.existsSync(newDocsDir)) {
-        try {
-            fs.renameSync(oldSchematicsDir, newDocsDir);
-        } catch (e) {
-            console.error("Failed to rename schematics folder to docs:", e);
+// Migrate legacy physical schematics folder to docs on startup (only for default directory)
+if (!process.env.UPLOAD_DIR) {
+    const oldSchematicsDir = path.join(__dirname, 'schematics');
+    if (fs.existsSync(oldSchematicsDir)) {
+        if (!fs.existsSync(docsDir)) {
+            try {
+                fs.renameSync(oldSchematicsDir, docsDir);
+            } catch (e) {
+                console.error("Failed to rename schematics folder to docs:", e);
+            }
         }
     }
 }
 
-app.use('/api/pictures', express.static(path.join(__dirname, 'pictures')));
-app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
+if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir, { recursive: true });
+if (!fs.existsSync(picturesDir)) fs.mkdirSync(picturesDir, { recursive: true });
+
+app.use('/api/pictures', express.static(picturesDir));
+app.use('/api/docs', express.static(docsDir));
 app.use('/api/docs', (req: Request, res: Response, next: NextFunction) => {
     const requestedFile = path.basename(req.path);
     if (!requestedFile) return next();
 
-    const docsRoot = path.join(__dirname, 'docs');
+    const docsRoot = docsDir;
     if (!fs.existsSync(docsRoot)) return next();
 
     try {
@@ -314,13 +327,31 @@ app.use('/api/docs', (req: Request, res: Response, next: NextFunction) => {
 });
 
 // Initialize Database
-initDb().then(() => {
+initDb().then(async () => {
+    // If sandbox mode is detected and database is empty, automatically seed with demo data
+    if (process.env.DB_PATH && process.env.DB_PATH.includes('sandbox')) {
+        await new Promise<void>((resolve) => {
+            db.get("SELECT COUNT(*) as cnt FROM projects", [], async (_err: any, row: any) => {
+                if (row && row.cnt === 0) {
+                    console.log("[Sandbox Mode] Empty sandbox database detected. Seeding with demo data...");
+                    try {
+                        await seedDemoDatabase();
+                        console.log("[Sandbox Mode] Demo data successfully seeded.");
+                    } catch (e: any) {
+                        console.error("[Sandbox Mode] Failed to seed demo data:", e.message);
+                    }
+                }
+                resolve();
+            });
+        });
+    }
+
     // Ensure docs directories exist for all projects and copy default files if missing
     db.all("SELECT id, project_key FROM projects", [], (errProj: Error | null, projects: any[]) => {
         if (!errProj && projects) {
             projects.forEach((p) => {
                 const projectKey = p.project_key || 'PRJ';
-                const targetDir = path.join(__dirname, 'docs', projectKey);
+                const targetDir = path.join(docsDir, projectKey);
                 if (!fs.existsSync(targetDir)) {
                     fs.mkdirSync(targetDir, { recursive: true });
                 }
@@ -348,8 +379,8 @@ initDb().then(() => {
     });
 
     // Lock all files in docs and pictures to prevent execution
-    lockDirectoryFiles(path.join(__dirname, 'docs'));
-    lockDirectoryFiles(path.join(__dirname, 'pictures'));
+    lockDirectoryFiles(docsDir);
+    lockDirectoryFiles(picturesDir);
 
     // Migrate legacy short codes to Base36 format
     db.all("SELECT id, board_number, project_id, short_code FROM pcbs WHERE length(short_code) < 5 OR short_code IS NULL", [], (errPcb: Error | null, rows: any[]) => {
@@ -1537,8 +1568,8 @@ app.post('/api/reworks', upload.any(), fileSanityCheckMiddleware, deduplicate, s
                     const ext = path.extname(file.originalname) || '.jpg';
                     const newFileName = `${reworkName}-PIC-${index + 1}${ext}`;
                     const projectKey = row.project_key || 'PRJ';
-                    const oldPath = path.join(__dirname, 'pictures', file.filename);
-                    const targetDir = path.join(__dirname, 'pictures', projectKey);
+                    const oldPath = path.join(picturesDir, file.filename);
+                    const targetDir = path.join(picturesDir, projectKey);
                     if (!fs.existsSync(targetDir)) {
                         fs.mkdirSync(targetDir, { recursive: true });
                     }
@@ -1685,8 +1716,8 @@ app.post('/api/projects/:id/docs', upload.any(), fileSanityCheckMiddleware, (req
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E4);
                 const newFileName = `${uniqueSuffix}-${cleanOriginal}`;
                 
-                const oldPath = path.join(__dirname, 'docs', file.filename);
-                const targetDir = path.join(__dirname, 'docs', projectKey);
+                const oldPath = path.join(docsDir, file.filename);
+                const targetDir = path.join(docsDir, projectKey);
                 if (!fs.existsSync(targetDir)) {
                     fs.mkdirSync(targetDir, { recursive: true });
                 }
@@ -1781,7 +1812,7 @@ app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response)
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "Document not found" });
 
-        const filePath = path.join(__dirname, row.path.replace(/^\//, ''));
+        const filePath = resolveDiskPath(row.path);
         db.run("DELETE FROM project_docs WHERE id = ?", [docId], function(this: any, deleteErr: Error | null) {
             if (deleteErr) return res.status(500).json({ error: deleteErr.message });
 
@@ -1902,7 +1933,7 @@ app.delete('/api/uploaded-docs/:id', (req: Request, res: Response) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "Document not found" });
 
-        const filePath = path.join(__dirname, row.path.replace(/^\//, ''));
+        const filePath = resolveDiskPath(row.path);
         db.run("DELETE FROM uploaded_docs WHERE id = ?", [docId], function(this: any, delErr: Error | null) {
             if (delErr) return res.status(500).json({ error: delErr.message });
 
@@ -2432,7 +2463,7 @@ app.delete('/api/reworks/:id', async (req: Request, res: Response) => {
                     if (docRows && docRows.length > 0) {
                         docRows.forEach((d: any) => {
                             try {
-                                const diskPath = path.join(__dirname, d.path.replace(/^\//, ''));
+                                const diskPath = resolveDiskPath(d.path);
                                 if (fs.existsSync(diskPath)) fs.unlinkSync(diskPath);
                             } catch {}
                         });
@@ -2449,14 +2480,37 @@ app.delete('/api/reworks/:id', async (req: Request, res: Response) => {
 app.post('/api/test/cleanup', (_req: Request, res: Response) => {
     db.serialize(() => {
         db.run('PRAGMA foreign_keys = OFF');
-        
+
+        // Clean up test files from disk
+        db.all(`
+            SELECT path FROM uploaded_docs 
+            WHERE project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR name LIKE '%[TEST]%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+               OR pcb_id IN (SELECT id FROM pcbs WHERE board_number LIKE '%vitest%' OR board_number LIKE '%TEST%')
+        `, [], (_err: any, rows: any[]) => {
+            if (rows && rows.length > 0) {
+                rows.forEach((r: any) => {
+                    try {
+                        const fp = resolveDiskPath(r.path);
+                        if (fs.existsSync(fp)) fs.unlinkSync(fp);
+                    } catch {}
+                });
+            }
+        });
+
+        // 0. Delete uploaded_docs of test projects / pcbs
+        db.run(`
+            DELETE FROM uploaded_docs 
+            WHERE project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR name LIKE '%[TEST]%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+               OR pcb_id IN (SELECT id FROM pcbs WHERE board_number LIKE '%vitest%' OR board_number LIKE '%TEST%')
+        `);
+
         // 1. Delete pcb_tags of test pcbs
         db.run(`
             DELETE FROM pcb_tags 
             WHERE pcb_id IN (
                 SELECT id FROM pcbs 
-                WHERE board_number LIKE '%vitest%' 
-                   OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+                WHERE board_number LIKE '%vitest%' OR board_number LIKE '%TEST%'
+                   OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR name LIKE '%[TEST]%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
             )
         `);
 
@@ -2465,26 +2519,28 @@ app.post('/api/test/cleanup', (_req: Request, res: Response) => {
             DELETE FROM reworks 
             WHERE pcb_id IN (
                 SELECT id FROM pcbs 
-                WHERE board_number LIKE '%vitest%' 
-                   OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+                WHERE board_number LIKE '%vitest%' OR board_number LIKE '%TEST%'
+                   OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR name LIKE '%[TEST]%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
             )
             OR owner_id IN (SELECT id FROM owners WHERE name LIKE '%vitest%' OR username LIKE '%vitest%')
             OR description LIKE '%Vitest%'
+            OR description LIKE '%[TEST]%'
+            OR title LIKE '%[TEST]%'
             OR title LIKE '%Silicon Swap to B0%'
         `);
 
         // 3. Delete pcbs
         db.run(`
             DELETE FROM pcbs 
-            WHERE board_number LIKE '%vitest%' 
-               OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+            WHERE board_number LIKE '%vitest%' OR board_number LIKE '%TEST%'
+               OR project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR name LIKE '%[TEST]%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
                OR owner_id IN (SELECT id FROM owners WHERE name LIKE '%vitest%' OR username LIKE '%vitest%')
         `);
 
         // 4. Delete pcb_flavors
         db.run(`
             DELETE FROM pcb_flavors 
-            WHERE project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
+            WHERE project_id IN (SELECT id FROM projects WHERE name LIKE '%vitest%' OR name LIKE '%Test Project%' OR name LIKE '%[TEST]%' OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR'))
         `);
 
         // 5. Delete projects
@@ -2492,6 +2548,7 @@ app.post('/api/test/cleanup', (_req: Request, res: Response) => {
             DELETE FROM projects 
             WHERE name LIKE '%vitest%' 
                OR name LIKE '%Test Project%' 
+               OR name LIKE '%[TEST]%'
                OR project_key IN ('VTT', 'VVV', 'DIO', 'TPR')
         `);
 
@@ -2500,6 +2557,7 @@ app.post('/api/test/cleanup', (_req: Request, res: Response) => {
             DELETE FROM tags 
             WHERE name LIKE '%vitest%' 
                OR name LIKE '%test%' 
+               OR name LIKE '%[TEST]%'
                OR owner_id IN (SELECT id FROM owners WHERE name LIKE '%vitest%' OR username LIKE '%vitest%')
         `);
 
@@ -2849,3 +2907,5 @@ app.post('/api/db/mode', async (req: Request, res: Response) => {
         }
     });
 });
+
+export { seedDemoDatabase, clearToEmptyDatabase };

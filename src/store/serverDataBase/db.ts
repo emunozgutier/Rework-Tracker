@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const getDbPath = (): string => {
-    if (process.env.DB_PATH) return process.env.DB_PATH;
+    if (process.env.DB_PATH) return path.resolve(process.cwd(), process.env.DB_PATH);
     const isTest = process.env.NODE_ENV === 'test' || typeof (globalThis as any).__vitest_worker__ !== 'undefined';
     const filename = isTest ? 'pcb_tracker_test.db' : 'pcb_tracker.db';
     return path.resolve(__dirname, 'data', filename);
